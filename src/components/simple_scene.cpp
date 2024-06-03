@@ -6,6 +6,8 @@
 #include "components/camera_input.h"
 #include "components/scene_input.h"
 #include "components/transform.h"
+#include "core/engine.h"
+#include "core/managers/resource_path.h"
 
 using namespace gfxc;
 
@@ -69,41 +71,41 @@ void SimpleScene::InitResources()
         simpleLine->SetDrawMode(GL_LINES);
     }
 
-    // Create a shader program for drawing face polygon with the color of the normal
-    {
-        Shader *shader = new Shader("Simple");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Default.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-
-    // Create a shader program for drawing vertex colors
-    {
-        Shader *shader = new Shader("Color");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Color.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-
-    // Create a shader program for drawing face polygon with the color of the normal
-    {
-        Shader *shader = new Shader("VertexNormal");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Normals.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
-
-    // Create a shader program for drawing vertex colors
-    {
-        Shader *shader = new Shader("VertexColor");
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
-        shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "VertexColor.FS.glsl"), GL_FRAGMENT_SHADER);
-        shader->CreateAndLink();
-        shaders[shader->GetName()] = shader;
-    }
+    // // Create a shader program for drawing face polygon with the color of the normal
+    // {
+    //     ShaderBase *shader = new ShaderBase("Simple");
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Default.FS.glsl"), GL_FRAGMENT_SHADER);
+    //     shader->CreateAndLink();
+    //     shaders[shader->GetName()] = shader;
+    // }
+    //
+    // // Create a shader program for drawing vertex colors
+    // {
+    //     ShaderBase *shader = new ShaderBase("Color");
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Color.FS.glsl"), GL_FRAGMENT_SHADER);
+    //     shader->CreateAndLink();
+    //     shaders[shader->GetName()] = shader;
+    // }
+    //
+    // // Create a shader program for drawing face polygon with the color of the normal
+    // {
+    //     ShaderBase *shader = new ShaderBase("VertexNormal");
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "Normals.FS.glsl"), GL_FRAGMENT_SHADER);
+    //     shader->CreateAndLink();
+    //     shaders[shader->GetName()] = shader;
+    // }
+    //
+    // // Create a shader program for drawing vertex colors
+    // {
+    //     ShaderBase *shader = new ShaderBase("VertexColor");
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "MVP.Texture.VS.glsl"), GL_VERTEX_SHADER);
+    //     shader->AddShader(PATH_JOIN(window->props.selfDir, RESOURCE_PATH::SHADERS, "VertexColor.FS.glsl"), GL_FRAGMENT_SHADER);
+    //     shader->CreateAndLink();
+    //     shaders[shader->GetName()] = shader;
+    // }
 
     // Default rendering mode will use depth buffer
     glDepthMask(GL_TRUE);
@@ -133,7 +135,7 @@ void SimpleScene::DrawCoordinateSystem(const glm::mat4 & viewMatrix, const glm::
 
     // Render the coordinate system
     {
-        Shader *shader = shaders["Color"];
+        ShaderBase *shader = shaders["Color"];
         shader->Use();
         glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(viewMatrix));
         glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMaxtix));
@@ -173,7 +175,7 @@ void SimpleScene::DrawCoordinateSystem(const glm::mat4 & viewMatrix, const glm::
 }
 
 
-void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, glm::vec3 position, glm::vec3 scale)
+void SimpleScene::RenderMesh(Mesh * mesh, ShaderBase * shader, glm::vec3 position, glm::vec3 scale)
 {
     if (!mesh || !shader || !shader->program)
         return;
@@ -197,7 +199,7 @@ void SimpleScene::RenderMesh(Mesh * mesh, glm::vec3 position, glm::vec3 scale)
 }
 
 
-void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader, const glm::mat3 &modelMatrix)
+void SimpleScene::RenderMesh2D(Mesh * mesh, ShaderBase * shader, const glm::mat3 &modelMatrix)
 {
     if (!mesh || !shader || !shader->program)
         return;
@@ -220,7 +222,7 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, Shader * shader, const glm::mat3 &mo
 
 void SimpleScene::RenderMesh2D(Mesh * mesh, const glm::mat3 & modelMatrix, const glm::vec3 & color) const
 {
-    Shader* shader = shaders.at("Color");
+    ShaderBase* shader = shaders.at("Color");
 
     if (!mesh || !shader || !shader->program)
         return;
@@ -243,7 +245,7 @@ void SimpleScene::RenderMesh2D(Mesh * mesh, const glm::mat3 & modelMatrix, const
 }
 
 
-void SimpleScene::RenderMesh(Mesh * mesh, Shader * shader, const glm::mat4 & modelMatrix)
+void SimpleScene::RenderMesh(Mesh * mesh, ShaderBase * shader, const glm::mat4 & modelMatrix)
 {
     if (!mesh || !shader || !shader->program)
         return;

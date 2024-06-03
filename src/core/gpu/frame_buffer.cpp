@@ -115,7 +115,7 @@ void FrameBuffer::Bind(bool clearBuffer) const
 }
 
 
-void FrameBuffer::SendResolution(Shader *shader) const
+void FrameBuffer::SendResolution(ShaderBase *shader) const
 {
     glUniform2i(shader->loc_resolution, width, height);
 }

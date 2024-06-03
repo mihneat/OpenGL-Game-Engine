@@ -9,7 +9,7 @@
 #include "components/camera.h"
 #include "components/transform.h"
 
-#include "core/gpu/shader.h"
+#include "core/gpu/ShaderBase.h"
 #include "core/gpu/texture2D.h"
 #include "core/gpu/ssbo.h"
 
@@ -24,7 +24,7 @@ class ParticleEffect
 
     virtual void Generate(unsigned int particleCount, bool createLocalBuffer = false);
     virtual void FillRandomData(std::function<T(void)> generator);
-    virtual void Render(gfxc::Camera *camera, Shader *shader, unsigned int nrParticles = -1);
+    virtual void Render(gfxc::Camera *camera, ShaderBase *shader, unsigned int nrParticles = -1);
 
     virtual SSBO<T>* GetParticleBuffer() const
     {
@@ -64,7 +64,7 @@ ParticleEffect<T>::~ParticleEffect()
 
 
 template <class T>
-void ParticleEffect<T>::Render(gfxc::Camera *camera, Shader *shader, unsigned int nrParticles)
+void ParticleEffect<T>::Render(gfxc::Camera *camera, ShaderBase *shader, unsigned int nrParticles)
 {
     // Bind MVP
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(source->GetModel()));

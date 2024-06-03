@@ -233,7 +233,7 @@ bool Mesh::InitMaterials(const aiScene* pScene)
     for (unsigned int i = 0 ; i < pScene->mNumMaterials ; i++)
     {
         const aiMaterial* pMaterial = pScene->mMaterials[i];
-        materials[i] = new Material();
+        materials[i] = new MaterialBase();
 
         if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0)
         {

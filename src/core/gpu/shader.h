@@ -11,12 +11,16 @@
 #define MAX_2D_TEXTURES        (16)
 #define INVALID_LOC            (-1)
 
+namespace rendering
+{
+   class RenderingSystem;
+}
 
-class Shader
+class ShaderBase
 {
  public:
-    Shader(const std::string &name);
-    ~Shader();
+    ShaderBase(const std::string &name);
+    ~ShaderBase();
 
     const char *GetName() const;
     GLuint GetProgramID() const;
@@ -80,4 +84,6 @@ class Shader
     std::vector<ShaderFile> shaderFiles;
     std::vector<ShaderFile> shaderCodes;
     std::list<std::function<void()>> loadObservers;
+
+   friend class rendering::RenderingSystem;
 };

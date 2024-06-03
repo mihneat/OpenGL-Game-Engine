@@ -8,7 +8,7 @@ endif()
 
 
 # Set the name of the project
-set(target_name GFXFramework)
+set(target_name OpenGLGameEngine)
 project(${target_name} C CXX)
 
 
@@ -42,7 +42,8 @@ endif()
 
 
 # Set options
-option(WITH_LAB_M1 "With module 1 labs" ON)
+option(WITH_MAIN "With main game engine code" ON)
+option(WITH_LAB_M1 "With module 1 labs" OFF)
 option(WITH_LAB_M2 "With module 2 labs" OFF)
 option(WITH_LAB_EXTRA "With extra labs" OFF)
 option(USE_DEV_COMPONENTS "Use dev components" OFF)
@@ -61,6 +62,9 @@ endif()
 # sources and headers for different courses. If the suffix variables remain
 # empty, the GLOB_RECURSE will look for files in the directory called `lab_`
 # which does not actually exist, but will not fail.
+if (WITH_MAIN)
+    set(MAIN "main")
+endif()
 if (WITH_LAB_M1)
     set(SUFFIX_LAB_M1 "m1")
 endif()
@@ -80,6 +84,7 @@ file(GLOB_RECURSE GFXF_SOURCES
     #
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
     #
+    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.c*
@@ -94,13 +99,33 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
     #
     ${CMAKE_CURRENT_LIST_DIR}/res/*.glsl
     #
+    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.h*
     #
+    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.glsl
+)
+
+
+# Gather the ImGui source files
+file(GLOB IMGUI_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/*.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/backends/imgui_impl_glfw.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/backends/imgui_impl_opengl3.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/misc/cpp/imgui_stdlib.cpp
+)
+
+
+# Gather the ImGui header files
+file(GLOB IMGUI_HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/*.h
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/backends/imgui_impl_glfw.h
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/backends/imgui_impl_opengl3.h
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui/misc/cpp/imgui_stdlib.h
 )
 
 
@@ -108,6 +133,7 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
 set(GFXF_INCLUDE_DIRS_PRIVATE
     ${GFXF_ROOT_DIR}/deps/api
     ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui
 )
 
 
@@ -116,6 +142,8 @@ custom_add_executable(${target_name}
     ${GFXF_SOURCES}
     ${GFXF_SOURCES_HIDDEN}
     ${GFXF_HEADERS_PRIVATE}
+    ${IMGUI_SOURCES}
+    ${IMGUI_HEADERS}
 )
 
 
@@ -135,7 +163,7 @@ elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
 endif()
 
 
-# Set library suffic
+# Set library suffix
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(__cmake_shared_suffix dll)
     set(__cmake_import_suffix lib)
@@ -215,6 +243,7 @@ endif()
 
 # Set source file properties
 set_source_files_properties(${GFXF_HEADERS_PRIVATE}  PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${IMGUI_HEADERS}  PROPERTIES HEADER_FILE_ONLY TRUE)
 
 
 # Group files under logical folders (mainly for IDEs)
@@ -222,12 +251,17 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES
     ${GFXF_SOURCES}
     ${GFXF_SOURCES_HIDDEN}
     ${GFXF_HEADERS_PRIVATE}
+    ${IMGUI_SOURCES}
+    ${IMGUI_HEADERS}
 )
 
 
 # Add definitions (specific to this project)
 # Recommended reading: so@a/24470998/5922876, so@a/11437693/5922876
 set(GFXF_CXX_DEFS       LIBGFXC_EXPORTS GLM_FORCE_SILENT_WARNINGS _CRT_SECURE_NO_WARNINGS SOLVED $<$<CONFIG:Debug>:DEBUG>)
+if (WITH_MAIN)
+    set(GFXF_CXX_DEFS   ${GFXF_CXX_DEFS} WITH_MAIN)
+endif()
 if (WITH_LAB_M1)
     set(GFXF_CXX_DEFS   ${GFXF_CXX_DEFS} WITH_LAB_M1)
 endif()
