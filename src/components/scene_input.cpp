@@ -1,6 +1,7 @@
 #include "components/scene_input.h"
 
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 #include "components/simple_scene.h"
 

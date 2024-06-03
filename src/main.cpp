@@ -3,6 +3,11 @@
 
 #include "core/engine.h"
 #include "components/simple_scene.h"
+#include "main/GameEngine/Systems/FileSystem.h"
+
+#if defined(WITH_MAIN)
+#   include "main/lab_list.h"
+#endif
 
 #if defined(WITH_LAB_M1)
 #   include "lab_m1/lab_list.h"
@@ -40,11 +45,14 @@ int main(int argc, char **argv)
     wp.vSync = true;
     wp.selfDir = GetParentDir(std::string(argv[0]));
 
+    // Set the primary file path
+    FileSystem::rootDirectory = wp.selfDir;
+
     // Init the Engine and create a new window with the defined properties
     (void)Engine::Init(wp);
 
     // Create a new 3D world and start running it
-    World *world = new m1::Steep();
+    World *world = new m1::GameEngine();
 
     world->Init();
     world->Run();

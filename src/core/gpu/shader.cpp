@@ -4,7 +4,7 @@
 #include <iostream>
 
 
-Shader::Shader(const std::string &name)
+ShaderBase::ShaderBase(const std::string &name)
 {
     program = 0;
     shaderName = name;
@@ -12,25 +12,25 @@ Shader::Shader(const std::string &name)
 }
 
 
-Shader::~Shader()
+ShaderBase::~ShaderBase()
 {
     glDeleteProgram(program);
 }
 
 
-const char * Shader::GetName() const
+const char * ShaderBase::GetName() const
 {
     return shaderName.c_str();
 }
 
 
-GLuint Shader::GetProgramID() const
+GLuint ShaderBase::GetProgramID() const
 {
     return program;
 }
 
 
-void Shader::Use() const
+void ShaderBase::Use() const
 {
     if (program)
     {
@@ -40,7 +40,7 @@ void Shader::Use() const
 }
 
 
-unsigned int Shader::Reload()
+unsigned int ShaderBase::Reload()
 {
     if (program) {
         glDeleteProgram(program);
@@ -51,7 +51,7 @@ unsigned int Shader::Reload()
 }
 
 
-void Shader::BindTexturesUnits()
+void ShaderBase::BindTexturesUnits()
 {
     for (int i = 0; i < MAX_2D_TEXTURES; i++) {
         if (loc_textures[i] >= 0)
@@ -60,19 +60,19 @@ void Shader::BindTexturesUnits()
 }
 
 
-GLint Shader::GetUniformLocation(const char *uniformName) const
+GLint ShaderBase::GetUniformLocation(const char *uniformName) const
 {
     return glGetUniformLocation(program, uniformName);
 }
 
 
-void Shader::OnLoad(std::function<void()> onLoad)
+void ShaderBase::OnLoad(std::function<void()> onLoad)
 {
     loadObservers.push_back(onLoad);
 }
 
 
-void Shader::GetUniforms()
+void ShaderBase::GetUniforms()
 {
     // MVP
     loc_model_matrix        = GetUniformLocation("Model");
@@ -111,7 +111,7 @@ void Shader::GetUniforms()
 }
 
 
-void Shader::AddShader(const std::string & shaderFile, GLenum shaderType)
+void ShaderBase::AddShader(const std::string & shaderFile, GLenum shaderType)
 {
     ShaderFile S;
     S.file = shaderFile;
@@ -120,7 +120,7 @@ void Shader::AddShader(const std::string & shaderFile, GLenum shaderType)
 }
 
 
-void Shader::AddShaderCode(const std::string &shaderCode, GLenum shaderType)
+void ShaderBase::AddShaderCode(const std::string &shaderCode, GLenum shaderType)
 {
     ShaderFile S;
     S.file = shaderCode;
@@ -129,13 +129,13 @@ void Shader::AddShaderCode(const std::string &shaderCode, GLenum shaderType)
 }
 
 
-unsigned int Shader::CreateAndLink()
+unsigned int ShaderBase::CreateAndLink()
 {
     std::vector<unsigned int> shaders;
 
     // Compile shaders
     for (auto S : shaderFiles) {
-        auto shaderID = Shader::CreateShader(S.file, S.type);
+        auto shaderID = ShaderBase::CreateShader(S.file, S.type);
         if (shaderID) {
             shaders.push_back(shaderID);
         } else {
@@ -145,7 +145,7 @@ unsigned int Shader::CreateAndLink()
 
     for (auto S : shaderCodes)
     {
-        auto shaderID = Shader::CompileShader(S.file, S.type);
+        auto shaderID = ShaderBase::CompileShader(S.file, S.type);
         if (shaderID) {
             shaders.push_back(shaderID);
         } else {
@@ -155,7 +155,7 @@ unsigned int Shader::CreateAndLink()
 
     // Create Program and Link
     if (shaders.size()) {
-        program = Shader::CreateProgram(shaders);
+        program = ShaderBase::CreateProgram(shaders);
 
         if (program)
         {
@@ -171,7 +171,7 @@ unsigned int Shader::CreateAndLink()
 }
 
 
-void Shader::ClearShaders()
+void ShaderBase::ClearShaders()
 {
     shaderFiles.clear();
 }
@@ -195,7 +195,7 @@ static std::string InjectDefines(const std::string &shaderCode)
 }
 
 
-unsigned int Shader::CreateShader(const std::string &shaderFile, GLenum shaderType)
+unsigned int ShaderBase::CreateShader(const std::string &shaderFile, GLenum shaderType)
 {
     std::string shader_code;
     std::ifstream file(shaderFile.c_str(), std::ios::in);
@@ -218,7 +218,7 @@ unsigned int Shader::CreateShader(const std::string &shaderFile, GLenum shaderTy
 }
 
 
-unsigned int Shader::CompileShader(const std::string shaderCode, GLenum shaderType)
+unsigned int ShaderBase::CompileShader(const std::string shaderCode, GLenum shaderType)
 {
     int infoLogLength = 0;
     int compileResult = 0;
@@ -270,7 +270,7 @@ unsigned int Shader::CompileShader(const std::string shaderCode, GLenum shaderTy
 }
 
 
-unsigned int Shader::CreateProgram(const std::vector<unsigned int> &shaderObjects)
+unsigned int ShaderBase::CreateProgram(const std::vector<unsigned int> &shaderObjects)
 {
     int infoLogLength = 0;
     int linkResult = 0;

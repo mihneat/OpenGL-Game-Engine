@@ -28,7 +28,7 @@ class FrameBuffer
 
     glm::ivec2 GetResolution() const;
 
-    void SendResolution(Shader *shader) const;
+    void SendResolution(ShaderBase *shader) const;
     void SetClearColor(glm::vec4 clearColor);
 
     static void Clear();

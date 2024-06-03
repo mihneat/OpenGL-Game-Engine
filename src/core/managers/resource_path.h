@@ -16,7 +16,14 @@ namespace RESOURCE_PATH
 
 namespace SOURCE_PATH
 {
-    const std::string M1        = PATH_JOIN("src", "lab_m1");
-    const std::string M2        = PATH_JOIN("src", "lab_m2");
-    const std::string EXTRA     = PATH_JOIN("src", "lab_extra");
+    const std::string MAIN          = PATH_JOIN("src", "main");
+    const std::string M1            = PATH_JOIN("src", "lab_m1");
+    const std::string M2            = PATH_JOIN("src", "lab_m2");
+    const std::string EXTRA         = PATH_JOIN("src", "lab_extra");
+}
+
+namespace ENGINE_PATH
+{
+    const std::string GAME_ENGINE   = PATH_JOIN(SOURCE_PATH::M1, "GameEngine");
+    const std::string ASSETS        = PATH_JOIN(GAME_ENGINE, "Assets");
 }

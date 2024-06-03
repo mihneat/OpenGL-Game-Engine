@@ -42,7 +42,7 @@ namespace gfxc
         std::map<GLchar, Character> Characters;
 
         // Shader used for text rendering
-        Shader *m_textShader;
+        ShaderBase *m_textShader;
 
         public:
         // Constructor

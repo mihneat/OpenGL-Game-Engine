@@ -10,10 +10,10 @@
 #include "assimp/scene.h"   // Output data structure
 
 
-class Material
+class MaterialBase
 {
  public:
-    Material()
+    MaterialBase()
     {
         texture = nullptr;
     }
@@ -114,5 +114,5 @@ class Mesh
     GPUBuffers *buffers;
 
     std::vector<MeshEntry> meshEntries;
-    std::vector<Material*> materials;
+    std::vector<MaterialBase*> materials;
 };
