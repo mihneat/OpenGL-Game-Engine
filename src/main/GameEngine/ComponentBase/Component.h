@@ -22,10 +22,14 @@ namespace component
         virtual void InputUpdate(const float deltaTime, const int mods) { }
         virtual void KeyPress(const int key, const int mods) { }
         virtual void KeyRelease(const int key, const int mods) { }
-        virtual void MouseBtnPress(const int mouseX, const int mouseY,
-            const int button, const int mods) { }
         virtual void MouseMove(const int mouseX, const int mouseY,
             const int deltaX, const int deltaY) { }
+        virtual void MouseBtnPress(const int mouseX, const int mouseY,
+            const int button, const int mods) { }
+        virtual void MouseBtnRelease(const int mouseX, const int mouseY,
+            const int button, const int mods) { }
+        virtual void MouseScroll(const int mouseX, const int mouseY,
+            const int offsetX, const int offsetY) { }
         virtual void WindowResize(int width, int height) { }
 
         bool GetHasStartActivated();

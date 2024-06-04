@@ -9,6 +9,7 @@
 #include <stack>
 
 #include "core/managers/resource_path.h"
+#include "GUI/GUIManager.h"
 #include "Systems/FileSystem.h"
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
@@ -78,7 +79,7 @@ void GameEngine::CreateHierarchy()
     hierarchy = new Transform();
 
     // Initialize singleton managers
-    Transform* gameManager = new Transform(hierarchy);
+    Transform* gameManager = new Transform(hierarchy, "Game Manager");
     managers::GameManager::GetInstance(gameManager, this);
     gameManager->AddComponent(managers::GameManager::GetInstance());
 
@@ -116,6 +117,9 @@ void GameEngine::FrameStart()
 
     glm::ivec2 resolution = window->GetResolution();
 
+    // Render the hierarchy in the GUI
+    GUIManager::GetInstance()->ShowHierarchy(hierarchy);
+
     // Sets the screen area where to draw
     glViewport(0, 0, resolution.x, resolution.y);
 }
@@ -128,7 +132,6 @@ void GameEngine::Update(float deltaTimeSeconds)
     glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
     glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
 
-    float deltaTimeTrunc = ((int)(deltaTimeSeconds * 100000)) / 100000.0f;
     this->StartComponents(hierarchy);
     this->UpdateComponents(hierarchy, deltaTimeSeconds);
     this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
@@ -136,9 +139,6 @@ void GameEngine::Update(float deltaTimeSeconds)
     this->DestroyMarkedObjects();
 
     renderingSystem->Render(hierarchy, currCam, window);
-
-    // TODO: This was before 'DestroyMarkedObject', might cause errors (probably not)
-    // this->renderingSystem->Render(hierarchy);
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
@@ -201,6 +201,9 @@ void GameEngine::DestroyMarkedObjects()
 
 void GameEngine::OnInputUpdate(float deltaTime, int mods)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
     ApplyToComponents(hierarchy, [deltaTime, mods](Component* component) {
         component->InputUpdate(deltaTime, mods);
     });
@@ -209,6 +212,9 @@ void GameEngine::OnInputUpdate(float deltaTime, int mods)
 
 void GameEngine::OnKeyPress(int key, int mods)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
     if (key == GLFW_KEY_F1) {
         useSceneCamera = !useSceneCamera;
     }
@@ -225,6 +231,9 @@ void GameEngine::OnKeyPress(int key, int mods)
 
 void GameEngine::OnKeyRelease(int key, int mods)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
     ApplyToComponents(hierarchy, [key, mods](Component* component) {
         component->KeyRelease(key, mods);
     });
@@ -243,6 +252,9 @@ void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
     // Add mouse button press event
     // Invert mouse position such that (0, 0) is on the bottom left
     const int invertedMouseY = window->GetResolution().y - mouseY;
@@ -254,12 +266,29 @@ void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
     // Add mouse button release event
+    // Invert mouse position such that (0, 0) is on the bottom left
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    ApplyToComponents(hierarchy, [mouseX, invertedMouseY, button, mods](Component* component) {
+        component->MouseBtnRelease(mouseX, invertedMouseY, button, mods);
+    });
 }
 
 
 void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 {
+    if (GUIManager::GetInstance()->IsGUIInput())
+        return;
+    
+    // Add mouse scroll event
+    // Invert mouse position such that (0, 0) is on the bottom left
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    ApplyToComponents(hierarchy, [mouseX, invertedMouseY, offsetX, offsetY](Component* component) {
+        component->MouseScroll(mouseX, invertedMouseY, offsetX, offsetY);
+    });
 }
 
 

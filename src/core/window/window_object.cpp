@@ -81,6 +81,10 @@ WindowObject::~WindowObject()
     delete window;
 }
 
+GLFWwindow* WindowObject::GetHandle()
+{
+    return this->window->handle;
+}
 
 void WindowObject::Show()
 {

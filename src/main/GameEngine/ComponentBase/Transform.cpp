@@ -32,12 +32,13 @@ Transform::Transform()
     this->manualRotationMatrix = glm::mat4(1.0f);
 }
 
-Transform::Transform(Transform* parent, std::string tag, bool manualRotation) : Transform()
+Transform::Transform(Transform* parent, const std::string& name, std::string tag, bool manualRotation) : Transform()
 {
     this->parent = parent;
     this->parent->AddChild(this);
     this->tag = tag;
     this->manualRotation = manualRotation;
+    this->name = name;
 }
 
 

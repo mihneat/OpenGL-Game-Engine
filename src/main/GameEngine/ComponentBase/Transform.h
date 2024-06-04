@@ -14,7 +14,7 @@ namespace transform
     {
     public:
         Transform();
-        Transform(Transform *parent, std::string tag = "Default", bool manualRotation = false);
+        Transform(Transform *parent, const std::string& name = "New Transform", std::string tag = "Default", bool manualRotation = false);
         ~Transform();
 
         void Update();
@@ -59,6 +59,7 @@ namespace transform
         component::Component* GetComponentByIndex(unsigned int index);
         int GetComponentCount();
 
+        std::string GetName() { return name; }
         std::string GetTag() { return tag; }
 
         // TODO: Make function static
@@ -102,6 +103,8 @@ namespace transform
         glm::vec3 up;
 
     protected:
+        std::string name; 
+        
         glm::vec3 localPosition;
         glm::vec3 worldPosition;
 

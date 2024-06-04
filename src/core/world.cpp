@@ -1,8 +1,13 @@
 #include "core/world.h"
 
+#include "imgui.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_opengl3.h"
+
 #include "core/engine.h"
 #include "components/camera_input.h"
 #include "components/transform.h"
+#include "main/GameEngine/GUI/GUIManager.h"
 
 
 World::World()
@@ -61,6 +66,8 @@ void World::LoopUpdate()
     // Polls and buffers the events
     window->PollEvents();
 
+    GUIManager::GetInstance()->BeginRenderGUI();
+
     // Computes frame deltaTime in seconds
     ComputeFrameDeltaTime();
 
@@ -73,6 +80,8 @@ void World::LoopUpdate()
     FrameStart();
     Update(static_cast<float>(deltaTime));
     FrameEnd();
+
+    GUIManager::GetInstance()->EndRenderGUI();
 
     // Swap front and back buffers - image will be displayed to the screen
     window->SwapBuffers();

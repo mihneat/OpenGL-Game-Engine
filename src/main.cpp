@@ -3,6 +3,7 @@
 
 #include "core/engine.h"
 #include "components/simple_scene.h"
+#include "main/GameEngine/GUI/GUIManager.h"
 #include "main/GameEngine/Systems/FileSystem.h"
 
 #if defined(WITH_MAIN)
@@ -51,11 +52,15 @@ int main(int argc, char **argv)
     // Init the Engine and create a new window with the defined properties
     (void)Engine::Init(wp);
 
+    GUIManager::GetInstance()->InitializeGUI(Engine::GetWindow()->GetHandle());
+
     // Create a new 3D world and start running it
     World *world = new m1::GameEngine();
 
     world->Init();
     world->Run();
+
+    GUIManager::GetInstance()->ShutdownGUI();
 
     // Signals to the Engine to release the OpenGL context
     Engine::Exit();

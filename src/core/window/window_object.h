@@ -91,6 +91,8 @@ class WindowObject
     // Update event listeners (key press / mouse move / window events)
     void UpdateObservers();
 
+    GLFWwindow* GetHandle();
+
  protected:
     // Frame time
     void ComputeFrameTime();
