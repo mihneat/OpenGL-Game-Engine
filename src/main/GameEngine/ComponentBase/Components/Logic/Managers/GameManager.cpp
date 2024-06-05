@@ -26,10 +26,12 @@ void GameManager::KeyPress(const int key, const int mods)
     if (gameState == Start) {
         if (key == GLFW_KEY_DOWN && gameSpeed != LightningMcQueen) {
             gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) + 1);
+            std::cout << "PRESSED DOWN??\n";
         }
 
         if (key == GLFW_KEY_UP && gameSpeed != Snail) {
             gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) - 1);
+            std::cout << "PRESSED UP??\n";
         }
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "main/GameEngine/ComponentBase/Transform.h"
 #include "window/input_controller.h"
 
 
@@ -29,4 +30,9 @@ class World : public InputController
     double deltaTime;
     bool paused;
     bool shouldClose;
+
+protected:
+   transform::Transform *hierarchy;
+
+   friend class GUIManager;
 };

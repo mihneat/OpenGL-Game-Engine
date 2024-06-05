@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
+#include "core/world.h"
 
 struct transform_data
 {
@@ -46,6 +47,8 @@ void GUIManager::ShowMainMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
+            if (ImGui::MenuItem("Play", "CTRL+P", &this->gameIsPlaying)) { ToggleGamePlaying(); }
+            if (ImGui::MenuItem("Pause", "CTRL+O", &this->gameIsPaused)) { ToggleGamePaused(); }
             ImGui::EndMenu();
         }
         
@@ -65,6 +68,7 @@ void GUIManager::ShowMainMenuBar()
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
             ImGui::MenuItem("Debug console", nullptr, &this->showDebugConsole);
+            ImGui::MenuItem("ImGui Demo <3", "CTRL+D", &this->showDemoWindow);
             ImGui::EndMenu();
         }
         
@@ -72,19 +76,33 @@ void GUIManager::ShowMainMenuBar()
     }
 }
 
-void GUIManager::BeginRenderGUI()
+void GUIManager::ToggleGamePlaying()
+{
+    // Stop the game
+    if (gameIsPlaying)
+    {
+        // TODO: Reset all object values
+    }
+
+    gameIsPlaying = !gameIsPlaying;
+}
+
+void GUIManager::ToggleGamePaused()
+{
+    gameIsPaused = !gameIsPaused;
+}
+
+void GUIManager::BeginRenderGUI(const World* world)
 {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(); // Show demo window! :)
 
-    // Show the main menu bar
     ShowMainMenuBar();
-
-    // Show the inspector
+    ShowHierarchy(world->hierarchy);
     ShowInspector();
+    ShowDemoWindow();
 }
 
 void GUIManager::EndRenderGUI()
@@ -104,6 +122,14 @@ void GUIManager::ShutdownGUI()
 bool GUIManager::IsGUIInput()
 {
     return ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
+}
+
+void GUIManager::ShowDemoWindow()
+{
+    if (!this->showDemoWindow)
+        return;
+    
+    ImGui::ShowDemoWindow(&this->showDemoWindow); // Show demo window! :)
 }
 
 void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
@@ -247,4 +273,19 @@ void GUIManager::ShowInspector()
     }
     
     ImGui::End();
+}
+
+bool GUIManager::IsGamePlaying() const
+{
+    return gameIsPlaying;
+}
+
+bool GUIManager::IsGamePaused() const
+{
+    return gameIsPaused;
+}
+
+bool GUIManager::IsGameActive() const
+{
+    return gameIsPlaying && !gameIsPaused;
 }

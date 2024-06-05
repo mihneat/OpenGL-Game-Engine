@@ -66,7 +66,12 @@ void World::LoopUpdate()
     // Polls and buffers the events
     window->PollEvents();
 
-    GUIManager::GetInstance()->BeginRenderGUI();
+    GUIManager::GetInstance()->BeginRenderGUI(this);
+
+    // Activate/deactivate game input events
+    const bool activeGameState = IsActive();
+    if (activeGameState != GUIManager::GetInstance()->IsGameActive())
+        SetActive(GUIManager::GetInstance()->IsGameActive());
 
     // Computes frame deltaTime in seconds
     ComputeFrameDeltaTime();
@@ -76,10 +81,15 @@ void World::LoopUpdate()
     // OnInputUpdate will be called each frame, the other functions are called only if an event is registered
     window->UpdateObservers();
 
-    // Frame processing
+    // FrameStart is used for clearing the screen
     FrameStart();
-    Update(static_cast<float>(deltaTime));
-    FrameEnd();
+
+    if (GUIManager::GetInstance()->IsGameActive())
+    {
+        // Frame processing
+        Update(static_cast<float>(deltaTime));
+        FrameEnd();
+    }
 
     GUIManager::GetInstance()->EndRenderGUI();
 

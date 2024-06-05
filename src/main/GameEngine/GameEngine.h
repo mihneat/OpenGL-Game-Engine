@@ -43,7 +43,7 @@ namespace m1
         component::Camera* GetCurrentCamera() { return currCam; }
 
     private:
-        std::stack<transform::Transform*> markedForDestruction;
+        std::unordered_set<transform::Transform*> markedForDestruction;
 
         void FrameStart() override;
         void Update(float deltaTimeSeconds) override;
@@ -76,8 +76,6 @@ namespace m1
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
-
-        transform::Transform *hierarchy;
 
         glm::vec4 clearColor;
         gfxc::TextRenderer* textRenderer;

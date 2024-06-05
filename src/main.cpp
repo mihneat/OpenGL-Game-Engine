@@ -3,6 +3,7 @@
 
 #include "core/engine.h"
 #include "components/simple_scene.h"
+#include "main/GameEngine/GUI/GUIInputListener.h"
 #include "main/GameEngine/GUI/GUIManager.h"
 #include "main/GameEngine/Systems/FileSystem.h"
 
@@ -53,6 +54,7 @@ int main(int argc, char **argv)
     (void)Engine::Init(wp);
 
     GUIManager::GetInstance()->InitializeGUI(Engine::GetWindow()->GetHandle());
+    GUIInputListener guiInputListener;
 
     // Create a new 3D world and start running it
     World *world = new m1::GameEngine();

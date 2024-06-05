@@ -110,15 +110,12 @@ void GameEngine::CreateHierarchy()
 
 void GameEngine::FrameStart()
 {
-    // Clears the color buffer (using the previously set color) and depth buffer
-    clearColor = managers::GameManager::GetInstance()->GetSkyColor();
-    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    // Clear the color and depth buffers of the default FB
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::ivec2 resolution = window->GetResolution();
-
-    // Render the hierarchy in the GUI
-    GUIManager::GetInstance()->ShowHierarchy(hierarchy);
+    const glm::ivec2 resolution = window->GetResolution();
 
     // Sets the screen area where to draw
     glViewport(0, 0, resolution.x, resolution.y);
@@ -126,6 +123,11 @@ void GameEngine::FrameStart()
 
 void GameEngine::Update(float deltaTimeSeconds)
 {
+    // Set the "skybox" color (flat colour)
+    clearColor = GameManager::GetInstance()->GetSkyColor();
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
     // Update components
     currCam = mainCam;
     projectionMatrix = currCam->GetProjectionMatrix();
@@ -162,6 +164,9 @@ void GameEngine::FrameEnd()
     ApplyToComponents(hierarchy, [](Component* component) {                                                                                                                                                     // Hello
         component->FrameEnd();
     });
+
+    // Bind back the default FB
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 glm::vec2 GameEngine::GetResolution()
@@ -172,24 +177,27 @@ glm::vec2 GameEngine::GetResolution()
 
 void GameEngine::DestroyObject(Transform* object)
 {
-    markedForDestruction.push(object);
+    markedForDestruction.insert(object);
 }
 
 void GameEngine::DestroyMarkedObjects()
 {
-    while (!markedForDestruction.empty()) {
-        // Get the first object
-        Transform* object = markedForDestruction.top();
-        markedForDestruction.pop();
+    auto it = markedForDestruction.begin();
+    while (it != markedForDestruction.end()) {
+        // Store the current object
+        Transform* object = *it;
+        
+        // Get the next object
+        ++it;
 
         // Remove the child from its parent
         object->parent->RemoveChild(object);
 
         // Recursively destroy the object
-        // PROBLEM: If a child of this object is ALSO marked for deletion, we might get
-        // double free errors, please keep this in mind :( fkin c++
         DeleteComponents(object);
     }
+
+    markedForDestruction.clear();
 }
 
 
@@ -379,7 +387,12 @@ void GameEngine::DeleteComponents(Transform* currentTransform)
     ApplyToComponents(currentTransform, [](Component* component) {
             delete component;
         }, [](Transform* _) { },
-        [](Transform* transform) {
+        [this](Transform* transform) {
+            // Remove any children from the objects marked for destruction
+            // TODO: Does this break the iteration through the set??
+            if (this->markedForDestruction.find(transform) != this->markedForDestruction.end())
+                markedForDestruction.erase(transform);
+            
             delete transform;
         }
     );
