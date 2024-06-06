@@ -133,16 +133,17 @@ void GUIManager::ShowMainWindow()
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
     if (!ImGui::Begin("Main", nullptr, flags))
     {
         // Early out if the window is collapsed, as an optimization.
-        ImGui::PopStyleVar();
+        ImGui::PopStyleVar(2);
         ImGui::End();
         return;
     }
     
-    ImGui::PopStyleVar();
+    ImGui::PopStyleVar(2);
 
     // Create the dockspace
     constexpr ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
@@ -153,6 +154,8 @@ void GUIManager::ShowMainWindow()
     if (ImGui::BeginMenuBar())
     {
         ImGui::Text("TODO: Here should be the Play / Pause buttons!");
+        // ImGui::ImageButton();
+        
         ImGui::EndMenuBar();
     }
 
@@ -238,27 +241,124 @@ void GUIManager::ShowGameWindow()
 
     // Compute and clamp the resolution
     constexpr glm::vec2 minResolution = {10.0f, 10.0f};
-    const glm::ivec2 resolution = {
+    const glm::ivec2 windowResolution = {
         floor(glm::max(imgSize.x, minResolution.x)),
         floor(glm::max(imgSize.y, minResolution.y))
     };
 
-    // Set the new FBO resolution (no-op if same)
-    gameFBOContainer.SetResolution(resolution);
-
-    // Check for window resize
-    isGameWindowResized = gameWindowResolution != resolution;
-    gameWindowResolution = resolution;
+    static const char* resolutionTexts[] = {
+        "800 x 600",
+        "1024 x 768",
+        "1280 x 720",
+        "1600 x 900",
+        "1920 x 1080",
+    };
+    static constexpr glm::ivec2 resolutions[] = {
+        glm::ivec2(800, 600),   // 4:3
+        glm::ivec2(1024, 768),  // 4:3
+        glm::ivec2(1280, 720),  // 16:9
+        glm::ivec2(1600, 900),  // 16:9 
+        glm::ivec2(1920, 1080), // 16:9
+    };
+    static const char* items[] = { "Free", "Fixed" };
+    static int viewType = 0;
+    static int fixedResolutionIndex = 0;
 
     // Create a menu bar that displays the resolution
     if (ImGui::BeginMenuBar())
     {
-        ImGui::Text("Resolution: %d x %d", resolution.x, resolution.y);
+        ImGui::Text("View:");
+        
+        static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview | ImGuiComboFlags_NoArrowButton;
+        if (ImGui::BeginCombo(" ##Game View Dropdown", items[viewType], comboFlags))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
+                const bool isSelected = (viewType == n);
+                if (ImGui::Selectable(items[n], isSelected))
+                    viewType = n;
+
+                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        if (viewType == 0)
+        {
+            // Free View
+            ImGui::Text("Resolution: %d x %d", windowResolution.x, windowResolution.y);
+        } else
+        {
+            // Fixed View
+            ImGui::Text("Resolution:");
+            if (ImGui::BeginCombo(" ##Resolution Dropdown", resolutionTexts[fixedResolutionIndex], comboFlags))
+            {
+                for (int n = 0; n < IM_ARRAYSIZE(resolutions); n++)
+                {
+                    const bool isSelected = (fixedResolutionIndex == n);
+                    if (ImGui::Selectable(resolutionTexts[n], isSelected))
+                        fixedResolutionIndex = n;
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+        }
+        
         ImGui::EndMenuBar();
     }
 
+    // Set resolution depending on view type
+    const glm::ivec2 gameResolution = viewType == 0 ? windowResolution : resolutions[fixedResolutionIndex];
+
+    // Set the new FBO resolution (no-op if same)
+    gameFBOContainer.SetResolution(gameResolution);
+
+    // Check for window resize
+    isGameWindowResized = gameWindowResolution != gameResolution;
+    gameWindowResolution = gameResolution;
+
+    // Compute the texture size
+    glm::vec2 offset(0.0f, 0.0f);
+    ImVec2 finalImgSize = imgSize;
+    if (viewType == 1)
+    {
+        // Try fit width
+        const float widthFactor = (float)gameResolution.x / (float)windowResolution.x;
+        if ((float)gameResolution.y / widthFactor <= (float)windowResolution.y)
+        {
+            // Fit width
+            finalImgSize = ImVec2(
+                (float)gameResolution.x / widthFactor,
+                (float)gameResolution.y / widthFactor
+            );
+
+            // Formula: Remaining height / 2.0f
+            offset.y = ((float)windowResolution.y - finalImgSize.y) / 2.0f;
+        }
+        else
+        {
+            // Fit height
+            const float heightFactor = (float)gameResolution.y / (float)windowResolution.y;
+            finalImgSize = ImVec2(
+                (float)gameResolution.x / heightFactor,
+                (float)gameResolution.y / heightFactor
+            );
+
+            // Formula: Remaining width / 2.0f
+            offset.x = ((float)windowResolution.x - finalImgSize.x) / 2.0f;
+        }
+    }
+    
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset.x);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offset.y);
+
     // Render the game texture into the window, also flip it vertically
-    ImGui::Image((ImTextureID)gameFBOContainer.GetColorTextureID(), imgSize, {0, 1}, {1, 0});
+    ImGui::Image((ImTextureID)gameFBOContainer.GetColorTextureID(), finalImgSize, {0, 1}, {1, 0});
     
     ImGui::End();
 }

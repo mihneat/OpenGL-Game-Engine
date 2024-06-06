@@ -22,7 +22,7 @@ struct WindowDataImpl
 
 WindowProperties::WindowProperties()
 {
-    name = "WindowName";
+    name = "OpenGL Game Engine";
     resolution = glm::ivec2(1280, 720);
     scaleFactor = 1.f;
     aspectRatio = 1280.0f / 720.0f;
