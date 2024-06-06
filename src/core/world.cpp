@@ -81,15 +81,10 @@ void World::LoopUpdate()
     // OnInputUpdate will be called each frame, the other functions are called only if an event is registered
     window->UpdateObservers();
 
-    // FrameStart is used for clearing the screen
+    // Frame processing
     FrameStart();
-
-    if (GUIManager::GetInstance()->IsGameActive())
-    {
-        // Frame processing
-        Update(static_cast<float>(deltaTime));
-        FrameEnd();
-    }
+    Update(static_cast<float>(deltaTime));
+    FrameEnd();
 
     GUIManager::GetInstance()->EndRenderGUI();
 

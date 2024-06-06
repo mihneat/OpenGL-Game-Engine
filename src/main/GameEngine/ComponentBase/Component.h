@@ -18,7 +18,6 @@ namespace component
         virtual void Start() { }
         virtual void Update(const float deltaTime) { }
         virtual void LateUpdate(const float deltaTime) { }
-        virtual void FrameEnd() { }
         virtual void InputUpdate(const float deltaTime, const int mods) { }
         virtual void KeyPress(const int key, const int mods) { }
         virtual void KeyRelease(const int key, const int mods) { }

@@ -30,6 +30,7 @@ WindowProperties::WindowProperties()
     resizable = true;
     centered = true;
     fullScreen = false;
+    maximized = false;
     visible = true;
     hideOnClose = false;
     vSync = true;
@@ -235,6 +236,10 @@ void WindowObject::WindowMode()
     }
 
     SetSize(props.resolution.x, props.resolution.y);
+
+    if (props.maximized)
+        glfwMaximizeWindow(window->handle);
+    
     resizeEvent = false;
 }
 

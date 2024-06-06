@@ -11,7 +11,7 @@ namespace rendering
     class RenderingSystem
     {
     public:
-        void Render(transform::Transform* hierarchy, component::Camera* cam, const WindowObject* window);
+        void Render(transform::Transform* hierarchy, component::Camera* cam, const glm::ivec2 resolution);
         
     private:
         void SetGlobalUniforms(

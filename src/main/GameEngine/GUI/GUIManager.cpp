@@ -7,6 +7,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "core/world.h"
+#include "main/GameEngine/Managers/TextureLoader.h"
 
 struct transform_data
 {
@@ -65,6 +66,7 @@ void GUIManager::ShowMainMenuBar()
         
         if (ImGui::BeginMenu("Window"))
         {
+            ImGui::MenuItem("Game", "CTRL+G", &this->showGameWindow);
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
             ImGui::MenuItem("Debug console", nullptr, &this->showDebugConsole);
@@ -100,6 +102,7 @@ void GUIManager::BeginRenderGUI(const World* world)
     ImGui::NewFrame();
 
     ShowMainMenuBar();
+    ShowGameWindow();
     ShowHierarchy(world->hierarchy);
     ShowInspector();
     ShowDemoWindow();
@@ -122,6 +125,48 @@ void GUIManager::ShutdownGUI()
 bool GUIManager::IsGUIInput()
 {
     return ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
+}
+
+void GUIManager::ShowGameWindow()
+{
+    if (!this->showGameWindow)
+        return;
+
+    constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+    
+    ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+    if (!ImGui::Begin("Game", &this->showGameWindow, flags))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return;
+    }
+
+    // Get the game window size
+    const ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+    const ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+    const ImVec2 imgSize(vMax.x - vMin.x, vMax.y - vMin.y);
+
+    // Compute the resolution
+    const glm::ivec2 resolution = {floor(imgSize.x), floor(imgSize.y)};
+
+    // Set the new FBO resolution (no-op if same)
+    gameFBOContainer.SetResolution(resolution);
+
+    // Create a menu bar that displays the resolution
+    if (ImGui::BeginMenuBar())
+    {
+        ImGui::Text("Resolution: %d x %d", resolution.x, resolution.y);
+        ImGui::EndMenuBar();
+    }
+
+    // Render the game texture into the window, also flip it vertically
+    ImGui::Image((ImTextureID)gameFBOContainer.GetColorTextureID(), imgSize, {0, 1}, {1, 0});
+    
+    ImGui::End();
+    
+    ImGui::PopStyleVar();
 }
 
 void GUIManager::ShowDemoWindow()
@@ -288,4 +333,9 @@ bool GUIManager::IsGamePaused() const
 bool GUIManager::IsGameActive() const
 {
     return gameIsPlaying && !gameIsPaused;
+}
+
+utils::FBOContainer* GUIManager::GetGameFBOContainer()
+{
+    return &gameFBOContainer;
 }

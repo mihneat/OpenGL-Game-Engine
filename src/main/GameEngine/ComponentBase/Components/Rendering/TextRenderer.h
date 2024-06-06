@@ -30,7 +30,6 @@ namespace component
 
         void Start();
         void Update(const float deltaTime);
-        void FrameEnd();
 
         void SetText(const std::string newText);
         void SetColor(const glm::vec4 newColor);
@@ -43,5 +42,6 @@ namespace component
         glm::vec2 position;
         gfxc::TextRenderer* textRenderer;
 
+        friend class rendering::RenderingSystem;
     };
 }   // namespace component

@@ -112,61 +112,81 @@ void GameEngine::FrameStart()
 {
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     const glm::ivec2 resolution = window->GetResolution();
 
     // Sets the screen area where to draw
     glViewport(0, 0, resolution.x, resolution.y);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void GameEngine::Update(float deltaTimeSeconds)
 {
-    // Set the "skybox" color (flat colour)
-    clearColor = GameManager::GetInstance()->GetSkyColor();
-    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
-    // Update components
-    currCam = mainCam;
-    projectionMatrix = currCam->GetProjectionMatrix();
-    glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
-    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    UpdateGameLogic(deltaTimeSeconds);
+    RenderGameView();
+    RenderSceneView();
+}
 
+void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
+{
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
     this->StartComponents(hierarchy);
     this->UpdateComponents(hierarchy, deltaTimeSeconds);
     this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
 
     this->DestroyMarkedObjects();
+}
 
-    renderingSystem->Render(hierarchy, currCam, window);
+void GameEngine::RenderGameView()
+{
+    // Get the game FBO container
+    const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetGameFBOContainer();
+    fboContainer->Bind();
+    
+    // Update rendering components
+    glViewport(0, 0, fboContainer->GetResolution().x, fboContainer->GetResolution().y);
+    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    
+    // Set the "skybox" color (flat colour)
+    clearColor = GameManager::GetInstance()->GetSkyColor();
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    renderingSystem->Render(hierarchy, mainCam, fboContainer->GetResolution());
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
         glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
+            (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        currCam = cam;
-        projectionMatrix = cam->GetProjectionMatrix();
-        glViewport((int)currCam->GetViewportDimensions().x, (int)currCam->GetViewportDimensions().y,
-            (int)currCam->GetViewportDimensions().z, (int)currCam->GetViewportDimensions().a);
-
-        renderingSystem->Render(hierarchy, currCam, window);
+        renderingSystem->Render(hierarchy, cam, fboContainer->GetResolution());
     }
 
+    // Upload FBO data to the texture
+    fboContainer->UploadDataToTexture();
 }
+
+void GameEngine::RenderSceneView()
+{
+    // DrawCoordinateSystem();
+    
+    // TODO: Render the scene view
+    return;
+}
+
 // This function does something apparently
 // Buna Mihnea
 void GameEngine::FrameEnd()
 {
-    // DrawCoordinateSystem();
-
-    ApplyToComponents(hierarchy, [](Component* component) {                                                                                                                                                     // Hello
-        component->FrameEnd();
-    });
-
     // Bind back the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 }
 
 glm::vec2 GameEngine::GetResolution()

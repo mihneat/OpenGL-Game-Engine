@@ -12,9 +12,10 @@ using namespace rendering;
 using namespace loaders;
 
 void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
-        const WindowObject* window)
+        const glm::ivec2 resolution)
 {
-    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, window](component::Component* component) {
+    // Render the meshes
+    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, resolution](component::Component* component) {
         const component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
             // Check the layer
@@ -40,13 +41,21 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
                 // TODO: Turn the texScale into a glm::vec2
                 meshRenderer->texScale,
                 cam,
-                window->GetResolution()
+                resolution
             );
             SetUniforms(material, meshRenderer->GetMaterialOverrides());
             
             // Render the mesh
             const Mesh *mesh = MeshResourceManager::meshes[meshRenderer->meshName];
             mesh->Render();
+        }
+    });
+
+    // Render the text
+    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+        const component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
+        if (text != nullptr) {
+            text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
         }
     });
 }

@@ -37,11 +37,6 @@ void TextRenderer::Update(const float deltaTime)
 
 }
 
-void TextRenderer::FrameEnd()
-{
-    textRenderer->RenderText(text, position.x, position.y, scale, color);
-}
-
 void TextRenderer::SetText(const std::string newText)
 {
     text = newText;

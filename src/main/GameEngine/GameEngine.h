@@ -40,7 +40,6 @@ namespace m1
 
         gfxc::TextRenderer* GetTextRenderer() { return textRenderer; }
         WindowObject* GetWindow() { return window; }
-        component::Camera* GetCurrentCamera() { return currCam; }
 
     private:
         std::unordered_set<transform::Transform*> markedForDestruction;
@@ -60,6 +59,10 @@ namespace m1
 
         void CreateHierarchy();
         void DestroyMarkedObjects();
+
+        void UpdateGameLogic(float deltaTimeSeconds);
+        void RenderGameView();
+        void RenderSceneView();
 
     public:
 
@@ -81,7 +84,6 @@ namespace m1
         gfxc::TextRenderer* textRenderer;
 
         component::Camera* mainCam;
-        component::Camera* currCam;
         std::vector<component::Camera*> secondaryCams;
 
         bool useSceneCamera;

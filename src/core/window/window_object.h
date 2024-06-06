@@ -25,6 +25,7 @@ class WindowProperties
     bool resizable;
     bool visible;
     bool fullScreen;
+    bool maximized;
     bool centered;
     bool hideOnClose;
     bool vSync;
