@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
+
 using namespace std;
 using namespace loaders;
 using namespace managers;
@@ -127,7 +129,7 @@ void PlayerController::MouseMove(const int mouseX, const int mouseY, const int d
 	}
 
 	// Get the resolution
-	glm::vec2 res = GameManager::GetInstance()->GetSceneReference()->GetResolution();
+	glm::vec2 res = EditorRuntimeSettings::resolution;
 
 	// Get the normalized vertical tilt
 	const float yRes = res.y;

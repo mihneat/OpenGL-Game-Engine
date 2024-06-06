@@ -61,12 +61,17 @@ class InputController
     // @param mouseY - Y coordinate in pixels of the mouse position relative to the top-left corner
     // @param offsetX - scroll steps on X axis
     // @param offsetY - scroll steps on Y axis
-    virtual void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) {}
+   virtual void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) {}
 
-    // If the window was resized during the last frame this method will be before the Update() method
-    // @param width - the new width of the window
-    // @param height - the new height of the window
-    virtual void OnWindowResize(int width, int height) {}
+   // If the window was resized during the last frame this method will be before the Update() method
+   // @param width - the new width of the window
+   // @param height - the new height of the window
+   virtual void OnWindowResize(int width, int height) {}
+
+   // If the GAME window was resized during the last frame this method will be before the Update() method
+   // @param width - the new width of the GAME window
+   // @param height - the new height of the GAME window
+   virtual void OnGameWindowResize(int width, int height) {}
 
  protected:
     WindowObject *window;

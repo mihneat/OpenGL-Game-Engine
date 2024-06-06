@@ -82,5 +82,7 @@ namespace component
         bool autoResize;
 
         std::unordered_set<int> layers;
+
+        bool isProjection = false;
     };
 }

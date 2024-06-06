@@ -63,11 +63,7 @@ void GameEngine::Init()
     CreateHierarchy();
 
     // Update initial transforms
-    ApplyToComponents(hierarchy, [](Component* component) {},
-        [](Transform* transform) {
-            transform->Update();
-        }
-        );
+    UpdateTransforms(hierarchy);
 
     // Start components
     StartComponents(hierarchy);
@@ -113,6 +109,7 @@ void GameEngine::FrameStart()
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Set engine resolution
     const glm::ivec2 resolution = window->GetResolution();
 
     // Sets the screen area where to draw
@@ -189,12 +186,6 @@ void GameEngine::FrameEnd()
     glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 }
 
-glm::vec2 GameEngine::GetResolution()
-{
-    glm::ivec2 resolution = window->GetResolution();
-    return glm::vec2((float)resolution.x, (float)resolution.y);
-}
-
 void GameEngine::DestroyObject(Transform* object)
 {
     markedForDestruction.insert(object);
@@ -229,7 +220,11 @@ void GameEngine::DestroyMarkedObjects()
 
 void GameEngine::OnInputUpdate(float deltaTime, int mods)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     ApplyToComponents(hierarchy, [deltaTime, mods](Component* component) {
@@ -240,7 +235,11 @@ void GameEngine::OnInputUpdate(float deltaTime, int mods)
 
 void GameEngine::OnKeyPress(int key, int mods)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     if (key == GLFW_KEY_F1) {
@@ -259,7 +258,11 @@ void GameEngine::OnKeyPress(int key, int mods)
 
 void GameEngine::OnKeyRelease(int key, int mods)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     ApplyToComponents(hierarchy, [key, mods](Component* component) {
@@ -270,6 +273,13 @@ void GameEngine::OnKeyRelease(int key, int mods)
 
 void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
     // Add mouse move event
     const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, deltaX, deltaY](Component* component) {
@@ -280,7 +290,11 @@ void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     // Add mouse button press event
@@ -294,7 +308,11 @@ void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     // Add mouse button release event
@@ -308,7 +326,11 @@ void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 {
-    if (GUIManager::GetInstance()->IsGUIInput())
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
     
     // Add mouse scroll event
@@ -322,9 +344,22 @@ void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 
 void GameEngine::OnWindowResize(int width, int height)
 {
+    // This is to be used during the BUILT version of the game
+    
+    // ApplyToComponents(hierarchy, [width, height](Component* component) {
+    //     component->WindowResize(width, height);
+    // });
+}
+
+void GameEngine::OnGameWindowResize(int width, int height)
+{
+    EditorRuntimeSettings::resolution = {width, height};
+    
     ApplyToComponents(hierarchy, [width, height](Component* component) {
         component->WindowResize(width, height);
     });
+
+    UpdateTransforms(hierarchy);
 }
 
 void GameEngine::ApplyToComponents(
@@ -416,4 +451,14 @@ void GameEngine::DeleteComponents(Transform* currentTransform)
             delete transform;
         }
     );
+}
+
+void GameEngine::UpdateTransforms(Transform* currentTransform)
+{
+    // Update the transform and the components
+    ApplyToComponents(currentTransform, [](Component* _) {},
+        [](Transform* transform) {
+            transform->Update();
+        }
+        );
 }

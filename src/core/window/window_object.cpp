@@ -5,6 +5,7 @@
 #include "core/engine.h"
 #include "core/window/window_callbacks.h"
 #include "core/window/input_controller.h"
+#include "main/GameEngine/GUI/GUIManager.h"
 
 #include "utils/gl_utils.h"
 #include "utils/memory_utils.h"
@@ -344,6 +345,15 @@ void WindowObject::UpdateObservers()
         resizeEvent = false;
         for (auto obs : observers) {
             obs->OnWindowResize(props.resolution.x, props.resolution.y);
+        }
+    }
+
+    // Signal game view resize
+    if (GUIManager::GetInstance()->IsGameWindowResized())
+    {
+        const glm::ivec2 resolution = GUIManager::GetInstance()->GetGameWindowResolution();
+        for (auto obs : observers) {
+            obs->OnGameWindowResize(resolution.x, resolution.y);
         }
     }
 

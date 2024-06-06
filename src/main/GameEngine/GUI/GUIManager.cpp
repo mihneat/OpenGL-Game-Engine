@@ -48,24 +48,17 @@ void GUIManager::ShowMainMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Play", "CTRL+P", &this->gameIsPlaying)) { ToggleGamePlaying(); }
-            if (ImGui::MenuItem("Pause", "CTRL+O", &this->gameIsPaused)) { ToggleGamePaused(); }
-            ImGui::EndMenu();
-        }
-        
-        if (ImGui::BeginMenu("Edit"))
-        {
-            if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-            if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-            ImGui::Separator();
-            if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-            if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-            if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+            if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { ToggleGamePlaying(); }
+            if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { ToggleGamePaused(); }
             ImGui::EndMenu();
         }
         
         if (ImGui::BeginMenu("Window"))
         {
+            ImGui::MenuItem("Save layout");
+            ImGui::MenuItem("Load layout");
+            ImGui::Separator();
+            ImGui::MenuItem("Scene", nullptr, &this->showSceneWindow);
             ImGui::MenuItem("Game", "CTRL+G", &this->showGameWindow);
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
@@ -102,6 +95,8 @@ void GUIManager::BeginRenderGUI(const World* world)
     ImGui::NewFrame();
 
     ShowMainMenuBar();
+    ShowMainWindow();
+    ShowSceneWindow();
     ShowGameWindow();
     ShowHierarchy(world->hierarchy);
     ShowInspector();
@@ -127,6 +122,93 @@ bool GUIManager::IsGUIInput()
     return ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 }
 
+void GUIManager::ShowMainWindow()
+{
+    static ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+    // We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
+    // Based on your use case you may want one or the other.
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->WorkPos);
+    ImGui::SetNextWindowSize(viewport->WorkSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+    if (!ImGui::Begin("Main", nullptr, flags))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::PopStyleVar();
+        ImGui::End();
+        return;
+    }
+    
+    ImGui::PopStyleVar();
+
+    // Create the dockspace
+    constexpr ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+    const ImGuiID dockspaceID = ImGui::GetID("MainDockSpace");
+    ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), dockspaceFlags);
+
+    // Create a menu bar that displays the resolution
+    if (ImGui::BeginMenuBar())
+    {
+        ImGui::Text("TODO: Here should be the Play / Pause buttons!");
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::End();
+}
+
+void GUIManager::ShowSceneWindow()
+{
+    if (!this->showSceneWindow)
+        return;
+
+    constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+    
+    ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+    if (!ImGui::Begin("Scene", &this->showSceneWindow, flags))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::PopStyleVar();
+        ImGui::End();
+        return;
+    }
+    
+    ImGui::PopStyleVar();
+
+    // Check if the game window is focused
+    isSceneWindowFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
+    // Get the game window size
+    const ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+    const ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+    const ImVec2 imgSize(vMax.x - vMin.x, vMax.y - vMin.y);
+
+    // Compute and clamp the resolution
+    constexpr glm::vec2 minResolution = {10.0f, 10.0f};
+    const glm::ivec2 resolution = {
+        floor(glm::max(imgSize.x, minResolution.x)),
+        floor(glm::max(imgSize.y, minResolution.y))
+    };
+
+    // Set the new FBO resolution (no-op if same)
+    sceneFBOContainer.SetResolution(resolution);
+
+    // Create a menu bar that displays the resolution
+    if (ImGui::BeginMenuBar())
+    {
+        ImGui::Text("Scene Resolution: %d x %d", resolution.x, resolution.y);
+        ImGui::EndMenuBar();
+    }
+
+    // Render the game texture into the window, also flip it vertically
+    ImGui::Image((ImTextureID)sceneFBOContainer.GetColorTextureID(), imgSize, {0, 0}, {1, 1});
+    
+    ImGui::End();
+}
+
 void GUIManager::ShowGameWindow()
 {
     if (!this->showGameWindow)
@@ -135,24 +217,38 @@ void GUIManager::ShowGameWindow()
     constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
     
     ImGui::SetNextWindowSize(ImVec2(1280, 720), ImGuiCond_FirstUseEver);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
     if (!ImGui::Begin("Game", &this->showGameWindow, flags))
     {
         // Early out if the window is collapsed, as an optimization.
+        ImGui::PopStyleVar();
         ImGui::End();
         return;
     }
+    
+    ImGui::PopStyleVar();
+
+    // Check if the game window is focused
+    isGameWindowFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
     // Get the game window size
     const ImVec2 vMin = ImGui::GetWindowContentRegionMin();
     const ImVec2 vMax = ImGui::GetWindowContentRegionMax();
     const ImVec2 imgSize(vMax.x - vMin.x, vMax.y - vMin.y);
 
-    // Compute the resolution
-    const glm::ivec2 resolution = {floor(imgSize.x), floor(imgSize.y)};
+    // Compute and clamp the resolution
+    constexpr glm::vec2 minResolution = {10.0f, 10.0f};
+    const glm::ivec2 resolution = {
+        floor(glm::max(imgSize.x, minResolution.x)),
+        floor(glm::max(imgSize.y, minResolution.y))
+    };
 
     // Set the new FBO resolution (no-op if same)
     gameFBOContainer.SetResolution(resolution);
+
+    // Check for window resize
+    isGameWindowResized = gameWindowResolution != resolution;
+    gameWindowResolution = resolution;
 
     // Create a menu bar that displays the resolution
     if (ImGui::BeginMenuBar())
@@ -165,8 +261,6 @@ void GUIManager::ShowGameWindow()
     ImGui::Image((ImTextureID)gameFBOContainer.GetColorTextureID(), imgSize, {0, 1}, {1, 0});
     
     ImGui::End();
-    
-    ImGui::PopStyleVar();
 }
 
 void GUIManager::ShowDemoWindow()
@@ -335,7 +429,22 @@ bool GUIManager::IsGameActive() const
     return gameIsPlaying && !gameIsPaused;
 }
 
+bool GUIManager::IsGameWindowResized() const
+{
+    return isGameWindowResized;
+}
+
+bool GUIManager::ReceiveGameInput() const
+{
+    return isGameWindowFocused && IsGameActive();
+}
+
 utils::FBOContainer* GUIManager::GetGameFBOContainer()
 {
     return &gameFBOContainer;
+}
+
+glm::ivec2 GUIManager::GetGameWindowResolution() const
+{
+    return gameFBOContainer.GetResolution();
 }

@@ -35,7 +35,6 @@ namespace m1
 
         void SetUniforms();
 
-        glm::vec2 GetResolution();
         void DestroyObject(transform::Transform* object);
 
         gfxc::TextRenderer* GetTextRenderer() { return textRenderer; }
@@ -56,6 +55,7 @@ namespace m1
         void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
+        void OnGameWindowResize(int width, int height) override;
 
         void CreateHierarchy();
         void DestroyMarkedObjects();
@@ -79,6 +79,8 @@ namespace m1
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
+        
+        void UpdateTransforms(transform::Transform* currentTransform);
 
         glm::vec4 clearColor;
         gfxc::TextRenderer* textRenderer;

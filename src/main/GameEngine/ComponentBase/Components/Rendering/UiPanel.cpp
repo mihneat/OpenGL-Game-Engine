@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
+
 using namespace std;
 using namespace managers;
 using namespace component;
@@ -23,7 +25,7 @@ void UiPanel::AnchorRight(const float offset)
 void UiPanel::WindowResize(int width, int height)
 {
 	// Get the resolution
-	glm::vec2 res = GameManager::GetInstance()->GetSceneReference()->GetWindow()->GetResolution();
+	glm::vec2 res = EditorRuntimeSettings::resolution;
 
 	// Get the new coordinates depending on the anchors
 	float oX = transform->GetLocalPosition().x;

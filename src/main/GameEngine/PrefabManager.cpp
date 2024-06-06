@@ -1,6 +1,7 @@
 #include "main/GameEngine/PrefabManager.h"
 
 #include "main/GameEngine/Managers/TextureLoader.h"
+#include "Systems/Editor/EditorRuntimeSettings.h"
 #include "Systems/Rendering/MaterialManager.h"
 
 using namespace std;
@@ -232,16 +233,16 @@ Transform* PrefabManager::CreateUI(m1::GameEngine* scene, Transform* parent)
     Transform* rootUI = new Transform(parent, "UI Root");
 
     // Get the resolution
-    glm::vec2 resolution = scene->GetResolution();
+    glm::vec2 resolution = EditorRuntimeSettings::resolution;
 
     // Create the Runs text
     Transform* runsText = new Transform(rootUI, "Run Counter Text");
-    runsText->AddComponent(new TextRenderer(runsText, "Run #1", glm::vec2(resolution.x / 2.0f - 80.0f, 25), 1.5f, glm::vec4(0.8f, 0.2f, 0.2f, 1.0f)));
+    runsText->AddComponent(new TextRenderer(runsText, "Run #1", glm::vec2(560.0f, 25), 1.5f, glm::vec4(0.8f, 0.2f, 0.2f, 1.0f)));
     runsText->AddComponent(new RunsDisplay(runsText));
 
     // Create the distance text
     Transform* distanceText = new Transform(rootUI, "Distance Text");
-    distanceText->AddComponent(new TextRenderer(distanceText, "distance: 0m", glm::vec2(resolution.x / 2.0f - 50.0f, 70), 0.9f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)));
+    distanceText->AddComponent(new TextRenderer(distanceText, "0.0m", glm::vec2(590.0f, 70), 0.9f, glm::vec4(0.2f, 0.2f, 0.2f, 1.0f)));
     distanceText->AddComponent(new DistanceDisplay(distanceText));
 
     // Create the text
@@ -266,7 +267,6 @@ Transform* PrefabManager::CreateUI(m1::GameEngine* scene, Transform* parent)
 
     // Create the lives holder
     Transform* livesHolder = new Transform(rootUI, "Lives Container");
-    livesHolder->Translate(glm::vec3(resolution.x - 180, resolution.y - 50, -200.0f));
     livesHolder->AddComponent(new LifeDisplay(livesHolder));
     livesHolder->AddComponent(new UiPanel(livesHolder));
     livesHolder->GetComponent<UiPanel>()->AnchorTop(50);
