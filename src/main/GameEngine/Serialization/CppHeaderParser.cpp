@@ -1,6 +1,7 @@
 ﻿#include "CppHeaderParser.h"
 
 #include <iostream>
+#include <filesystem>
 
 #include "Serializer.h"
 
@@ -16,8 +17,7 @@ void CppHeaderParser::GenerateSerializedData()
 
     SerializationResult result;
 
-    // TODO: Use a file visitor to find all header files
-    for (recursive_directory_iterator i("."), end; i != end; ++i) 
+    for (std::filesystem::recursive_directory_iterator i("."), end; i != end; ++i) 
         if (!is_directory(i->path()))
             std::cout << i->path().filename() << "\n";
     
