@@ -1,7 +1,11 @@
 #pragma once
 
 #include "main/GameEngine/ComponentBase/Transform.h"
-#include <iostream>
+
+#define SERIALIZE_FIELD
+#define SERIALIZE_CLASS friend class Serializer
+
+struct SerializedField;
 
 namespace transform {
     class Transform;
@@ -30,7 +34,7 @@ namespace component
         virtual void MouseScroll(const int mouseX, const int mouseY,
             const int offsetX, const int offsetY) { }
         virtual void WindowResize(int width, int height) { }
-
+        
         bool GetHasStartActivated();
         void SetHasStartActivated();
 
@@ -42,6 +46,5 @@ namespace component
     protected:
         bool enabled;
         bool hasStartActivated;
-
     };
 }   // namespace component

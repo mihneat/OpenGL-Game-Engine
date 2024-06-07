@@ -8,6 +8,8 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "core/world.h"
 #include "main/GameEngine/Managers/TextureLoader.h"
+#include "main/GameEngine/Serialization/CppHeaderParser.h"
+#include "main/GameEngine/Serialization/Serializer.h"
 
 struct transform_data
 {
@@ -50,6 +52,8 @@ void GUIManager::ShowMainMenuBar()
         {
             if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { ToggleGamePlaying(); }
             if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { ToggleGamePaused(); }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Reset", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
             ImGui::EndMenu();
         }
         
@@ -450,20 +454,136 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
     ImGui::End();
 }
 
-// void ExtractClassName(const char* str)
-// {
-//     std::string s = std::string(str);
-//     std::string delimiter = "::";
-//
-//     size_t pos = 0;
-//     std::string token;
-//     while ((pos = s.find(delimiter)) != std::string::npos) {
-//         token = s.substr(0, pos);
-//         std::cout << token << std::endl;
-//         s.erase(0, pos + delimiter.length());
-//     }
-//     std::cout << s << std::endl;
-// }
+std::string ExtractClassName(const char* str)
+{
+    // Make a copy of the string
+    std::string fullClassName = std::string(str);
+    std::string delimiter = "::";
+
+    const size_t pos = fullClassName.rfind(delimiter);
+    std::string token = fullClassName.substr(pos + delimiter.length(), fullClassName.length() - pos);
+
+    return token;
+}
+
+bool SerializeBool(bool* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::Checkbox("##dragBool", data);
+
+    return true;
+}
+
+bool SerializeInt(int* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::DragInt("##dragInt", data, 1);
+
+    return true;
+}
+
+bool SerializeFloat(float* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::DragFloat("##dragFloat", data, 1.0f);
+
+    return true;
+}
+
+bool SerializeVec2(glm::vec2* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::DragFloat2("##dragVec2", reinterpret_cast<float*>(data), 1.0f);
+
+    return true;
+}
+
+bool SerializeVec3(glm::vec3* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::DragFloat3("##dragVec3", reinterpret_cast<float*>(data), 1.0f);
+
+    return true;
+}
+
+bool SerializeColour(glm::vec4* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::DragFloat4("##dragColour", reinterpret_cast<float*>(data), 1.0f);
+
+    return true;
+}
+
+bool SerializeTransform(transform::Transform* data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::Text("%s", data->GetName());
+
+    return true;
+}
+
+void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* data)
+{
+    ImGui::AlignTextToFramePadding();
+    ImGui::SetNextItemWidth(100);
+    ImGui::Text("%s ", attribute.name.c_str());
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+
+    int successful;
+    switch (attribute.type)
+    {
+    case FieldTypeBool:
+        successful = SerializeBool(static_cast<bool*>(data));
+        break;
+        
+    case FieldTypeInt:
+        successful = SerializeInt(static_cast<int*>(data));
+        break;
+        
+    case FieldTypeFloat:
+        successful = SerializeFloat(static_cast<float*>(data));
+        break;
+        
+    case FieldTypeVec2:
+        successful = SerializeVec2(static_cast<glm::vec2*>(data));
+        break;
+        
+    case FieldTypeVec3:
+        successful = SerializeVec3(static_cast<glm::vec3*>(data));
+        break;
+        
+    case FieldTypeColour:
+        successful = SerializeColour(static_cast<glm::vec4*>(data));
+        break;
+        
+    case FieldTypeTransform:
+        successful = SerializeTransform(static_cast<transform::Transform*>(data));
+        break;
+
+    default:
+        ImGui::Text("Unknown type %d", attribute.type);
+        std::cout << "[GUIManager] Type '" << attribute.type << "' not implemented\n";
+        return;
+    }
+
+    if (!successful)
+        std::cerr << "Data serialization failed for attribute " << attribute.name << " of type " << attribute.type << "\n";
+}
 
 void GUIManager::ShowInspector()
 {
@@ -500,15 +620,27 @@ void GUIManager::ShowInspector()
     for (int i = 0; i < this->lastSelectedTransform->GetComponentCount(); ++i) {
         component::Component* curr = this->lastSelectedTransform->GetComponentByIndex(i);
 
+        const std::string className = ExtractClassName(typeid(*curr).name());
+        
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         nodeOpen = ImGui::TreeNodeEx(curr, baseObjectNodeFlags, "");
         ImGui::SameLine();
-        ImGui::Text("%s", typeid(*curr).name());
+        ImGui::Text("%s", className.c_str());
 
-        if (nodeOpen)
+        if (!nodeOpen)
+            continue;
+
+        // std::cout << "Serializing class '" << className << "'\n";
+
+        for (const auto& attribute : Serializer::GetSerializedFieldsForClass(className))
         {
-            ImGui::TreePop();
+            // std::cout << "Serializing attribute '" << attribute.name << "' of type '" << attribute.type << "'\n";
+            void* data = Serializer::GetAttributeReference(curr, attribute.name);
+
+            DisplaySerializedField(attribute, data);
         }
+        
+        ImGui::TreePop();
     }
     
     ImGui::End();

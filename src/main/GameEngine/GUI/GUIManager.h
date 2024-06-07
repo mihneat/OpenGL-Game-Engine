@@ -51,6 +51,8 @@ private:
 
     void ToggleGamePlaying();
     void ToggleGamePaused();
+
+    void DisplaySerializedField(const SerializedField& attribute, void* data);
     
     bool showSceneWindow = true;
     bool showGameWindow = true;

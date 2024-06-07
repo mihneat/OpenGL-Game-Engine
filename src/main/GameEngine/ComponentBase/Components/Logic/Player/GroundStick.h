@@ -8,9 +8,10 @@ namespace component
 {
     class GroundStick : public Component
     {
+        SERIALIZE_CLASS;
+        
     public:
         GroundStick(transform::Transform* transform) : Component(transform), player(NULL), offset(glm::vec3()) { }
-
         ~GroundStick() { }
 
         void Start();

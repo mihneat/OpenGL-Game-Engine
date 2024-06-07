@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include "GUIManager.h"
+#include "main/GameEngine/Serialization/CppHeaderParser.h"
 
 void GUIInputListener::OnInputUpdate(float deltaTime, int mods)
 {
@@ -11,6 +12,7 @@ void GUIInputListener::OnInputUpdate(float deltaTime, int mods)
 
 void GUIInputListener::OnKeyPress(int key, int mods)
 {
+    // --== File ==--
     // Play/Stop game
     if (key == GLFW_KEY_P && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->ToggleGamePlaying();
@@ -18,7 +20,12 @@ void GUIInputListener::OnKeyPress(int key, int mods)
     // Pause/Unpause game
     if (key == GLFW_KEY_O && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->ToggleGamePaused();
-    
+
+    // Reload scripts
+    if (key == GLFW_KEY_R && mods & GLFW_MOD_CONTROL)
+        CppHeaderParser::GenerateSerializedData();
+
+    // --== Window ==--
     // Show/Hide game window
     if (key == GLFW_KEY_G && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->showGameWindow = !GUIManager::GetInstance()->showGameWindow;

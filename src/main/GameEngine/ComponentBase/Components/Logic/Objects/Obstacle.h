@@ -11,6 +11,8 @@ namespace component
 {
     class Obstacle : public Component, public IResetable
     {
+        SERIALIZE_CLASS;
+        
     public:
         Obstacle(transform::Transform* transform, float collisionRadius, bool isHazard = true) : Component(transform), player(NULL), t(0.0f), despawnDistance(220.0f),
             previousPlayerPosition(glm::vec3()), playerRadius(4.0f), collisionRadius(collisionRadius), isHazard(isHazard) { }
@@ -25,8 +27,9 @@ namespace component
         managers::GameManager* gameManager;
 
         const float playerRadius;
-        float collisionRadius;
-        bool isHazard;
+
+        SERIALIZE_FIELD float collisionRadius;
+        SERIALIZE_FIELD bool isHazard;
 
         transform::Transform* player;
         glm::vec3 previousPlayerPosition;
