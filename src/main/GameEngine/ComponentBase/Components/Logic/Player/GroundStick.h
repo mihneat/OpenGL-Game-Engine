@@ -6,9 +6,10 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class GroundStick : public Component
     {
-        SERIALIZE_CLASS;
+        MARK_SERIALIZABLE
         
     public:
         GroundStick(transform::Transform* transform) : Component(transform), player(NULL), offset(glm::vec3()) { }
@@ -18,7 +19,7 @@ namespace component
         void Update(const float deltaTime);
 
     protected:
-        transform::Transform* player;
-        glm::vec3 offset;
+        SERIALIZE_FIELD transform::Transform* player;
+        SERIALIZE_FIELD glm::vec3 offset;
     };
 }

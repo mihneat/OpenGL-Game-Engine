@@ -8,7 +8,7 @@
 
 using namespace std;
 using namespace loaders;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 

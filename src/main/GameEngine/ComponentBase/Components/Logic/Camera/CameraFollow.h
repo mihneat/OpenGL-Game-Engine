@@ -9,8 +9,11 @@ namespace component
 {
     class Camera;
 
+    SERIALIZE_CLASS
     class CameraFollow : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         CameraFollow(transform::Transform* transform, transform::Transform* followTarget,
             float distanceToTarget, float forwardFollowDistance) : Component(transform), followTarget(followTarget),
@@ -28,14 +31,15 @@ namespace component
 
     protected:
         component::Camera* mainCam;
-        transform::Transform* followTarget;
-        float distanceToTarget;
+        SERIALIZE_FIELD transform::Transform* followTarget;
+        SERIALIZE_FIELD float distanceToTarget;
 
-        float forwardFollowDistance;
+        SERIALIZE_FIELD float forwardFollowDistance;
         glm::vec3 forwardOffset;
         
-        const float angleScale, retroAngleScale;
+        SERIALIZE_FIELD float angleScale;
+        SERIALIZE_FIELD float retroAngleScale;
 
-        bool isRetroCam;
+        SERIALIZE_FIELD bool isRetroCam;
     };
 }

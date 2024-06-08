@@ -2,8 +2,29 @@
 
 #include "main/GameEngine/ComponentBase/Transform.h"
 
+// Check 'Component.h' for more details
+#define SERIALIZE_CLASS
+
+// Check 'Component.h' for all serializable fields
 #define SERIALIZE_FIELD
-#define SERIALIZE_CLASS friend class Serializer
+
+// Check 'Component.h' for more details
+#define MARK_SERIALIZABLE friend class Serializer;
+
+/**
+ * Serialized field types:
+ *
+ * NO const or unsigned
+ *
+ * bool <name>;
+ * int <name>;
+ * float <name>;
+ * glm::vec2 <name>;
+ * glm::vec3 <name>;
+ * glm::vec4 <name>;
+ * Transform* <name>;
+ * 
+ */
 
 struct SerializedField;
 

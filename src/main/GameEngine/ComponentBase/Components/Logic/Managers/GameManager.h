@@ -10,10 +10,13 @@ namespace m1 {
     class GameEngine;
 }
 
-namespace managers
+namespace component
 {
+    SERIALIZE_CLASS
     class GameManager : public component::Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         enum GameState {
             Start,
@@ -43,9 +46,9 @@ namespace managers
 
         m1::GameEngine* scene;
 
-        int score;
-        int highScore;
-        int runs;
+        SERIALIZE_FIELD int score;
+        SERIALIZE_FIELD int highScore;
+        SERIALIZE_FIELD int runs;
 
     public:
         GameManager(GameManager& other) = delete;
@@ -54,15 +57,17 @@ namespace managers
 
         static GameManager* GetInstance(transform::Transform* transform = NULL, m1::GameEngine* scene = NULL);
 
-        void KeyPress(const int key, const int mods);
+        void KeyPress(const int key, const int mods) override;
         void MouseBtnPress(const int mouseX, const int mouseY,
-            const int button, const int mods);
+            const int button, const int mods) override;
+        void MouseScroll(const int mouseX, const int mouseY,
+            const int offsetX, const int offsetY) override;
 
         int GetScore() { return score; }
         int GetHighScore() { return highScore; }
         int GetRuns() { return runs; }
-        glm::vec4 GetSkyColor() { return currentSkyColor; };
-        void SetSkyColor(glm::vec4 newSkyColor) { currentSkyColor = newSkyColor; };
+        glm::vec4 GetSkyColor() { return currentSkyColor; }
+        void SetSkyColor(glm::vec4 newSkyColor) { currentSkyColor = newSkyColor; }
 
         GameState GetGameState() { return gameState; }
         GameSpeed GetGameSpeed() { return gameSpeed; }
@@ -71,7 +76,7 @@ namespace managers
 
         void UpdateScore(const int value) { score += value; highScore = std::max(highScore, score); }
         void AddResetable(component::IResetable* resetable) { resetables.insert(resetable); }
-        void DeleteResetable(component::IResetable* resetable) { resetables.erase(resetable); };
+        void DeleteResetable(component::IResetable* resetable) { resetables.erase(resetable); }
 
         void ResetGame();
         void EndGame();
@@ -80,9 +85,9 @@ namespace managers
         GameState gameState;
         GameSpeed gameSpeed;
 
-        glm::vec4 currentSkyColor;
-        glm::vec4 defaultSkyColor;
-        glm::vec4 endSkyColor;
+        SERIALIZE_FIELD glm::vec4 currentSkyColor;
+        SERIALIZE_FIELD glm::vec4 defaultSkyColor;
+        SERIALIZE_FIELD glm::vec4 endSkyColor;
 
         std::unordered_set<component::IResetable*> resetables;
 

@@ -4,6 +4,8 @@
 #include "utils/glm_utils.h"
 #include <vector>
 
+class GUIManager;
+
 namespace component {
     class Component;
 }
@@ -124,5 +126,7 @@ namespace transform
         glm::mat4 manualRotationMatrix;
 
         std::string tag;
+        
+        friend class GUIManager;
     };
 }   // namespace transform2D

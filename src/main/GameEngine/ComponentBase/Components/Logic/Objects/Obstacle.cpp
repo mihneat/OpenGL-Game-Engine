@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 using namespace prefabManager;

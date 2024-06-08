@@ -10,8 +10,11 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class UpdateLightPosition : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         UpdateLightPosition(transform::Transform* transform) : Component(transform) { }
         virtual ~UpdateLightPosition() { }

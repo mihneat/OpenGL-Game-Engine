@@ -24,6 +24,6 @@ namespace SOURCE_PATH
 
 namespace ENGINE_PATH
 {
-    const std::string GAME_ENGINE   = PATH_JOIN(SOURCE_PATH::M1, "GameEngine");
+    const std::string GAME_ENGINE   = PATH_JOIN(SOURCE_PATH::MAIN, "GameEngine");
     const std::string ASSETS        = PATH_JOIN(GAME_ENGINE, "Assets");
 }

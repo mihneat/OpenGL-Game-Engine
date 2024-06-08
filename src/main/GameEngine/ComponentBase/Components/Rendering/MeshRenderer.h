@@ -26,9 +26,11 @@ namespace component
         std::vector<unsigned int> indices;
         int drawMode;
     };
-
+    
+    SERIALIZE_CLASS
     class MeshRenderer : public Component, public IRenderable
     {
+        MARK_SERIALIZABLE
 
     public:
         enum MeshEnum {
@@ -63,7 +65,7 @@ namespace component
 
         friend class rendering::RenderingSystem;
 
-        void Start();
+        void Init();
 
         void SetColor(glm::vec4 newColor);
         void SetTexture(std::string newTexture, glm::vec2 newTexScale = glm::vec2(1.0f));
@@ -84,8 +86,8 @@ namespace component
         MeshEnum type;
         std::string baseMeshName;
         std::string meshName;
-        glm::vec4 color;
-        glm::mat4 scaleMatrix;
+        SERIALIZE_FIELD glm::vec4 color;
+        SERIALIZE_FIELD glm::vec3 meshScale;
 
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
@@ -94,13 +96,13 @@ namespace component
         mesh_desc CreateRoad();
 
     private:
-        bool debugOnly;
+        SERIALIZE_FIELD bool debugOnly;
         long long meshIndex;
         bool generateMesh;
         bool renderUI;
         LayerEnum layer;
         std::string texture;
-        glm::vec2 texScale;
+        SERIALIZE_FIELD glm::vec2 texScale;
 
         const rendering::Material* material;
         rendering::MaterialOverrides* materialOverrides;

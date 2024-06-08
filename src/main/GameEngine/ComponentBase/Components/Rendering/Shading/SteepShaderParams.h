@@ -8,8 +8,11 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class SteepShaderParams : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         SteepShaderParams(transform::Transform* transform, rendering::Material* groundMat) : Component(transform),
             offset(glm::vec2()), player(nullptr), previousPlayerPos(glm::vec3()), groundMat(groundMat) { }

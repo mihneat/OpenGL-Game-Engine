@@ -11,16 +11,28 @@ enum FieldType
     FieldTypeVec2,
     FieldTypeVec3,
     FieldTypeColour,
+    FieldTypeString,
     FieldTypeTransform,
+    FieldTypeUnimplemented,
 };
 
 struct SerializedField
 {
     std::string name;
     FieldType type;
+
+    std::string GetTypeName() const;
 };
 
-typedef std::map<std::string, std::vector<SerializedField>> SerializationResult;
+struct ClassInfo
+{
+    std::string classPath;
+    std::string className;
+    std::string classParent;
+    std::vector<SerializedField> serializedFields;
+};
+
+typedef std::map<std::string, ClassInfo> SerializationResult;
 
 class CppHeaderParser
 {

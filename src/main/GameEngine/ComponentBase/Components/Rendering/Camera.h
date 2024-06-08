@@ -9,7 +9,7 @@
 #include "main/GameEngine/ComponentBase/Components/Rendering/MeshRenderer.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 
-namespace managers
+namespace component
 {
     class GameManager;
 }
@@ -19,8 +19,11 @@ namespace component
     class MeshRenderer;
     enum class LayerEnum;
 
+    SERIALIZE_CLASS
     class Camera : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         Camera(transform::Transform* transform, const glm::vec3& center, const glm::vec3& up,
                 const glm::vec2 viewportBottomLeft, const glm::vec2 viewportWidthHeight, 
@@ -77,9 +80,9 @@ namespace component
         glm::vec2 viewportWidthHeight;
 
     protected:
-        float distanceToTarget;
+        SERIALIZE_FIELD float distanceToTarget;
         glm::mat4 projectionMatrix;
-        bool autoResize;
+        SERIALIZE_FIELD bool autoResize;
 
         std::unordered_set<int> layers;
 

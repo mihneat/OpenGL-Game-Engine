@@ -9,9 +9,10 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class Obstacle : public Component, public IResetable
     {
-        SERIALIZE_CLASS;
+        MARK_SERIALIZABLE
         
     public:
         Obstacle(transform::Transform* transform, float collisionRadius, bool isHazard = true) : Component(transform), player(NULL), t(0.0f), despawnDistance(220.0f),
@@ -24,7 +25,7 @@ namespace component
         void Reset();
 
     protected:
-        managers::GameManager* gameManager;
+        component::GameManager* gameManager;
 
         const float playerRadius;
 

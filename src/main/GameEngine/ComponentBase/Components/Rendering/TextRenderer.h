@@ -16,8 +16,11 @@ namespace m1
 
 namespace component
 {
+    SERIALIZE_CLASS
     class TextRenderer : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         TextRenderer(
             transform::Transform* transform,
@@ -28,18 +31,17 @@ namespace component
         );
         ~TextRenderer();
 
-        void Start();
-        void Update(const float deltaTime);
+        void Init();
 
         void SetText(const std::string newText);
         void SetColor(const glm::vec4 newColor);
 
     protected:
         m1::GameEngine* scene;
-        float scale;
-        glm::vec4 color;
-        std::string text;
-        glm::vec2 position;
+        SERIALIZE_FIELD float scale;
+        SERIALIZE_FIELD glm::vec4 color;
+        SERIALIZE_FIELD std::string text;
+        SERIALIZE_FIELD glm::vec2 position;
         gfxc::TextRenderer* textRenderer;
 
         friend class rendering::RenderingSystem;

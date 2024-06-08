@@ -15,7 +15,7 @@ TextRenderer::TextRenderer(
     glm::vec4 color
 ) : Component(transform)
 {
-    this->scene = managers::GameManager::GetInstance()->GetSceneReference();
+    this->scene = component::GameManager::GetInstance()->GetSceneReference();
     this->text = text;
     this->position = position;
     this->scale = scale;
@@ -26,15 +26,10 @@ TextRenderer::~TextRenderer()
 {
 }
 
-void TextRenderer::Start()
+void TextRenderer::Init()
 {
     // Store a reference to the scene's text renderer
     textRenderer = scene->GetTextRenderer();
-}
-
-void TextRenderer::Update(const float deltaTime)
-{
-
 }
 
 void TextRenderer::SetText(const std::string newText)

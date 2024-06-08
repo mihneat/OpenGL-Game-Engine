@@ -8,7 +8,7 @@ namespace transform
     class Transform;
 }
 
-namespace managers
+namespace component
 {
     enum SceneLoadMode
     {

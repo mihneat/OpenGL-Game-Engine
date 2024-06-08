@@ -1,7 +1,7 @@
 ﻿#include "SceneManager.h"
 
 using namespace std;
-using namespace managers;
+using namespace component;
 
 std::unordered_map<std::string, transform::Transform *> SceneManager::loadedScenes;
 

@@ -10,8 +10,11 @@ namespace component
 {
     class TextRenderer;
 
+    SERIALIZE_CLASS
     class StartRunDisplay : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         StartRunDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL) { }
         ~StartRunDisplay() { }

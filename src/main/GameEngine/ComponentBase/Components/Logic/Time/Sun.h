@@ -7,8 +7,11 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class Sun : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         Sun(transform::Transform* transform) : Component(transform), speed(0.1f), nightSpeed(0.25f), dist(10000.0f), lightSource(NULL), sunPosition(glm::vec3()) { }
         ~Sun() { }
@@ -20,7 +23,8 @@ namespace component
         glm::vec3 sunPosition;
         Light* lightSource;
 
-        float speed, nightSpeed;
+        SERIALIZE_FIELD float speed;
+        SERIALIZE_FIELD float nightSpeed;
         float dist;
     };
 }

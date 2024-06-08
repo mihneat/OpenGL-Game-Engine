@@ -4,7 +4,7 @@
 
 #include "utils/memory_utils.h"
 
-using namespace managers;
+using namespace component;
 using namespace component;
 
 GameManager* GameManager::gameManager = nullptr;
@@ -29,6 +29,19 @@ void GameManager::KeyPress(const int key, const int mods)
         }
 
         if (key == GLFW_KEY_UP && gameSpeed != Snail) {
+            gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) - 1);
+        }
+    }
+}
+
+void GameManager::MouseScroll(const int mouseX, const int mouseY, const int offsetX, const int offsetY)
+{
+    if (gameState == Start) {
+        if (offsetY < 0 && gameSpeed != LightningMcQueen) {
+            gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) + 1);
+        }
+
+        if (offsetY > 0 && gameSpeed != Snail) {
             gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) - 1);
         }
     }

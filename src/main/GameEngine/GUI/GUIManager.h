@@ -28,11 +28,6 @@ public:
 
     bool IsGUIInput();
 
-    void ShowSceneWindow();
-    void ShowGameWindow();
-    void ShowHierarchy(transform::Transform* hierarchy);
-    void ShowInspector();
-
     bool IsGamePlaying() const;
     bool IsGamePaused() const;
     bool IsGameActive() const;
@@ -48,16 +43,25 @@ private:
     void ShowMainMenuBar();
     void ShowMainWindow();
     void ShowDemoWindow();
+    void ShowSceneWindow();
+    void ShowGameWindow();
+    void ShowHierarchy(transform::Transform* hierarchy);
+    void ShowInspector();
+    void ShowPreferences();
+
+    void LoadPreferences();
 
     void ToggleGamePlaying();
     void ToggleGamePaused();
 
     void DisplaySerializedField(const SerializedField& attribute, void* data);
+    void DisplaySerializedTransform(transform::Transform* transform);
     
     bool showSceneWindow = true;
     bool showGameWindow = true;
     bool showHierarchy = true;
     bool showInspector = true;
+    bool showPreferences = false;
     bool showDebugConsole = false;
     bool showDemoWindow = true;
 
@@ -75,6 +79,8 @@ private:
 
     utils::FBOContainer sceneFBOContainer;
     utils::FBOContainer gameFBOContainer;
+
+    std::unordered_map<std::string, glm::vec4> colors;
 
     friend class GUIInputListener;
 };

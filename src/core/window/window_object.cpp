@@ -330,6 +330,8 @@ void WindowObject::MouseMove(int posX, int posY)
 
 void WindowObject::MouseScroll(double offsetX, double offsetY)
 {
+    scrollEvent = true;
+    
     mouseScrollDeltaX = (int)offsetX;
     mouseScrollDeltaY = (int)offsetY;
 }

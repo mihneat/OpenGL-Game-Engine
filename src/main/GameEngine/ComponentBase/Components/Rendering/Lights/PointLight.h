@@ -10,8 +10,11 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class PointLight : public Light
     {
+        MARK_SERIALIZABLE
+        
     public:
         PointLight(transform::Transform* transform);
         virtual ~PointLight() { }

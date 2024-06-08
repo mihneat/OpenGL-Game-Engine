@@ -6,7 +6,7 @@
 #include "main/GameEngine/Systems/Rendering/MeshResourceManager.h"
 
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 
@@ -38,8 +38,8 @@ MeshRenderer::MeshRenderer(
         .append(to_string(meshColor.b))
         .append(to_string(meshColor.a));
     this->meshName = std::string(meshName) + colorString;
+    this->meshScale = meshScale;
 	this->color = meshColor;
-    this->scaleMatrix = Transform::GetScalingMatrix(meshScale);
     this->debugOnly = debugOnly;
     this->renderUI = renderUI;
     this->layer = layer;
@@ -59,7 +59,7 @@ MeshRenderer::~MeshRenderer()
 {
 }
 
-void MeshRenderer::Start()
+void MeshRenderer::Init()
 {
     MeshFactory();
 }

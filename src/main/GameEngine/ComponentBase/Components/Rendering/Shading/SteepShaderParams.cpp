@@ -5,7 +5,7 @@
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 

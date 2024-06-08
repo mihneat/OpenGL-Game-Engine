@@ -10,8 +10,11 @@ namespace component
 {
     class TextRenderer;
 
+    SERIALIZE_CLASS
     class SpeedSelectionDisplay : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         SpeedSelectionDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL),
             prevTextRenderer(NULL), currTextRenderer(NULL), nextTextRenderer(NULL) { }

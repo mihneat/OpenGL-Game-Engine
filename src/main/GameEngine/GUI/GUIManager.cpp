@@ -4,12 +4,16 @@
 #include <unordered_map>
 
 #include "imgui.h"
+#include "imgui_internal.h"
+#include "misc/cpp/imgui_stdlib.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "core/world.h"
 #include "main/GameEngine/Managers/TextureLoader.h"
 #include "main/GameEngine/Serialization/CppHeaderParser.h"
 #include "main/GameEngine/Serialization/Serializer.h"
+
+#define BUF_SIZE 64
 
 struct transform_data
 {
@@ -19,6 +23,11 @@ struct transform_data
 };
 
 GUIManager* GUIManager::instance = nullptr;
+
+static const char* MainWindow_PlayBtnActive = "MainWindow_PlayBtnActive";
+static const char* MainWindow_PlayBtnInactive = "MainWindow_PlayBtnInactive";
+static const char* MainWindow_PauseBtnActive = "MainWindow_PauseBtnActive";
+static const char* MainWindow_PauseBtnInactive = "MainWindow_PauseBtnInactive";
 
 GUIManager* GUIManager::GetInstance()
 {
@@ -42,6 +51,20 @@ void GUIManager::InitializeGUI(GLFWwindow* window)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
     ImGui_ImplOpenGL3_Init();
+
+    LoadPreferences();
+}
+
+void GUIManager::LoadPreferences()
+{
+    // TODO: Create a editorConfig.ini, read and parse it
+    
+    colors = {
+        {MainWindow_PlayBtnActive, glm::vec4(62, 190, 70, 255) / 255.0f},
+        {MainWindow_PlayBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
+        {MainWindow_PauseBtnActive, glm::vec4(203, 183, 38, 255) / 255.0f},
+        {MainWindow_PauseBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
+    };
 }
 
 void GUIManager::ShowMainMenuBar()
@@ -54,6 +77,12 @@ void GUIManager::ShowMainMenuBar()
             if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { ToggleGamePaused(); }
             ImGui::Separator();
             if (ImGui::MenuItem("Reset", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
+            ImGui::EndMenu();
+        }
+        
+        if (ImGui::BeginMenu("Edit"))
+        {
+            ImGui::MenuItem("Preferences", nullptr, &this->showPreferences);
             ImGui::EndMenu();
         }
         
@@ -104,6 +133,7 @@ void GUIManager::BeginRenderGUI(const World* world)
     ShowGameWindow();
     ShowHierarchy(world->hierarchy);
     ShowInspector();
+    ShowPreferences();
     ShowDemoWindow();
 }
 
@@ -126,6 +156,67 @@ bool GUIManager::IsGUIInput()
     return ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantCaptureKeyboard;
 }
 
+void MouseWrap(const char* buf, bool wrapHorizontal, bool wrapVertical, ImGuiMouseCursor_ cursorType)
+{
+    if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+    {
+        std::cout << "Active ID: " << ImGui::GetActiveID() << "\n";
+        
+        // Check if the active window is the one given as parameter
+        ImGuiWindow* window = ImGui::GetCurrentWindow();
+        if (ImGui::GetActiveID() != window->GetID(buf))
+            return;
+
+        // Set the mouse cursor type
+        ImGui::SetMouseCursor(cursorType);
+
+        // Wrap the mouse around the editor window
+        glm::vec2 mousePos = {ImGui::GetMousePos().x, ImGui::GetMousePos().y};
+        glm::vec2 windowSize = {ImGui::GetMainViewport()->Size.x, ImGui::GetMainViewport()->Size.y};
+        constexpr float pad = 5;
+        bool teleportMouse = false;
+        glm::vec2 newMousePos = mousePos;
+
+        if (wrapHorizontal)
+        {
+            if (mousePos.x < pad)
+            {
+                newMousePos.x = windowSize.x - pad;
+                teleportMouse = true;
+            }
+
+            if (mousePos.x > windowSize.x - pad)
+            {
+                newMousePos.x = pad;
+                teleportMouse = true;
+            }
+        }
+
+        if (wrapVertical)
+        {
+            if (mousePos.y < pad)
+            {
+                newMousePos.y = windowSize.y - pad;
+                teleportMouse = true;
+            }
+
+            if (mousePos.y > windowSize.y - pad)
+            {
+                newMousePos.y = pad;
+                teleportMouse = true;
+            }
+        }
+
+        if (teleportMouse)
+            ImGui::TeleportMousePos(ImVec2(newMousePos.x, newMousePos.y));
+    }
+}
+
+ImVec4 GlmVec4ToImVec4(glm::vec4 col, float add = 0.0f)
+{
+    return {col.r + add, col.g + add, col.b + add, col.a};
+}
+
 void GUIManager::ShowMainWindow()
 {
     static ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
@@ -133,12 +224,13 @@ void GUIManager::ShowMainWindow()
 
     // We demonstrate using the full viewport area or the work area (without menu-bars, task-bars etc.)
     // Based on your use case you may want one or the other.
+    constexpr ImVec2 framePadding = ImVec2(0.0f, 10.0f);
     const ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
     ImGui::SetNextWindowViewport(viewport->ID);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 10.0f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
     if (!ImGui::Begin("Main", nullptr, flags))
     {
         // Early out if the window is collapsed, as an optimization.
@@ -157,8 +249,32 @@ void GUIManager::ShowMainWindow()
     // Create a menu bar that displays the resolution
     if (ImGui::BeginMenuBar())
     {
-        ImGui::Text("TODO: Here should be the Play / Pause buttons!");
-        // ImGui::ImageButton();
+        // Center buttons horizontally
+        constexpr ImVec2 buttonSize = ImVec2(70.0f, 25.0f);
+        ImGuiStyle& style = ImGui::GetStyle();
+        const float contentSize = buttonSize.x * 2.0f + style.ItemSpacing.x + framePadding.x * 2.0f;
+        const float available = ImGui::GetContentRegionAvail().x;
+        ImGui::SetCursorPosX((available - contentSize) / 2.0f);
+
+        // Center buttons vertically
+        const float menuBarHeight = ImGui::GetFrameHeight();
+        ImGui::SetCursorPosY(menuBarHeight - buttonSize.y + framePadding.y);
+
+        // Retrieve button colors
+        glm::vec4 playBtnCol = IsGamePlaying() ? colors[MainWindow_PlayBtnActive] : colors[MainWindow_PlayBtnInactive];
+        glm::vec4 pauseBtnCol = IsGamePaused() ? colors[MainWindow_PauseBtnActive] : colors[MainWindow_PauseBtnInactive];
+        
+        ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(playBtnCol));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(playBtnCol, 0.05f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(playBtnCol,  0.15f));
+        if (ImGui::Button("Play##PlayBtn", buttonSize)) ToggleGamePlaying();
+        ImGui::PopStyleColor(3);
+        
+        ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(pauseBtnCol));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(pauseBtnCol, 0.05f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(pauseBtnCol, 0.15f));
+        if (ImGui::Button("Pause##PauseBtn", buttonSize)) ToggleGamePaused();
+        ImGui::PopStyleColor(3);
         
         ImGui::EndMenuBar();
     }
@@ -471,7 +587,11 @@ bool SerializeBool(bool* data)
     if (data == nullptr)
         return false;
 
-    ImGui::Checkbox("##dragBool", data);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeBool %p", (void*)data);
+
+    ImGui::Checkbox(buf, data);
 
     return true;
 }
@@ -481,7 +601,13 @@ bool SerializeInt(int* data)
     if (data == nullptr)
         return false;
 
-    ImGui::DragInt("##dragInt", data, 1);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeInt %p", (void*)data);
+
+    ImGui::DragInt(buf, data, 1);
+    
+    MouseWrap(buf, true, false, ImGuiMouseCursor_ResizeEW);
 
     return true;
 }
@@ -491,7 +617,13 @@ bool SerializeFloat(float* data)
     if (data == nullptr)
         return false;
 
-    ImGui::DragFloat("##dragFloat", data, 1.0f);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeFloat %p", (void*)data);
+
+    ImGui::DragFloat(buf, data, 0.02f);
+        
+    MouseWrap(buf, true, false, ImGuiMouseCursor_ResizeEW);
 
     return true;
 }
@@ -501,7 +633,22 @@ bool SerializeVec2(glm::vec2* data)
     if (data == nullptr)
         return false;
 
-    ImGui::DragFloat2("##dragVec2", reinterpret_cast<float*>(data), 1.0f);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeVec2 %p", (void*)data);
+
+    ImGui::DragFloat2(buf, reinterpret_cast<float*>(data), 0.02f);
+
+    // Check ImGui::DragScalarN() for more information
+    ImGui::PushID(buf);
+    for (int i = 0; i < 2; ++i)
+    {
+        ImGui::PushID(i);
+        MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+        ImGui::PopID();
+    }
+    
+    ImGui::PopID();
 
     return true;
 }
@@ -511,7 +658,22 @@ bool SerializeVec3(glm::vec3* data)
     if (data == nullptr)
         return false;
 
-    ImGui::DragFloat3("##dragVec3", reinterpret_cast<float*>(data), 1.0f);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeVec3 %p", (void*)data);
+
+    ImGui::DragFloat3(buf, reinterpret_cast<float*>(data), 0.02f);
+
+    // Check ImGui::DragScalarN() for more information
+    ImGui::PushID(buf);
+    for (int i = 0; i < 3; ++i)
+    {
+        ImGui::PushID(i);
+        MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+        ImGui::PopID();
+    }
+    
+    ImGui::PopID();
 
     return true;
 }
@@ -521,26 +683,79 @@ bool SerializeColour(glm::vec4* data)
     if (data == nullptr)
         return false;
 
-    ImGui::DragFloat4("##dragColour", reinterpret_cast<float*>(data), 1.0f);
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeColour %p", (void*)data);
+
+    ImGui::ColorEdit4(buf, reinterpret_cast<float*>(data));
+
+    // Check ImGui::ColorEdit4() for more information
+    ImGui::PushID(buf);
+    ImGui::PushID("##X");
+    MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+    ImGui::PopID();
+    ImGui::PushID("##Y");
+    MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+    ImGui::PopID();
+    ImGui::PushID("##Z");
+    MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+    ImGui::PopID();
+    ImGui::PushID("##W");
+    MouseWrap("", true, false, ImGuiMouseCursor_ResizeEW);
+    ImGui::PopID();
+    ImGui::PopID();
 
     return true;
 }
 
-bool SerializeTransform(transform::Transform* data)
+bool SerializeString(std::string* data)
 {
     if (data == nullptr)
         return false;
 
-    ImGui::Text("%s", data->GetName());
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeString %p", (void*)data);
+
+    ImGui::InputText(buf, data);
 
     return true;
+}
+
+bool SerializeTransform(transform::Transform** data)
+{
+    if (data == nullptr)
+        return false;
+
+    ImGui::Text("%s", (*data)->GetName().c_str());
+
+    return true;
+}
+
+std::string FormatString(const std::string& str)
+{
+    std::string formattedString(str);
+    formattedString[0] = toupper(formattedString[0]);
+
+    // Insert a space before each capital letter
+    for (size_t i = 1; i < formattedString.length(); ++i)
+    {
+        if (formattedString[i] >= 'A' && formattedString[i] <= 'Z') {
+            formattedString.insert(i, " ");
+            
+            // Skip over the character
+            ++i;
+        }
+    }
+
+    return formattedString;
 }
 
 void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* data)
 {
     ImGui::AlignTextToFramePadding();
     ImGui::SetNextItemWidth(100);
-    ImGui::Text("%s ", attribute.name.c_str());
+    ImGui::Text("%s ", FormatString(attribute.name).c_str());
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
@@ -571,8 +786,12 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
         successful = SerializeColour(static_cast<glm::vec4*>(data));
         break;
         
+    case FieldTypeString:
+        successful = SerializeString(static_cast<std::string*>(data));
+        break;
+        
     case FieldTypeTransform:
-        successful = SerializeTransform(static_cast<transform::Transform*>(data));
+        successful = SerializeTransform(static_cast<transform::Transform**>(data));
         break;
 
     default:
@@ -583,6 +802,15 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
 
     if (!successful)
         std::cerr << "Data serialization failed for attribute " << attribute.name << " of type " << attribute.type << "\n";
+}
+
+void GUIManager::DisplaySerializedTransform(transform::Transform* transform)
+{
+    DisplaySerializedField({"name", FieldTypeString}, &transform->name);
+    DisplaySerializedField({"tag", FieldTypeString}, &transform->tag);
+    DisplaySerializedField({"position", FieldTypeVec3}, &transform->localPosition);
+    DisplaySerializedField({"rotation", FieldTypeVec3}, &transform->localRotation);
+    DisplaySerializedField({"scale", FieldTypeVec3}, &transform->localScale);
 }
 
 void GUIManager::ShowInspector()
@@ -613,7 +841,7 @@ void GUIManager::ShowInspector()
 
     if (nodeOpen)
     {
-        ImGui::Text("Name: %s", lastSelectedTransform->GetName().c_str());
+        DisplaySerializedTransform(lastSelectedTransform);
         ImGui::TreePop();
     }
 
@@ -643,6 +871,32 @@ void GUIManager::ShowInspector()
         ImGui::TreePop();
     }
     
+    ImGui::End();
+}
+
+void GUIManager::ShowPreferences()
+{
+    if (!this->showPreferences)
+        return;
+    
+    ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("Preferences", &this->showPreferences))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return;
+    }
+    
+    ImGui::Text("Play button active"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Play btn active color", reinterpret_cast<float*>(&colors[MainWindow_PlayBtnActive]));
+    ImGui::Text("Play button inactive"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Play button inactive color", reinterpret_cast<float*>(&colors[MainWindow_PlayBtnInactive]));
+    
+    ImGui::Text("Pause button active"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Pause btn active color", reinterpret_cast<float*>(&colors[MainWindow_PauseBtnActive]));
+    ImGui::Text("Pause button inactive"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Pause button inactive color", reinterpret_cast<float*>(&colors[MainWindow_PauseBtnInactive]));
+
     ImGui::End();
 }
 

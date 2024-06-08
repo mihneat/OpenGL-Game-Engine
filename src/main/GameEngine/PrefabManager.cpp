@@ -6,7 +6,7 @@
 
 using namespace std;
 using namespace loaders;
-using namespace managers;
+using namespace component;
 using namespace rendering;
 using namespace component;
 using namespace transform;
@@ -133,7 +133,7 @@ Transform* PrefabManager::CreateTree(Transform* parent)
     light->AddComponent(new UpdateLightPosition(light));
     light->AddComponent(new PointLight(light));
     light->GetComponent<PointLight>()->ChangeIntensity(250.0f);
-    light->GetComponent<PointLight>()->ChangeColor(glm::vec3(106, 209, 48) / 255.0f);
+    light->GetComponent<PointLight>()->ChangeColor(glm::vec4(106, 209, 48, 255) / 255.0f);
 
     return tree;
 }
@@ -163,7 +163,7 @@ Transform* PrefabManager::CreateRock(Transform* parent)
     light->AddComponent(new UpdateLightPosition(light));
     light->AddComponent(new PointLight(light));
     light->GetComponent<PointLight>()->ChangeIntensity(200.0f);
-    light->GetComponent<PointLight>()->ChangeColor(glm::vec3(131, 109, 101) / 255.0f);
+    light->GetComponent<PointLight>()->ChangeColor(glm::vec4(131, 109, 101, 255) / 255.0f);
 
     return rock;
 }
@@ -192,14 +192,14 @@ Transform* PrefabManager::CreateLightPole(Transform* parent)
     light1->AddComponent(new UpdateLightPosition(light1));
     light1->AddComponent(new SpotLight(light1));
     light1->GetComponent<SpotLight>()->ChangeIntensity(300.0f);
-    light1->GetComponent<SpotLight>()->ChangeColor(glm::vec3(250, 191, 77) / 255.0f);
+    light1->GetComponent<SpotLight>()->ChangeColor(glm::vec4(250, 191, 77, 255) / 255.0f);
 
     Transform* light2 = new Transform(horizontalPole, "Light 2");
     light2->Translate(glm::vec3( 12.0f, 0.0f, 0.0f));
     light2->AddComponent(new UpdateLightPosition(light2));
     light2->AddComponent(new SpotLight(light2));
     light2->GetComponent<SpotLight>()->ChangeIntensity(300.0f);
-    light2->GetComponent<SpotLight>()->ChangeColor(glm::vec3(250, 191, 77) / 255.0f);
+    light2->GetComponent<SpotLight>()->ChangeColor(glm::vec4(250, 191, 77, 255) / 255.0f);
 
     return lightPole;
 }
@@ -222,7 +222,7 @@ Transform* PrefabManager::CreatePresent(Transform* parent)
     light->AddComponent(new UpdateLightPosition(light));
     light->AddComponent(new PointLight(light));
     light->GetComponent<PointLight>()->ChangeIntensity(150.0f);
-    light->GetComponent<PointLight>()->ChangeColor(glm::vec3(247, 48, 37) / 255.0f);   // Pink: 237, 0, 255
+    light->GetComponent<PointLight>()->ChangeColor(glm::vec4(247, 48, 37, 255) / 255.0f);   // Pink: 237, 0, 255
 
     return present;
 }
@@ -231,9 +231,6 @@ Transform* PrefabManager::CreateUI(m1::GameEngine* scene, Transform* parent)
 {
     // Create the top-level object
     Transform* rootUI = new Transform(parent, "UI Root");
-
-    // Get the resolution
-    glm::vec2 resolution = EditorRuntimeSettings::resolution;
 
     // Create the Runs text
     Transform* runsText = new Transform(rootUI, "Run Counter Text");

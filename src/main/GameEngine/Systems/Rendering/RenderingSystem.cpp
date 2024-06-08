@@ -11,8 +11,27 @@
 using namespace rendering;
 using namespace loaders;
 
+void RenderingSystem::Init(transform::Transform* hierarchy)
+{
+    // Initialize the meshes
+    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+        component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
+        if (meshRenderer != nullptr) {
+            meshRenderer->Init();
+        }
+    });
+
+    // Initialize the text
+    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+        component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
+        if (text != nullptr) {
+            text->Init();
+        }
+    });
+}
+
 void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
-        const glm::ivec2 resolution)
+                             const glm::ivec2 resolution)
 {
     // Render the meshes
     m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, resolution](component::Component* component) {
@@ -34,11 +53,10 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
             // Set the uniforms
             SetGlobalUniforms(
                 material->shader,
-                // TODO: Deprecate scaleMatrix once the engine works again..
-                meshRenderer->transform->GetModelMatrix() * meshRenderer->scaleMatrix,
+                // TODO: Deprecate meshScale
+                meshRenderer->transform->GetModelMatrix() * transform::Transform::GetScalingMatrix(meshRenderer->meshScale),
                 meshRenderer->renderUI,
                 meshRenderer->texture,
-                // TODO: Turn the texScale into a glm::vec2
                 meshRenderer->texScale,
                 cam,
                 resolution

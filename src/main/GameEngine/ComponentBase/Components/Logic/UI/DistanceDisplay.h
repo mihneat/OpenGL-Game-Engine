@@ -10,8 +10,11 @@ namespace component
 {
     class TextRenderer;
 
+    SERIALIZE_CLASS
     class DistanceDisplay : public Component, public IResetable
     {
+        MARK_SERIALIZABLE
+        
     public:
         DistanceDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL),
             distance(0.0f), prevPos(glm::vec3()) { }
@@ -23,7 +26,7 @@ namespace component
         void Reset();
 
     protected:
-        transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player;
         component::TextRenderer* textRenderer;
         
         float distance;

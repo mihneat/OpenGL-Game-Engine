@@ -9,8 +9,11 @@ namespace component
 {
     class Camera;
 
+    SERIALIZE_CLASS
     class OrthoCameraFollow : public Component
     {
+        MARK_SERIALIZABLE
+        
     public:
         OrthoCameraFollow(transform::Transform* transform, transform::Transform* followTarget) : Component(transform),
             followTarget(followTarget), cam(NULL), isFixed(true), minDimensions(glm::vec2(150, 150)),
@@ -26,12 +29,14 @@ namespace component
 
     protected:
         component::Camera* cam;
-        transform::Transform* followTarget;
+        SERIALIZE_FIELD transform::Transform* followTarget;
 
-        bool isFixed;
-        float zoom;
-        glm::vec2 minDimensions, maxDimensions, fixedDimensions;
-        float zoomSpeed;
+        SERIALIZE_FIELD bool isFixed;
+        SERIALIZE_FIELD float zoom;
+        SERIALIZE_FIELD glm::vec2 minDimensions;
+        SERIALIZE_FIELD glm::vec2 maxDimensions;
+        SERIALIZE_FIELD glm::vec2 fixedDimensions;
+        SERIALIZE_FIELD float zoomSpeed;
 
         WindowObject* window;
     };

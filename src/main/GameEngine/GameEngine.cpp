@@ -22,7 +22,7 @@ using namespace component;
 using namespace rendering;
 using namespace transform;
 using namespace prefabManager;
-using namespace managers;
+using namespace component;
 
 
 /*
@@ -63,10 +63,12 @@ void GameEngine::Init()
     CreateHierarchy();
 
     // Update initial transforms
-    UpdateTransforms(hierarchy);
+    // UpdateTransforms(hierarchy);
 
     // Start components
-    StartComponents(hierarchy);
+    // StartComponents(hierarchy);
+
+    renderingSystem->Init(hierarchy);
 }
 
 void GameEngine::CreateHierarchy()
@@ -76,8 +78,8 @@ void GameEngine::CreateHierarchy()
 
     // Initialize singleton managers
     Transform* gameManager = new Transform(hierarchy, "Game Manager");
-    managers::GameManager::GetInstance(gameManager, this);
-    gameManager->AddComponent(managers::GameManager::GetInstance());
+    component::GameManager::GetInstance(gameManager, this);
+    gameManager->AddComponent(component::GameManager::GetInstance());
 
     // Create the player
     Transform* player = PrefabManager::CreatePlayer(hierarchy);
@@ -128,13 +130,19 @@ void GameEngine::Update(float deltaTimeSeconds)
 
 void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
 {
+    // Update transforms regardless if the game is playing or not
+    UpdateTransforms(hierarchy);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
     
     this->StartComponents(hierarchy);
+    this->UpdateTransforms(hierarchy);
     this->UpdateComponents(hierarchy, deltaTimeSeconds);
+    this->UpdateTransforms(hierarchy);
     this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
+    this->UpdateTransforms(hierarchy);
 
     this->DestroyMarkedObjects();
 }
@@ -433,7 +441,9 @@ void GameEngine::LateUpdateComponents(Transform* currentTransform, const float d
     // Update the transform and the components
     ApplyToComponents(currentTransform, [deltaTime](Component* component) {
         component->LateUpdate(deltaTime);
-    });
+    }, [](Transform* transform) {
+            transform->Update();
+        });
 }
 
 void GameEngine::DeleteComponents(Transform* currentTransform)
