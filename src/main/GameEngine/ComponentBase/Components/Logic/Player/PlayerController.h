@@ -4,6 +4,7 @@
 #include "utils/math_utils.h"
 #include "main/GameEngine/MathUtils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/Interfaces/IResetable.h"
 
 namespace component
@@ -65,5 +66,7 @@ namespace component
 
         int skinIndex;
         std::vector<int> skins;
+
+        GameManager* gameManager = nullptr;
     };
 }

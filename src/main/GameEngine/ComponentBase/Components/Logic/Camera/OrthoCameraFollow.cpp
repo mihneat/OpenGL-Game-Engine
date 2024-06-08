@@ -4,6 +4,9 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+#include "main/GameEngine/Managers/InputManager.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -12,9 +15,6 @@ using namespace transform;
 void OrthoCameraFollow::Start()
 {
 	cam = transform->GetComponent<Camera>();
-
-	// Get a window reference
-	window = GameManager::GetInstance()->GetSceneReference()->GetWindow();
 
 	isFixed = true;
 	cam->Set(glm::vec3(300.0f, 2000.0f, 0.0f), glm::vec3(300.0f, 0.0f, 0.0f), -glm::vec3_forward);
@@ -31,7 +31,7 @@ void OrthoCameraFollow::Update(const float deltaTime)
 	}
 
 	// Check if the game has ended
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended) {
 		return;
 	}
 
@@ -42,7 +42,7 @@ void OrthoCameraFollow::Update(const float deltaTime)
 void OrthoCameraFollow::InputUpdate(const float deltaTime, const int mods)
 {
 	// Zoom out
-	if (window->KeyHold(GLFW_KEY_MINUS)) {
+	if (InputManager::KeyHold(GLFW_KEY_MINUS)) {
 		// If already not following the player, can't zoom out more
 		if (isFixed) {
 			return;
@@ -63,7 +63,7 @@ void OrthoCameraFollow::InputUpdate(const float deltaTime, const int mods)
 		);
 
 	} // Zoom in
-	else if (window->KeyHold(GLFW_KEY_EQUAL)) {
+	else if (InputManager::KeyHold(GLFW_KEY_EQUAL)) {
 		// If the camera is fixed, unfix it
 		if (isFixed) {
 			isFixed = false;

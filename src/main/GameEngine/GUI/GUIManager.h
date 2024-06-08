@@ -36,6 +36,8 @@ public:
     
     bool ReceiveGameInput() const;
 
+    bool ShouldReset() const;
+
     utils::FBOContainer* GetGameFBOContainer();
     glm::ivec2 GetGameWindowResolution() const;
 
@@ -74,6 +76,8 @@ private:
     bool isGameWindowFocused = false;
 
     bool isGameWindowResized = false;
+
+    bool markStateReset = false;
 
     glm::ivec2 gameWindowResolution = {0, 0};
 

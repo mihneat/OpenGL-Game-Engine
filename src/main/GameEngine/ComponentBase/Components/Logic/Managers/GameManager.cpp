@@ -5,17 +5,6 @@
 #include "utils/memory_utils.h"
 
 using namespace component;
-using namespace component;
-
-GameManager* GameManager::gameManager = nullptr;
-
-GameManager* GameManager::GetInstance(transform::Transform* transform, m1::GameEngine* scene)
-{
-    if (gameManager == nullptr) {
-        gameManager = new GameManager(transform, scene);
-    }
-    return gameManager;
-}
 
 void GameManager::KeyPress(const int key, const int mods)
 {
@@ -59,6 +48,7 @@ void GameManager::MouseBtnPress(const int mouseX, const int mouseY,
 
 m1::GameEngine* GameManager::GetSceneReference()
 {
+    std::cout << "Scene ptr GetSceneReference(): " << scene << "\n";
     return scene;
 }
 
@@ -72,10 +62,12 @@ void GameManager::ResetGame()
     // Reset manager variables
     gameState = Start;
     score = 0;
+    
+    std::cout << "Scene ptr ResetGame(): " << scene << "\n";
 
     // Reset all subscribed objects
-    for (IResetable* resetable : resetables) {
-        resetable->Reset();
+    for (IResetable* resettable : resetables) {
+        resettable->Reset();
     }
 }
 

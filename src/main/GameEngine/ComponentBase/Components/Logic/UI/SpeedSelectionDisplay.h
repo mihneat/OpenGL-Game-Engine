@@ -23,13 +23,14 @@ namespace component
         void Start();
         void Update(const float deltaTime);
 
-        void SetTextValues(component::TextRenderer* textRenderer, int gameSpeed, bool fade = false);
-        void EmptyText(component::TextRenderer* textRenderer);
+        void SetTextValues(TextRenderer* textRenderer, int gameSpeed, bool fade = false);
+        void EmptyText(TextRenderer* textRenderer);
 
     protected:
-        component::TextRenderer* textRenderer;
-        component::TextRenderer* prevTextRenderer;
-        component::TextRenderer* currTextRenderer;
-        component::TextRenderer* nextTextRenderer;
+        GameManager* gameManager = nullptr;
+        TextRenderer* textRenderer;
+        TextRenderer* prevTextRenderer;
+        TextRenderer* currTextRenderer;
+        TextRenderer* nextTextRenderer;
     };
 }

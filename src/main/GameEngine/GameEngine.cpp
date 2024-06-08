@@ -10,6 +10,8 @@
 
 #include "core/managers/resource_path.h"
 #include "GUI/GUIManager.h"
+#include "Managers/GameInstance.h"
+#include "Managers/InputManager.h"
 #include "Systems/FileSystem.h"
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
@@ -56,19 +58,40 @@ void GameEngine::Init()
     textRenderer = new gfxc::TextRenderer(FileSystem::rootDirectory, resolution.x, resolution.y);
     textRenderer->Load(PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::FONTS, "Hack-Bold.TTF"), 30);
 
+    // Create the GameInstance singleton by retrieving it
+    managers::GameInstance::Get();
+
+    InputManager::window = window;
+    
     ShaderLoader::InitShaders();
     TextureLoader::InitTextures();
     MaterialManager::InitMaterials();
 
-    CreateHierarchy();
+    ReloadScene();
 
+    // DEPRECATED - left here in case things break
     // Update initial transforms
     // UpdateTransforms(hierarchy);
 
     // Start components
     // StartComponents(hierarchy);
+}
 
-    renderingSystem->Init(hierarchy);
+void GameEngine::ReloadScene()
+{
+    if (hierarchy != nullptr)
+    {
+        mainCam = nullptr;
+        secondaryCams.clear();
+        markedForDestruction.clear();
+        
+        DeleteComponents(hierarchy);
+
+        hierarchy = nullptr;
+    }
+    
+    CreateHierarchy();
+    renderingSystem->Init(hierarchy, textRenderer);
 }
 
 void GameEngine::CreateHierarchy()
@@ -76,11 +99,16 @@ void GameEngine::CreateHierarchy()
     // Define the root-level Hierarchy transform
     hierarchy = new Transform();
 
-    // Initialize singleton managers
-    Transform* gameManager = new Transform(hierarchy, "Game Manager");
-    component::GameManager::GetInstance(gameManager, this);
-    gameManager->AddComponent(component::GameManager::GetInstance());
+    // Create a persistent singleton object
+    // The users should not declare their own singletons, but rather
+    // use the engine-created object
+    // TODO: Add the object to "DontDestroyOnLoad" when the functionality is added
+    Transform* gameInstance = new Transform(hierarchy, "Game Instance");
+    managers::GameInstance::gameInstance->AttachTransform(gameInstance);
 
+    // The following components are added by the user within the editor
+    gameInstance->AddComponent(new GameManager(gameInstance, this));
+    
     // Create the player
     Transform* player = PrefabManager::CreatePlayer(hierarchy);
 
@@ -108,6 +136,9 @@ void GameEngine::CreateHierarchy()
 
 void GameEngine::FrameStart()
 {
+    if (GUIManager::GetInstance()->ShouldReset())
+        ReloadScene();
+    
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -119,6 +150,12 @@ void GameEngine::FrameStart()
     
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// This executes before the input callbacks from world.cpp
+void GameEngine::PreUpdate()
+{
+    AwakeComponents(hierarchy);
 }
 
 void GameEngine::Update(float deltaTimeSeconds)
@@ -137,6 +174,7 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
     
+    this->AwakeComponents(hierarchy);
     this->StartComponents(hierarchy);
     this->UpdateTransforms(hierarchy);
     this->UpdateComponents(hierarchy, deltaTimeSeconds);
@@ -158,7 +196,7 @@ void GameEngine::RenderGameView()
     glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
     
     // Set the "skybox" color (flat colour)
-    clearColor = GameManager::GetInstance()->GetSkyColor();
+    clearColor = managers::GameInstance::Get()->GetComponent<GameManager>()->GetSkyColor();
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -413,6 +451,16 @@ void GameEngine::ApplyToComponents(
     }
 }
 
+void GameEngine::AwakeComponents(Transform* currentTransform)
+{
+    // Start the components
+    ApplyToComponents(currentTransform, [](Component* component) {
+        if (!component->GetHasAwakeActivated()) {
+            component->SetHasAwakeActivated();
+            component->Awake();
+        }
+    });
+}
 
 void GameEngine::StartComponents(Transform* currentTransform)
 {

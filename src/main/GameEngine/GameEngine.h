@@ -25,25 +25,17 @@ namespace m1
         GameEngine();
         ~GameEngine();
 
-        // friend class loaders::ShaderLoader;
-        // friend class rendering::RenderingSystem;
-
         void Init() override;
 
-        // void LoadTexture(std::string texId, std::string texPath);
-        // ShaderBase* LoadShader(std::string shaderName, std::string vertexShaderPath, std::string fragmentShaderPath);
-
-        void SetUniforms();
-
+        // TODO: This should be in a SceneManager, I believe
+        void ReloadScene();
         void DestroyObject(transform::Transform* object);
-
-        gfxc::TextRenderer* GetTextRenderer() { return textRenderer; }
-        WindowObject* GetWindow() { return window; }
 
     private:
         std::unordered_set<transform::Transform*> markedForDestruction;
 
         void FrameStart() override;
+        void PreUpdate() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
 
@@ -75,6 +67,7 @@ namespace m1
 
     protected:
 
+        void AwakeComponents(transform::Transform *currentTransform);
         void StartComponents(transform::Transform *currentTransform);
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
@@ -85,22 +78,15 @@ namespace m1
         glm::vec4 clearColor;
         gfxc::TextRenderer* textRenderer;
 
-        component::Camera* mainCam;
+        component::Camera* mainCam = nullptr;
         std::vector<component::Camera*> secondaryCams;
 
         bool useSceneCamera;
-
-        glm::mat4 projectionMatrix;
-
-        std::unordered_map<std::string, Texture2D*> mapTextures;
 
         std::unordered_set<transform::Transform*> loadedHierarchies;
 
     private:
         rendering::RenderingSystem* renderingSystem;
-
-    public:
-        float timeOfDay;
 
     };
 }   // namespace m1

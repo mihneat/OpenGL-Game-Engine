@@ -16,6 +16,16 @@ Component::~Component()
 {
 }
 
+bool Component::GetHasAwakeActivated()
+{
+	return hasAwakeActivated;
+}
+
+void Component::SetHasAwakeActivated()
+{
+	hasAwakeActivated = true;
+}
+
 bool Component::GetHasStartActivated()
 {
 	return hasStartActivated;

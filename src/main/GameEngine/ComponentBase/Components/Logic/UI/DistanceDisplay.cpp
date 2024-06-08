@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -19,7 +21,7 @@ void DistanceDisplay::Start()
 
 void DistanceDisplay::Update(const float deltaTime)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended) {
 		return;
 	}
 

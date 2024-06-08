@@ -82,7 +82,6 @@ namespace component
         static std::unordered_set<std::string> meshNames;
 
     protected:
-        m1::GameEngine* scene;
         MeshEnum type;
         std::string baseMeshName;
         std::string meshName;
@@ -97,7 +96,6 @@ namespace component
 
     private:
         SERIALIZE_FIELD bool debugOnly;
-        long long meshIndex;
         bool generateMesh;
         bool renderUI;
         LayerEnum layer;

@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -34,7 +36,7 @@ void CameraFollow::Start()
 void CameraFollow::LateUpdate(const float deltaTime)
 {
 	// Check if the game has ended
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended) {
 		return;
 	}
 

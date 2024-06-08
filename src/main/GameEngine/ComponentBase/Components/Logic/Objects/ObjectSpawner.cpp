@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -27,7 +29,7 @@ void ObjectSpawner::Start()
 
 void ObjectSpawner::Update(const float deltaTime)
 {
-    if (GameManager::GetInstance()->GetGameState() != GameManager::Playing) {
+    if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() != GameManager::Playing) {
         return;
     }
 
@@ -53,23 +55,23 @@ void ObjectSpawner::SpawnObject()
     const int objectCount = 4;
     const int randomObject = (rand() * rand()) % objectCount;
 
-    Transform* spawnedObject = NULL;
+    Transform* spawnedObject = nullptr;
 
     switch (randomObject) {
     case 0:
-        spawnedObject = PrefabManager::CreateTree(transform);
+        spawnedObject = Transform::Instantiate(PrefabManager::CreateTree(transform));
         break;
 
     case 1:
-        spawnedObject = PrefabManager::CreateRock(transform);
+        spawnedObject = Transform::Instantiate(PrefabManager::CreateRock(transform));
         break;
 
     case 2:
-        spawnedObject = PrefabManager::CreateLightPole(transform);
+        spawnedObject = Transform::Instantiate(PrefabManager::CreateLightPole(transform));
         break;
 
     case 3:
-        spawnedObject = PrefabManager::CreatePresent(transform);
+        spawnedObject = Transform::Instantiate(PrefabManager::CreatePresent(transform));
         break;
 
     default:

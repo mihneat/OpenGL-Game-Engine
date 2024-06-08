@@ -76,6 +76,9 @@ void World::LoopUpdate()
     // Computes frame deltaTime in seconds
     ComputeFrameDeltaTime();
 
+    // Update components before input listeners
+    PreUpdate();
+
     // Calls the methods of the instance of InputController in the following order
     // OnWindowResize, OnGameWindowResize, OnMouseMove, OnMouseBtnPress, OnMouseBtnRelease, OnMouseScroll, OnKeyPress, OnMouseScroll, OnInputUpdate
     // OnInputUpdate will be called each frame, the other functions are called only if an event is registered

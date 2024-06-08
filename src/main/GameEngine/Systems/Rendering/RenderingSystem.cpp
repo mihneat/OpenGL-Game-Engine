@@ -11,7 +11,7 @@
 using namespace rendering;
 using namespace loaders;
 
-void RenderingSystem::Init(transform::Transform* hierarchy)
+void RenderingSystem::Init(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer)
 {
     // Initialize the meshes
     m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
@@ -22,10 +22,10 @@ void RenderingSystem::Init(transform::Transform* hierarchy)
     });
 
     // Initialize the text
-    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+    m1::GameEngine::ApplyToComponents(hierarchy, [this, textRenderer](component::Component* component) {
         component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
         if (text != nullptr) {
-            text->Init();
+            text->Init(textRenderer);
         }
     });
 }

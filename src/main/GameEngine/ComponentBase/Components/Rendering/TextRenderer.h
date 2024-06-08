@@ -31,13 +31,12 @@ namespace component
         );
         ~TextRenderer();
 
-        void Init();
+        void Init(gfxc::TextRenderer* textRenderer);
 
         void SetText(const std::string newText);
         void SetColor(const glm::vec4 newColor);
 
     protected:
-        m1::GameEngine* scene;
         SERIALIZE_FIELD float scale;
         SERIALIZE_FIELD glm::vec4 color;
         SERIALIZE_FIELD std::string text;

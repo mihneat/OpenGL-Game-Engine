@@ -108,9 +108,7 @@ void GUIManager::ToggleGamePlaying()
 {
     // Stop the game
     if (gameIsPlaying)
-    {
-        // TODO: Reset all object values
-    }
+        markStateReset = true;
 
     gameIsPlaying = !gameIsPlaying;
 }
@@ -126,6 +124,8 @@ void GUIManager::BeginRenderGUI(const World* world)
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    markStateReset = false;
 
     ShowMainMenuBar();
     ShowMainWindow();
@@ -923,6 +923,11 @@ bool GUIManager::IsGameWindowResized() const
 bool GUIManager::ReceiveGameInput() const
 {
     return isGameWindowFocused && IsGameActive();
+}
+
+bool GUIManager::ShouldReset() const
+{
+    return markStateReset;
 }
 
 utils::FBOContainer* GUIManager::GetGameFBOContainer()

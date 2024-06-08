@@ -19,6 +19,7 @@ namespace component
             previousPlayerPosition(glm::vec3()), playerRadius(4.0f), collisionRadius(collisionRadius), isHazard(isHazard) { }
         ~Obstacle() { }
 
+        void Awake();
         void Start();
         void Update(const float deltaTime);
 

@@ -40,9 +40,11 @@ namespace component
         Component(transform::Transform *transform);
         virtual ~Component();
 
+        virtual void Awake() { }
         virtual void Start() { }
         virtual void Update(const float deltaTime) { }
         virtual void LateUpdate(const float deltaTime) { }
+        
         virtual void InputUpdate(const float deltaTime, const int mods) { }
         virtual void KeyPress(const int key, const int mods) { }
         virtual void KeyRelease(const int key, const int mods) { }
@@ -56,6 +58,8 @@ namespace component
             const int offsetX, const int offsetY) { }
         virtual void WindowResize(int width, int height) { }
         
+        bool GetHasAwakeActivated();
+        void SetHasAwakeActivated();
         bool GetHasStartActivated();
         void SetHasStartActivated();
 
@@ -66,6 +70,9 @@ namespace component
 
     protected:
         bool enabled;
+        bool hasAwakeActivated;
         bool hasStartActivated;
+
+        friend class transform::Transform;
     };
 }   // namespace component

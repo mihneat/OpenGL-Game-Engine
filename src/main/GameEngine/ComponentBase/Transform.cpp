@@ -128,6 +128,26 @@ Transform* Transform::GetTransformByTag(std::string tag)
     return NULL;
 }
 
+Transform* Transform::Instantiate(Transform* transform)
+{
+    for (int i = 0; i < transform->GetComponentCount(); ++i) {
+        Component* curr = transform->GetComponentByIndex(i);
+
+        // Check if the component is enabled
+        if (!curr->IsActive()) {
+            continue;
+        }
+
+        // Call Awake function of component
+        curr->hasAwakeActivated = true;
+        curr->Awake();
+    }
+    
+    transform->Update();
+
+    return transform;
+}
+
 glm::mat4 Transform::GetTranslationMatrix(glm::vec3 translate)
 {
     return glm::transpose(glm::mat4(

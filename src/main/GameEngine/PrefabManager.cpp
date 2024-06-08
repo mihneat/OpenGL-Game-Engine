@@ -44,16 +44,26 @@ Transform* PrefabManager::CreatePlayer(Transform* parent)
 {
     // Create the empty player (SET TO MANUAL ROTATION)
     Transform* player = new Transform(parent, "Player", "Player", true);
+
+    std::cout << "OK!\n";
     player->SetManualRotationMatrix(glm::rotate(glm::mat4(1.0f), glm::pi<float>() / 6.0f, glm::vec3_right));
+
+    std::cout << "WTF!\n";
     player->AddComponent(new PlayerController(player));
+
+    std::cout << "Huh!\n";
 
     // Create the player mesh
     Transform* playerMesh = new Transform(player, "Player Mesh");
+
+    std::cout << "No meshes yet!\n";
 
     Transform* playerBody = new Transform(playerMesh, "Body");
     playerBody->AddComponent(new MeshRenderer(playerBody, MeshRenderer::CubeMesh, "playerBody", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(4.0f, 10.0f, 4.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f)));
 
+    std::cout << "Mesh renderer yes!\n";
+    
     Transform* playerSki1 = new Transform(playerMesh, "Left Ski");
     playerSki1->Translate(glm::vec3(-1.8f, -4.8f,  1.8f));
     playerSki1->AddComponent(new MeshRenderer(playerSki1, MeshRenderer::Cube, "playerSki1", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),

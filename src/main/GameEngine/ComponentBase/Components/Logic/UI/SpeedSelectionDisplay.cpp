@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -11,6 +13,7 @@ using namespace transform;
 
 void SpeedSelectionDisplay::Start()
 {
+	gameManager = managers::GameInstance::Get()->GetComponent<GameManager>();
 	textRenderer = transform->GetComponent<TextRenderer>();
 	prevTextRenderer = transform->GetChild(0)->GetComponent<TextRenderer>();
 	currTextRenderer = transform->GetChild(1)->GetComponent<TextRenderer>();
@@ -19,13 +22,13 @@ void SpeedSelectionDisplay::Start()
 
 void SpeedSelectionDisplay::Update(const float deltaTime)
 {
-	textRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Start);
-	prevTextRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Start);
-	currTextRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Start);
-	nextTextRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Start);
+	textRenderer->SetActive(gameManager->GetGameState() == GameManager::Start);
+	prevTextRenderer->SetActive(gameManager->GetGameState() == GameManager::Start);
+	currTextRenderer->SetActive(gameManager->GetGameState() == GameManager::Start);
+	nextTextRenderer->SetActive(gameManager->GetGameState() == GameManager::Start);
 
 	// Get the current game speed
-	switch (GameManager::GetInstance()->GetGameSpeed()) {
+	switch (gameManager->GetGameSpeed()) {
 	case GameManager::Snail:
 		EmptyText(prevTextRenderer);
 		SetTextValues(currTextRenderer, GameManager::Snail);

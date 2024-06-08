@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -16,5 +18,5 @@ void GameOverDisplay::Start()
 
 void GameOverDisplay::Update(const float deltaTime)
 {
-	textRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Ended);
+	textRenderer->SetActive(managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended);
 }

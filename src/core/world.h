@@ -11,6 +11,7 @@ class World : public InputController
     virtual ~World() {}
     virtual void Init() {}
     virtual void FrameStart() {}
+    virtual void PreUpdate() {}
     virtual void Update(float deltaTimeSeconds) {}
     virtual void FrameEnd() {}
 
@@ -32,7 +33,7 @@ class World : public InputController
     bool shouldClose;
 
 protected:
-   transform::Transform *hierarchy;
+   transform::Transform *hierarchy = nullptr;
 
    friend class GUIManager;
 };

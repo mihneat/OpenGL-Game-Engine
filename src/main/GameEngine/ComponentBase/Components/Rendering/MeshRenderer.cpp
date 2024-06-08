@@ -24,13 +24,6 @@ MeshRenderer::MeshRenderer(
     bool debugOnly
 ) : Component(transform)
 {
-    // Get the scene reference
-    scene = GameManager::GetInstance()->GetSceneReference();
-
-    static long long staticMeshIndex = 0;
-    // ++staticMeshIndex;
-    this->meshIndex = staticMeshIndex;
-
     this->type = meshType;
     this->baseMeshName = std::string(meshName);
     std::string colorString = std::string(to_string(meshColor.r))

@@ -4,6 +4,7 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
 #include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
 
 using namespace std;
@@ -14,11 +15,11 @@ using namespace transform;
 
 void PlayerController::Start()
 {
+	// Get the game manager
+	gameManager = managers::GameInstance::Get()->GetComponent<GameManager>();
+	
 	// Get the player body
 	playerBody = transform->GetChild(0)->GetChild(0);
-
-	// Add it to the GameManager obervables
-	GameManager::GetInstance()->AddResetable(this);
 
 	// Get the initial position of the player
 	initialPosition = transform->GetWorldPosition();
@@ -36,8 +37,8 @@ void PlayerController::Start()
 void PlayerController::Update(const float deltaTime)
 {
 	// If the game hasn't started, don't move the player but check for difficulty updates
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Start) {
-		switch (GameManager::GetInstance()->GetGameSpeed()) {
+	if (gameManager->GetGameState() == GameManager::Start) {
+		switch (gameManager->GetGameSpeed()) {
 		case GameManager::Snail:
 			maxSpeed = 50.0f;
 			break;
@@ -86,7 +87,7 @@ void PlayerController::GetHit()
 	}
 	else {
 		// End the game
-		GameManager::GetInstance()->EndGame();
+		gameManager->EndGame();
 	}
 }
 
@@ -109,7 +110,7 @@ void PlayerController::ChangeSkin()
 
 void PlayerController::KeyPress(const int key, const int mods)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Start) {
+	if (gameManager->GetGameState() == GameManager::Start) {
 		if (key == GLFW_KEY_RIGHT) {
 			skinIndex = (skinIndex + 1) % (int)skins.size();
 			ChangeSkin();
@@ -124,7 +125,7 @@ void PlayerController::KeyPress(const int key, const int mods)
 
 void PlayerController::MouseMove(const int mouseX, const int mouseY, const int deltaX, const int deltaY)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (gameManager->GetGameState() == GameManager::Ended) {
 		return;
 	}
 

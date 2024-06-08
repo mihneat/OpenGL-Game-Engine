@@ -58,6 +58,9 @@ namespace transform
             return componentVec;
         }
 
+        // TODO: Refactor this, it probably needs a GUID of a serialized object??
+        static Transform* Instantiate(Transform* transform);
+
         component::Component* GetComponentByIndex(unsigned int index);
         int GetComponentCount();
 

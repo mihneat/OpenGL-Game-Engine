@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -16,5 +18,5 @@ void RunsDisplay::Start()
 
 void RunsDisplay::Update(const float deltaTime)
 {
-	textRenderer->SetText(std::string("Run #").append(std::to_string(GameManager::GetInstance()->GetRuns())));
+	textRenderer->SetText(std::string("Run #").append(std::to_string(managers::GameInstance::Get()->GetComponent<GameManager>()->GetRuns())));
 }

@@ -1,16 +1,16 @@
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/Interfaces/IResetable.h"
 
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
+#include "main/GameEngine/Managers/GameInstance.h"
 
-using namespace component;
 using namespace component;
 
 IResetable::IResetable()
 {
-	GameManager::GetInstance()->AddResetable(this);
+	managers::GameInstance::Get()->GetComponent<GameManager>()->AddResetable(this);
 }
 
 IResetable::~IResetable()
 {
-	GameManager::GetInstance()->DeleteResetable(this);
+	managers::GameInstance::Get()->GetComponent<GameManager>()->DeleteResetable(this);
 }

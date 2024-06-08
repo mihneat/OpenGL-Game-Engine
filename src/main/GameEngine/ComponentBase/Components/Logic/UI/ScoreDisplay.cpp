@@ -4,6 +4,8 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
 using namespace component;
 using namespace component;
@@ -16,5 +18,5 @@ void ScoreDisplay::Start()
 
 void ScoreDisplay::Update(const float deltaTime)
 {
-	textRenderer->SetText(std::string(std::to_string(GameManager::GetInstance()->GetScore())));
+	textRenderer->SetText(std::string(std::to_string(managers::GameInstance::Get()->GetComponent<GameManager>()->GetScore())));
 }
