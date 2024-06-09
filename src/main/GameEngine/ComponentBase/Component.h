@@ -32,6 +32,8 @@ namespace transform {
     class Transform;
 }
 
+class GUIManager;
+
 namespace component
 {
     class Component
@@ -74,5 +76,6 @@ namespace component
         bool hasStartActivated;
 
         friend class transform::Transform;
+        friend class GUIManager;
     };
 }   // namespace component

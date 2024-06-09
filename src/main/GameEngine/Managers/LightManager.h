@@ -31,6 +31,7 @@ namespace loaders
         static void Init();
         static int AddLight(LightType lightType);
         static void DeleteLight(int index);
+        static void ClearValues();
 
         // Check with std::vector: static std::vector<LightProperties> lights;
         static LightProperties lights[100];

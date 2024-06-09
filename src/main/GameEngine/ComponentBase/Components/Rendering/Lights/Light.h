@@ -7,6 +7,11 @@
 #include "utils/math_utils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
 
+namespace rendering
+{
+    class RenderingSystem;
+}
+
 namespace component
 {
     SERIALIZE_CLASS
@@ -17,8 +22,6 @@ namespace component
     protected:
         Light(transform::Transform* transform, int lightType);
         virtual ~Light();
-        
-        void Update(const float deltaTime) override;
 
     public:
         virtual void ChangeIntensity(float newIntensity);
@@ -27,6 +30,8 @@ namespace component
         virtual void ChangeDirection(glm::vec3 newDirection);
 
     private:
+        void UpdateLightValues() const;
+        
         int lightIndex;
 
     protected:
@@ -34,5 +39,7 @@ namespace component
         SERIALIZE_FIELD glm::vec3 position = glm::vec3();
         SERIALIZE_FIELD glm::vec4 color = glm::vec4();
         SERIALIZE_FIELD glm::vec3 direction = glm::vec3();
+        
+        friend class rendering::RenderingSystem;
     };
 }

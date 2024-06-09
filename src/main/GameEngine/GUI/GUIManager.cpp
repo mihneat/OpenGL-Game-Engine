@@ -830,11 +830,14 @@ void GUIManager::ShowInspector()
         return;
     }
     
-    ImGuiTreeNodeFlags baseObjectNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen;
+    ImGuiTreeNodeFlags baseObjectNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+        ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
 
     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     bool nodeOpen = ImGui::TreeNodeEx(lastSelectedTransform, baseObjectNodeFlags, "");
     ImGui::SameLine();
+    // ImGui::Checkbox(lastSelectedTransform, &lastSelectedTransform->);
+    // ImGui::SameLine();
     ImGui::Text("Transform");
 
     if (nodeOpen)
@@ -850,6 +853,8 @@ void GUIManager::ShowInspector()
         
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         nodeOpen = ImGui::TreeNodeEx(curr, baseObjectNodeFlags, "");
+        ImGui::SameLine();
+        ImGui::PushID(curr); ImGui::Checkbox("", &curr->enabled); ImGui::PopID();
         ImGui::SameLine();
         ImGui::Text("%s", className.c_str());
 

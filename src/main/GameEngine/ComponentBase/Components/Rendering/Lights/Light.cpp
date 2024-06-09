@@ -19,7 +19,7 @@ Light::~Light()
 	LightManager::DeleteLight(lightIndex);
 }
 
-void Light::Update(const float deltaTime)
+void Light::UpdateLightValues() const
 {
 	LightManager::lights[lightIndex].intensity = intensity;
 	LightManager::lights[lightIndex].position = position;

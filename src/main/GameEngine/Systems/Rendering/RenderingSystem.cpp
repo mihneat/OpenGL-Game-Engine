@@ -33,10 +33,17 @@ void RenderingSystem::Init(transform::Transform* hierarchy, gfxc::TextRenderer* 
 void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
                              const glm::ivec2 resolution)
 {
+    // Clear rendering state
     meshesByShader.clear();
+    LightManager::ClearValues();
     
-    // Render the meshes
+    // Render the meshes and the lights
     m1::GameEngine::ApplyToComponents(hierarchy, [this, cam](component::Component* component) {
+        component::Light* light = dynamic_cast<component::Light*>(component);
+        if (light != nullptr) {
+            light->UpdateLightValues();
+        }
+        
         component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
             // Check the layer
