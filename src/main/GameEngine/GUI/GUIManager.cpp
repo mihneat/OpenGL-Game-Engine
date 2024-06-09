@@ -28,6 +28,7 @@ static const char* MainWindow_PlayBtnActive = "MainWindow_PlayBtnActive";
 static const char* MainWindow_PlayBtnInactive = "MainWindow_PlayBtnInactive";
 static const char* MainWindow_PauseBtnActive = "MainWindow_PauseBtnActive";
 static const char* MainWindow_PauseBtnInactive = "MainWindow_PauseBtnInactive";
+static const char* InspectorWindow_Header = "InspectorWindow_Header";
 
 GUIManager* GUIManager::GetInstance()
 {
@@ -64,6 +65,7 @@ void GUIManager::LoadPreferences()
         {MainWindow_PlayBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
         {MainWindow_PauseBtnActive, glm::vec4(203, 183, 38, 255) / 255.0f},
         {MainWindow_PauseBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
+        {InspectorWindow_Header, glm::vec4(29, 34, 44, 255) / 255.0f}
     };
 }
 
@@ -832,7 +834,11 @@ void GUIManager::ShowInspector()
     
     ImGuiTreeNodeFlags baseObjectNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
         ImGuiTreeNodeFlags_AllowOverlap | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed;
-
+    
+    ImGui::PushStyleColor(ImGuiCol_Header, GlmVec4ToImVec4(colors[InspectorWindow_Header]));
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, GlmVec4ToImVec4(colors[InspectorWindow_Header], 0.05f));
+    ImGui::PushStyleColor(ImGuiCol_HeaderActive, GlmVec4ToImVec4(colors[InspectorWindow_Header], 0.15f));
+    
     ImGui::SetNextItemOpen(true, ImGuiCond_Once);
     bool nodeOpen = ImGui::TreeNodeEx(lastSelectedTransform, baseObjectNodeFlags, "");
     ImGui::SameLine();
@@ -874,6 +880,8 @@ void GUIManager::ShowInspector()
         ImGui::TreePop();
     }
     
+    ImGui::PopStyleColor(3);
+    
     ImGui::End();
 }
 
@@ -899,7 +907,10 @@ void GUIManager::ShowPreferences()
     ImGui::ColorEdit4("##Pause btn active color", reinterpret_cast<float*>(&colors[MainWindow_PauseBtnActive]));
     ImGui::Text("Pause button inactive"); ImGui::SameLine();
     ImGui::ColorEdit4("##Pause button inactive color", reinterpret_cast<float*>(&colors[MainWindow_PauseBtnInactive]));
-
+    
+    ImGui::Text("Inspector header"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Inspector header color", reinterpret_cast<float*>(&colors[InspectorWindow_Header]));
+    
     ImGui::End();
 }
 
