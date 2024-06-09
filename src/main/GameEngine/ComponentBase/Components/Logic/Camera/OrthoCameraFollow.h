@@ -29,7 +29,7 @@ namespace component
 
     protected:
         component::Camera* cam;
-        SERIALIZE_FIELD transform::Transform* followTarget;
+        SERIALIZE_FIELD transform::Transform* followTarget = nullptr;
 
         SERIALIZE_FIELD bool isFixed;
         SERIALIZE_FIELD float zoom;

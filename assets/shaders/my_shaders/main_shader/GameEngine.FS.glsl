@@ -37,6 +37,8 @@ uniform vec2 tex_scale;
 uniform sampler2D texture_color;
 //uniform sampler2D texture_normal;
 
+uniform vec4 mesh_color;
+
 float sun_light_contribution(light_source light)
 {
     float material_kd = 0.4;
@@ -197,7 +199,8 @@ void main()
             discard;
         }
 
-        lit_vertex = vec4(light.x * tex.x, light.y * tex.y, light.z * tex.z, 1);
+        // Light * texture * color
+        lit_vertex = vec4(light.x * tex.x * mesh_color.x, light.y * tex.y * mesh_color.y, light.z * tex.z * mesh_color.z, 1);
     }
     // lit_vertex = light * texture2D(texture_color, tex_coord);
 

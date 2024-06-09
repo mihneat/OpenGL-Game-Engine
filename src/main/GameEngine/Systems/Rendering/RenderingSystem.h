@@ -18,9 +18,10 @@ namespace rendering
         void SetGlobalUniforms(
             ShaderBase* shader,
             const glm::mat4& modelMatrix,
-            bool renderUI,
+            bool renderInWorldSpace,
             std::string texture,
             glm::vec2 texScale,
+            glm::vec4 meshColor,
             component::Camera* cam,
             glm::ivec2 resolution
         );

@@ -15,6 +15,7 @@
 #include "Systems/FileSystem.h"
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
+#include "Systems/Editor/SceneCamera.h"
 #include "Systems/Rendering/MaterialManager.h"
 
 using namespace std;
@@ -42,8 +43,6 @@ GameEngine::GameEngine()
     
     LightManager::Init();
     SceneManager::LoadScene(defaultScene);
-
-    useSceneCamera = false;
 }
 
 GameEngine::~GameEngine()
@@ -67,6 +66,8 @@ void GameEngine::Init()
     TextureLoader::InitTextures();
     MaterialManager::InitMaterials();
 
+    CreateSceneCamera();
+
     ReloadScene();
 
     // DEPRECATED - left here in case things break
@@ -75,6 +76,17 @@ void GameEngine::Init()
 
     // Start components
     // StartComponents(hierarchy);
+}
+
+void GameEngine::CreateSceneCamera()
+{
+    // Create the scene camera
+    Transform* sceneCamTransform = new Transform();
+    sceneCamTransform->Translate(glm::vec3(0.0f, 20.0f, -50.0f));
+    
+    sceneCamera = new SceneCamera(sceneCamTransform);
+    sceneCamTransform->AddComponent(sceneCamera);
+    sceneCamera->SetProjection(60, 16.0f / 9.0f);
 }
 
 void GameEngine::ReloadScene()
@@ -136,8 +148,17 @@ void GameEngine::CreateHierarchy()
 
 void GameEngine::FrameStart()
 {
+    if (GUIManager::GetInstance()->ShouldPlay())
+        GUIManager::GetInstance()->ToggleGamePlaying();
+    
+    if (GUIManager::GetInstance()->ShouldPause())
+        GUIManager::GetInstance()->ToggleGamePaused();
+    
     if (GUIManager::GetInstance()->ShouldReset())
+    {
         ReloadScene();
+        GUIManager::GetInstance()->UnmarkReset();
+    }
     
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -155,6 +176,10 @@ void GameEngine::FrameStart()
 // This executes before the input callbacks from world.cpp
 void GameEngine::PreUpdate()
 {
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
     AwakeComponents(hierarchy);
 }
 
@@ -173,8 +198,7 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
-    
-    this->AwakeComponents(hierarchy);
+
     this->StartComponents(hierarchy);
     this->UpdateTransforms(hierarchy);
     this->UpdateComponents(hierarchy, deltaTimeSeconds);
@@ -217,17 +241,44 @@ void GameEngine::RenderGameView()
 
 void GameEngine::RenderSceneView()
 {
-    // DrawCoordinateSystem();
+    // Get the scene FBO container
+    const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetSceneFBOContainer();
+    fboContainer->Bind();
     
-    // TODO: Render the scene view
-    return;
+    // Update rendering components
+    glViewport(0, 0, fboContainer->GetResolution().x, fboContainer->GetResolution().y);
+    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    
+    // Set the "skybox" color (flat colour)
+    constexpr glm::vec4 defaultSkyboxColor = glm::vec4(40, 40, 40, 255) / 255.0f;
+    glClearColor(defaultSkyboxColor.r, defaultSkyboxColor.g, defaultSkyboxColor.b, defaultSkyboxColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Update the scene camera
+    Transform* transformToFocus = GUIManager::GetInstance()->GetTransformToFocus();
+    if (transformToFocus != nullptr && GUIManager::GetInstance()->IsSceneHovered())
+    {
+        sceneCamera->FocusTransform(transformToFocus);
+        GUIManager::GetInstance()->FinishTransformFocus();
+    }
+    
+    sceneCamera->transform->Update();
+    sceneCamera->UpdateValues(fboContainer->GetResolution());
+
+    // TODO: Why no work?
+    // DrawCoordinateSystem();
+
+    renderingSystem->Render(hierarchy, sceneCamera, fboContainer->GetResolution());
+
+    // Upload FBO data to the texture
+    fboContainer->UploadDataToTexture();
 }
 
 // This function does something apparently
 // Buna Mihnea
 void GameEngine::FrameEnd()
 {
-    // Bind back the default FB
+    // Bind back the default FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 }
@@ -266,6 +317,9 @@ void GameEngine::DestroyMarkedObjects()
 
 void GameEngine::OnInputUpdate(float deltaTime, int mods)
 {
+    // Update the scene camera
+    sceneCamera->InputUpdate(deltaTime, mods);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -281,16 +335,15 @@ void GameEngine::OnInputUpdate(float deltaTime, int mods)
 
 void GameEngine::OnKeyPress(int key, int mods)
 {
+    // Update the scene camera
+    sceneCamera->KeyPress(key, mods);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
     
     if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
-    
-    if (key == GLFW_KEY_F1) {
-        useSceneCamera = !useSceneCamera;
-    }
 
     if (key == GLFW_KEY_F3) {
         EditorRuntimeSettings::debugMode = !EditorRuntimeSettings::debugMode;
@@ -304,6 +357,9 @@ void GameEngine::OnKeyPress(int key, int mods)
 
 void GameEngine::OnKeyRelease(int key, int mods)
 {
+    // Update the scene camera
+    sceneCamera->KeyRelease(key, mods);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -319,6 +375,10 @@ void GameEngine::OnKeyRelease(int key, int mods)
 
 void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseMove(mouseX, invertedMouseY, deltaX, deltaY);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -327,7 +387,6 @@ void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
         return;
     
     // Add mouse move event
-    const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, deltaX, deltaY](Component* component) {
         component->MouseMove(mouseX, invertedMouseY, deltaX, deltaY);
     });
@@ -336,6 +395,10 @@ void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseBtnPress(mouseX, invertedMouseY, button, mods);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -345,7 +408,6 @@ void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
     
     // Add mouse button press event
     // Invert mouse position such that (0, 0) is on the bottom left
-    const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, button, mods](Component* component) {
         component->MouseBtnPress(mouseX, invertedMouseY, button, mods);
     });
@@ -354,6 +416,10 @@ void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseBtnRelease(mouseX, invertedMouseY, button, mods);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -363,7 +429,6 @@ void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
     
     // Add mouse button release event
     // Invert mouse position such that (0, 0) is on the bottom left
-    const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, button, mods](Component* component) {
         component->MouseBtnRelease(mouseX, invertedMouseY, button, mods);
     });
@@ -372,6 +437,10 @@ void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseScroll(mouseX, invertedMouseY, offsetX, offsetY);
+    
     // Check if game is active
     if (!GUIManager::GetInstance()->IsGameActive())
         return;
@@ -381,7 +450,6 @@ void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
     
     // Add mouse scroll event
     // Invert mouse position such that (0, 0) is on the bottom left
-    const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, offsetX, offsetY](Component* component) {
         component->MouseScroll(mouseX, invertedMouseY, offsetX, offsetY);
     });

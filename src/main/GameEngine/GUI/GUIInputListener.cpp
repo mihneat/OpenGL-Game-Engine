@@ -15,11 +15,11 @@ void GUIInputListener::OnKeyPress(int key, int mods)
     // --== File ==--
     // Play/Stop game
     if (key == GLFW_KEY_P && mods & GLFW_MOD_CONTROL)
-        GUIManager::GetInstance()->ToggleGamePlaying();
+        GUIManager::GetInstance()->markStatePlay = true;
     
     // Pause/Unpause game
     if (key == GLFW_KEY_O && mods & GLFW_MOD_CONTROL)
-        GUIManager::GetInstance()->ToggleGamePaused();
+        GUIManager::GetInstance()->markStatePause = true;
 
     // Reload scripts
     if (key == GLFW_KEY_R && mods & GLFW_MOD_CONTROL)
@@ -41,6 +41,11 @@ void GUIInputListener::OnKeyPress(int key, int mods)
     // Show/Hide ImGui demo window
     if (key == GLFW_KEY_D && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->showDemoWindow = !GUIManager::GetInstance()->showDemoWindow;
+
+    // --== Scene window ==--
+    // Focus currently selected object
+    if (key == GLFW_KEY_F && GUIManager::GetInstance()->lastSelectedTransform != nullptr && GUIManager::GetInstance()->IsSceneHovered())
+        GUIManager::GetInstance()->transformToFocus = GUIManager::GetInstance()->lastSelectedTransform;
 }
 
 void GUIInputListener::OnKeyRelease(int key, int mods)

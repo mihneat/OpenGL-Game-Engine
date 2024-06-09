@@ -39,7 +39,6 @@ namespace component
             defaultSkyColor(glm::vec4(30, 5, 82, 255) / 255.0f),    // Blue-y: 30, 5, 82, 255    // Purple-y: 38, 6, 59, 255
             endSkyColor(glm::vec4(194, 21, 56, 76) / 255.0f)
         {
-            std::cout << "Scene ptr: " << scene << "\n";
             currentSkyColor = defaultSkyColor;
         }
 

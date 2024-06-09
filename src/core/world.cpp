@@ -68,6 +68,9 @@ void World::LoopUpdate()
 
     GUIManager::GetInstance()->BeginRenderGUI(this);
 
+    // Editor frame start processing
+    FrameStart();
+
     // Activate/deactivate game input events
     // const bool activeGameState = IsActive();
     // if (activeGameState != GUIManager::GetInstance()->IsGameActive())
@@ -84,9 +87,10 @@ void World::LoopUpdate()
     // OnInputUpdate will be called each frame, the other functions are called only if an event is registered
     window->UpdateObservers();
 
-    // Frame processing
-    FrameStart();
+    // Main loop
     Update(static_cast<float>(deltaTime));
+    
+    // Editor frame end processing
     FrameEnd();
 
     GUIManager::GetInstance()->EndRenderGUI();

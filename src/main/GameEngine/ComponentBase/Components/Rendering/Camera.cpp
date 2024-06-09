@@ -106,7 +106,7 @@ void Camera::RotateThirdPerson_OZ(float angle)
 void Camera::SetProjection(const float fov, const float aspectRatio)
 {
     isProjection = true;
-    projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 500.0f);
+    projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 5000.0f);
 }
 
 void Camera::SetOrtographic(const float width, const float height)

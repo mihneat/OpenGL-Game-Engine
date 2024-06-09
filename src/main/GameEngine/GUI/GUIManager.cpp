@@ -15,11 +15,11 @@
 
 #define BUF_SIZE 64
 
-struct transform_data
+struct TransformData
 {
     transform::Transform* transform;
     int indent;
-    int is_parent_open;
+    int isParentOpen;
 };
 
 GUIManager* GUIManager::instance = nullptr;
@@ -73,8 +73,8 @@ void GUIManager::ShowMainMenuBar()
     {
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { ToggleGamePlaying(); }
-            if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { ToggleGamePaused(); }
+            if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { markStatePlay = true; }
+            if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { markStatePause = true; }
             ImGui::Separator();
             if (ImGui::MenuItem("Reset", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
             ImGui::EndMenu();
@@ -111,11 +111,13 @@ void GUIManager::ToggleGamePlaying()
         markStateReset = true;
 
     gameIsPlaying = !gameIsPlaying;
+    markStatePlay = false;
 }
 
 void GUIManager::ToggleGamePaused()
 {
     gameIsPaused = !gameIsPaused;
+    markStatePause = false;
 }
 
 void GUIManager::BeginRenderGUI(const World* world)
@@ -124,8 +126,6 @@ void GUIManager::BeginRenderGUI(const World* world)
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-
-    markStateReset = false;
 
     ShowMainMenuBar();
     ShowMainWindow();
@@ -160,8 +160,6 @@ void MouseWrap(const char* buf, bool wrapHorizontal, bool wrapVertical, ImGuiMou
 {
     if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
     {
-        std::cout << "Active ID: " << ImGui::GetActiveID() << "\n";
-        
         // Check if the active window is the one given as parameter
         ImGuiWindow* window = ImGui::GetCurrentWindow();
         if (ImGui::GetActiveID() != window->GetID(buf))
@@ -267,13 +265,13 @@ void GUIManager::ShowMainWindow()
         ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(playBtnCol));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(playBtnCol, 0.05f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(playBtnCol,  0.15f));
-        if (ImGui::Button("Play##PlayBtn", buttonSize)) ToggleGamePlaying();
+        if (ImGui::Button("Play##PlayBtn", buttonSize)) markStatePlay = true;
         ImGui::PopStyleColor(3);
         
         ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(pauseBtnCol));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(pauseBtnCol, 0.05f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(pauseBtnCol, 0.15f));
-        if (ImGui::Button("Pause##PauseBtn", buttonSize)) ToggleGamePaused();
+        if (ImGui::Button("Pause##PauseBtn", buttonSize)) markStatePause = true;
         ImGui::PopStyleColor(3);
         
         ImGui::EndMenuBar();
@@ -301,10 +299,11 @@ void GUIManager::ShowSceneWindow()
     
     ImGui::PopStyleVar();
 
-    // Check if the game window is focused
+    // Check if the scene window is focused and hovered
     isSceneWindowFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+    isSceneHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 
-    // Get the game window size
+    // Get the scene window size
     const ImVec2 vMin = ImGui::GetWindowContentRegionMin();
     const ImVec2 vMax = ImGui::GetWindowContentRegionMax();
     const ImVec2 imgSize(vMax.x - vMin.x, vMax.y - vMin.y);
@@ -327,7 +326,7 @@ void GUIManager::ShowSceneWindow()
     }
 
     // Render the game texture into the window, also flip it vertically
-    ImGui::Image((ImTextureID)sceneFBOContainer.GetColorTextureID(), imgSize, {0, 0}, {1, 1});
+    ImGui::Image((ImTextureID)sceneFBOContainer.GetColorTextureID(), imgSize, {0, 1}, {1, 0});
     
     ImGui::End();
 }
@@ -381,8 +380,8 @@ void GUIManager::ShowGameWindow()
         glm::ivec2(1920, 1080), // 16:9
     };
     static const char* items[] = { "Free", "Fixed" };
-    static int viewType = 0;
-    static int fixedResolutionIndex = 0;
+    static int viewType = 1;
+    static int fixedResolutionIndex = 2;
 
     // Create a menu bar that displays the resolution
     if (ImGui::BeginMenuBar())
@@ -507,7 +506,7 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
     ImGuiTreeNodeFlags baseObjectNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 
     // Make a stack of pairs containing the transform and the indent level
-    std::stack<transform_data> transformStack;
+    std::stack<TransformData> transformStack;
 
     // Add all the children to the stack
     for (int i = hierarchy->GetChildCount() - 1; i >= 0; --i) {
@@ -520,18 +519,18 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
     // Go through all transforms in the scene
     while (!transformStack.empty()) {
         // Update the root
-        const transform_data currentTransform = transformStack.top();
+        const TransformData currentTransform = transformStack.top();
         transformStack.pop();
 
         for (int i = currentTransform.indent; i < prevIndent; ++i)
             ImGui::TreePop();
 
-        if (currentTransform.is_parent_open)
+        if (currentTransform.isParentOpen)
             prevIndent = currentTransform.indent;
 
         // Render the object only if the parent is open
         bool nodeOpen = false;
-        if (currentTransform.is_parent_open)
+        if (currentTransform.isParentOpen)
         {
             ImGuiTreeNodeFlags objectNodeFlags = baseObjectNodeFlags;
             if (lastSelectedTransform == currentTransform.transform)
@@ -539,11 +538,10 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
             if (currentTransform.transform->GetChildCount() == 0)
                 objectNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         
-            nodeOpen = ImGui::TreeNodeEx(currentTransform.transform, objectNodeFlags, ""); // "%s", buf);
+            nodeOpen = ImGui::TreeNodeEx(currentTransform.transform, objectNodeFlags, "");
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
             {
                 lastSelectedTransform = currentTransform.transform;
-                std::cout << "Selected transform: " << currentTransform.transform->GetName() << "\n";
             }
         
             ImGui::SameLine();
@@ -558,7 +556,7 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
         // Add all the children to the stack
         for (int i = currentTransform.transform->GetChildCount() - 1; i >= 0; --i) {
             transformStack.push({currentTransform.transform->GetChild(i),
-                currentTransform.indent + 1, currentTransform.is_parent_open && nodeOpen});
+                currentTransform.indent + 1, currentTransform.isParentOpen && nodeOpen});
         }
     }
 
@@ -727,7 +725,7 @@ bool SerializeTransform(transform::Transform** data)
     if (data == nullptr)
         return false;
 
-    ImGui::Text("%s", (*data)->GetName().c_str());
+    ImGui::Text("%s", *data == nullptr ? "NULL" : (*data)->GetName().c_str());
 
     return true;
 }
@@ -925,9 +923,44 @@ bool GUIManager::ReceiveGameInput() const
     return isGameWindowFocused && IsGameActive();
 }
 
+bool GUIManager::ShouldPlay() const
+{
+    return markStatePlay;
+}
+
+bool GUIManager::ShouldPause() const
+{
+    return markStatePause;
+}
+
 bool GUIManager::ShouldReset() const
 {
     return markStateReset;
+}
+
+void GUIManager::UnmarkReset()
+{
+    markStateReset = false;
+}
+
+bool GUIManager::IsSceneHovered() const
+{
+    return isSceneHovered;
+}
+
+transform::Transform* GUIManager::GetTransformToFocus() const
+{
+    return transformToFocus;
+}
+
+void GUIManager::FinishTransformFocus()
+{
+    transformToFocus = nullptr;
+}
+
+utils::FBOContainer* GUIManager::GetSceneFBOContainer()
+{
+    return &sceneFBOContainer;
 }
 
 utils::FBOContainer* GUIManager::GetGameFBOContainer()

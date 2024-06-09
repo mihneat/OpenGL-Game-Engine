@@ -48,7 +48,6 @@ void GameManager::MouseBtnPress(const int mouseX, const int mouseY,
 
 m1::GameEngine* GameManager::GetSceneReference()
 {
-    std::cout << "Scene ptr GetSceneReference(): " << scene << "\n";
     return scene;
 }
 
@@ -62,8 +61,6 @@ void GameManager::ResetGame()
     // Reset manager variables
     gameState = Start;
     score = 0;
-    
-    std::cout << "Scene ptr ResetGame(): " << scene << "\n";
 
     // Reset all subscribed objects
     for (IResetable* resettable : resetables) {

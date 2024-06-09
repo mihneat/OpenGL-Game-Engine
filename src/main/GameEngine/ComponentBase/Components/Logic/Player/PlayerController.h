@@ -54,7 +54,7 @@ namespace component
         glm::vec3 defaultForward, defaultUp;
         glm::vec3 forward;
 
-        SERIALIZE_FIELD transform::Transform* playerBody;
+        SERIALIZE_FIELD transform::Transform* playerBody = nullptr;
 
         SERIALIZE_FIELD float tilt;
         SERIALIZE_FIELD float tiltFactor;

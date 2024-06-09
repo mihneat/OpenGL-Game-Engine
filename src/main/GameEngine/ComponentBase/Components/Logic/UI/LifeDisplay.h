@@ -23,6 +23,6 @@ namespace component
         void Update(const float deltaTime);
 
     protected:
-        SERIALIZE_FIELD transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player = nullptr;
     };
 }

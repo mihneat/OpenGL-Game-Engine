@@ -55,9 +55,10 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
                 material->shader,
                 // TODO: Deprecate meshScale
                 meshRenderer->transform->GetModelMatrix() * transform::Transform::GetScalingMatrix(meshRenderer->meshScale),
-                meshRenderer->renderUI,
+                meshRenderer->renderInWorldSpace,
                 meshRenderer->texture,
                 meshRenderer->texScale,
+                meshRenderer->color,
                 cam,
                 resolution
             );
@@ -81,19 +82,20 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
     const glm::mat4& modelMatrix,
-    const bool renderUI,
+    const bool renderInWorldSpace,
     const std::string texture,
     const glm::vec2 texScale,
+    const glm::vec4 meshColor,
     component::Camera* cam,
     glm::ivec2 resolution
 )
 {
     glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE,
-        renderUI
+        renderInWorldSpace
             ? glm::value_ptr(cam->GetViewMatrix())
             : glm::value_ptr(glm::mat4(1.0f)));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, 
-        renderUI
+        renderInWorldSpace
             ? glm::value_ptr(cam->GetProjectionMatrix())
             : glm::value_ptr(glm::ortho(0.0f, static_cast<float>(resolution.x),
                     0.0f, static_cast<float>(resolution.y), 0.01f, 500.0f)));
@@ -120,48 +122,60 @@ void RenderingSystem::SetGlobalUniforms(
     // Send texture scale
     glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(texScale));
 
+    // Send mesh color
+    glUniform4fv(glGetUniformLocation(shader->program, "mesh_color"), 1, glm::value_ptr(meshColor));
+
     // Send light information
     int cnt = 0;
+    static constexpr int MAX_BUF = 30;
+    static char* lightIsUsed = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
+    static char* lightType = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
+    static char* lightIntensity = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
+    static char* lightIsPosition = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
+    static char* lightIsColor = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
+    static char* lightIsDirection = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
     for (int i = 0; i < LightManager::maxLights; ++i)
     {
         if (LightManager::lights[i].isUsed == true) {
             ++cnt;
         }
 
+        // Modify the strings to the current index
+        snprintf(lightIsUsed, MAX_BUF, "lights[%d].isUsed", i);
+        snprintf(lightType, MAX_BUF, "lights[%d].type", i);
+        snprintf(lightIntensity, MAX_BUF, "lights[%d].intensity", i);
+        snprintf(lightIsPosition, MAX_BUF, "lights[%d].position", i);
+        snprintf(lightIsColor, MAX_BUF, "lights[%d].color", i);
+        snprintf(lightIsDirection, MAX_BUF, "lights[%d].direction", i);
+
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].isUsed");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1i(location, loaders::LightManager::lights[i].isUsed);
+            const GLint location = glGetUniformLocation(shader->program, lightIsUsed);
+            glUniform1i(location, LightManager::lights[i].isUsed);
         }
 
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].type");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1i(location, loaders::LightManager::lights[i].type);
+            const GLint location = glGetUniformLocation(shader->program, lightType);
+            glUniform1i(location, LightManager::lights[i].type);
         }
 
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].intensity");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1f(location, loaders::LightManager::lights[i].intensity);
+            const GLint location = glGetUniformLocation(shader->program, lightIntensity);
+            glUniform1f(location, LightManager::lights[i].intensity);
         }
 
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].position");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].position));
+            const GLint location = glGetUniformLocation(shader->program, lightIsPosition);
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].position));
         }
 
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].color");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].color));
+            const GLint location = glGetUniformLocation(shader->program, lightIsColor);
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].color));
         }
 
         {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].direction");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].direction));
+            const GLint location = glGetUniformLocation(shader->program, lightIsDirection);
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].direction));
         }
     }
 

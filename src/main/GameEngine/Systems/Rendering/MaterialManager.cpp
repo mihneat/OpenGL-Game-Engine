@@ -7,6 +7,7 @@ using namespace rendering;
 const std::string MaterialManager::MAT_DEFAULT_LIT = "DefaultLit";
 const std::string MaterialManager::MAT_SCROLLABLE_TERRAIN = "ScrollableTerrain";
 const std::string MaterialManager::MAT_SIMPLE = "Simple";
+const std::string MaterialManager::MAT_COLOR = "Color";
 
 std::unordered_map<std::string, Material*> MaterialManager::materials;
 
@@ -29,6 +30,12 @@ void MaterialManager::InitMaterials()
         Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SIMPLE));
 
         materials[MAT_SIMPLE] = material;
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_COLOR));
+
+        materials[MAT_COLOR] = material;
     }
 }
 

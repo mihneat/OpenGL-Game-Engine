@@ -30,8 +30,8 @@ namespace component
         void KeyRelease(const int key, const int mods);
 
     protected:
-        component::Camera* mainCam;
-        SERIALIZE_FIELD transform::Transform* followTarget;
+        Camera* mainCam;
+        SERIALIZE_FIELD transform::Transform* followTarget = nullptr;
         SERIALIZE_FIELD float distanceToTarget;
 
         SERIALIZE_FIELD float forwardFollowDistance;

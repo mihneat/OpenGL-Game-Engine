@@ -33,7 +33,7 @@ class World : public InputController
     bool shouldClose;
 
 protected:
-   transform::Transform *hierarchy = nullptr;
+   transform::Transform* hierarchy = nullptr;
 
    friend class GUIManager;
 };

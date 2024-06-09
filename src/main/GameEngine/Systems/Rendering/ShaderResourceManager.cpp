@@ -6,6 +6,7 @@ using namespace rendering;
 
 const std::string ShaderResourceManager::SHADER_STANDARD = "GameEngine";
 const std::string ShaderResourceManager::SHADER_SIMPLE = "Simple";
+const std::string ShaderResourceManager::SHADER_COLOR = "Color";
 
 std::unordered_map<std::string, Shader*> ShaderResourceManager::shaders;
 

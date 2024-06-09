@@ -26,15 +26,15 @@ MeshRenderer::MeshRenderer(
 {
     this->type = meshType;
     this->baseMeshName = std::string(meshName);
-    std::string colorString = std::string(to_string(meshColor.r))
-        .append(to_string(meshColor.g))
-        .append(to_string(meshColor.b))
-        .append(to_string(meshColor.a));
+    std::string colorString = std::string(to_string(static_cast<int>(meshColor.r * 255.0f)))
+        .append(to_string(static_cast<int>(meshColor.g * 255.0f)))
+        .append(to_string(static_cast<int>(meshColor.b * 255.0f)))
+        .append(to_string(static_cast<int>(meshColor.a * 255.0f)));
     this->meshName = std::string(meshName) + colorString;
     this->meshScale = meshScale;
 	this->color = meshColor;
     this->debugOnly = debugOnly;
-    this->renderUI = renderUI;
+    this->renderInWorldSpace = renderUI;
     this->layer = layer;
     this->texture = "";
     this->material = material;
@@ -54,7 +54,11 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Init()
 {
-    MeshFactory();
+
+    if (meshNames.find(this->meshName) == meshNames.end()) {
+        meshNames.insert(this->meshName);
+        MeshFactory();
+    }
 }
 
 /// <summary>
@@ -63,10 +67,10 @@ void MeshRenderer::Init()
 void MeshRenderer::SetColor(glm::vec4 newColor)
 {
     color = newColor;
-    std::string colorString = std::string(to_string(color.r))
-        .append(to_string(color.g))
-        .append(to_string(color.b))
-        .append(to_string(color.a));
+    std::string colorString = std::string(to_string(static_cast<int>(newColor.r * 255.0f)))
+        .append(to_string(static_cast<int>(newColor.g * 255.0f)))
+        .append(to_string(static_cast<int>(newColor.b * 255.0f)))
+        .append(to_string(static_cast<int>(newColor.a * 255.0f)));
 
     // Create the new mesh name
     std::string newMeshName = std::string(this->baseMeshName).append(colorString);

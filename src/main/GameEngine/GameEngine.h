@@ -13,6 +13,11 @@
 
 #include <stack>
 
+namespace component
+{
+    class SceneCamera;
+}
+
 namespace prefabManager {
     class PrefabManager;
 }
@@ -49,6 +54,7 @@ namespace m1
         void OnWindowResize(int width, int height) override;
         void OnGameWindowResize(int width, int height) override;
 
+        void CreateSceneCamera();
         void CreateHierarchy();
         void DestroyMarkedObjects();
 
@@ -81,12 +87,11 @@ namespace m1
         component::Camera* mainCam = nullptr;
         std::vector<component::Camera*> secondaryCams;
 
-        bool useSceneCamera;
-
         std::unordered_set<transform::Transform*> loadedHierarchies;
 
     private:
         rendering::RenderingSystem* renderingSystem;
+        component::SceneCamera* sceneCamera;
 
     };
 }   // namespace m1

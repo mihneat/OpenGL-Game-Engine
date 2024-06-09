@@ -26,7 +26,7 @@ namespace component
         void Reset();
 
     protected:
-        SERIALIZE_FIELD transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player = nullptr;
         component::TextRenderer* textRenderer;
         
         float distance;

@@ -36,8 +36,20 @@ public:
     
     bool ReceiveGameInput() const;
 
+    bool ShouldPlay() const;
+    bool ShouldPause() const;
     bool ShouldReset() const;
+    void UnmarkReset();
 
+    bool IsSceneHovered() const;
+
+    transform::Transform* GetTransformToFocus() const;
+    void FinishTransformFocus();
+
+    void ToggleGamePlaying();
+    void ToggleGamePaused();
+
+    utils::FBOContainer* GetSceneFBOContainer();
     utils::FBOContainer* GetGameFBOContainer();
     glm::ivec2 GetGameWindowResolution() const;
 
@@ -53,9 +65,6 @@ private:
 
     void LoadPreferences();
 
-    void ToggleGamePlaying();
-    void ToggleGamePaused();
-
     void DisplaySerializedField(const SerializedField& attribute, void* data);
     void DisplaySerializedTransform(transform::Transform* transform);
     
@@ -68,6 +77,8 @@ private:
     bool showDemoWindow = true;
 
     transform::Transform* lastSelectedTransform = nullptr;
+    
+    transform::Transform* transformToFocus = nullptr;
 
     bool gameIsPlaying = false;
     bool gameIsPaused = false;
@@ -77,7 +88,11 @@ private:
 
     bool isGameWindowResized = false;
 
+    bool isSceneHovered = false;
+
     bool markStateReset = false;
+    bool markStatePlay = false;
+    bool markStatePause = false;
 
     glm::ivec2 gameWindowResolution = {0, 0};
 

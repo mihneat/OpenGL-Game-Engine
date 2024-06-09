@@ -95,15 +95,15 @@ namespace component
         mesh_desc CreateRoad();
 
     private:
-        SERIALIZE_FIELD bool debugOnly;
+        SERIALIZE_FIELD bool debugOnly = false;
         bool generateMesh;
-        bool renderUI;
+        bool renderInWorldSpace;
         LayerEnum layer;
         std::string texture;
-        SERIALIZE_FIELD glm::vec2 texScale;
+        SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
-        const rendering::Material* material;
-        rendering::MaterialOverrides* materialOverrides;
+        const rendering::Material* material = nullptr;
+        rendering::MaterialOverrides* materialOverrides = nullptr;
 
         void MeshFactory();
         void LoadMesh(const std::string name, const std::string path);

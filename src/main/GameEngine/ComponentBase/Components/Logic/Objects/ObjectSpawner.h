@@ -28,7 +28,7 @@ namespace component
         void Reset();
 
     protected:
-        SERIALIZE_FIELD transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player = nullptr;
         glm::vec3 previousPlayerPosition, startingPlayerPosition;
 
         float t, spawnTime;
