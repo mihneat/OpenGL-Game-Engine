@@ -268,7 +268,7 @@ void GameEngine::RenderSceneView()
     // TODO: Why no work?
     // DrawCoordinateSystem();
 
-    renderingSystem->Render(hierarchy, sceneCamera, fboContainer->GetResolution());
+    renderingSystem->Render(hierarchy, sceneCamera, fboContainer->GetResolution(), false);
 
     // Upload FBO data to the texture
     fboContainer->UploadDataToTexture();

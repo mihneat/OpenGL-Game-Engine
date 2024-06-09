@@ -31,7 +31,7 @@ void RenderingSystem::Init(transform::Transform* hierarchy, gfxc::TextRenderer* 
 }
 
 void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
-                             const glm::ivec2 resolution)
+                             const glm::ivec2 resolution, bool renderText)
 {
     // Clear rendering state
     meshesByShader.clear();
@@ -84,12 +84,14 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
     }
 
     // Render the text
-    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
-        const component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
-        if (text != nullptr) {
-            text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
-        }
-    });
+    // TODO: Temporary variable until making a full canvas system
+    if (renderText)
+        m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+            const component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
+            if (text != nullptr) {
+                text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
+            }
+        });
 }
 
 void RenderingSystem::SetGlobalUniforms(
