@@ -6,6 +6,11 @@
 #include "MaterialOverrides.h"
 #include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 
+namespace component
+{
+    class MeshRenderer;
+}
+
 namespace rendering
 {
     class RenderingSystem
@@ -17,18 +22,19 @@ namespace rendering
     private:
         void SetGlobalUniforms(
             ShaderBase* shader,
-            const glm::mat4& modelMatrix,
-            bool renderInWorldSpace,
-            std::string texture,
-            glm::vec2 texScale,
-            glm::vec4 meshColor,
+            component::Camera* cam
+        );
+        void SetLocalUniforms(ShaderBase* shader,
+            component::MeshRenderer* meshRenderer,
             component::Camera* cam,
             glm::ivec2 resolution
         );
-        void SetUniforms(const Material* material, const MaterialOverrides* materialOverrides);
+        void SetShaderSpecificUniforms(const Material* material, const MaterialOverrides* materialOverrides);
         void SetIntUniforms(const Material* material, const MaterialOverrides* materialOverrides);
         void SetFloatUniforms(const Material* material, const MaterialOverrides* materialOverrides);
         void SetVec2Uniforms(const Material* material, const MaterialOverrides* materialOverrides);
         void SetVec3Uniforms(const Material* material, const MaterialOverrides* materialOverrides);
+        
+        std::unordered_map<Shader*, std::vector<component::MeshRenderer*>> meshesByShader;
     };
 }

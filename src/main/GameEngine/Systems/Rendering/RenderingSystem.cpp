@@ -33,9 +33,11 @@ void RenderingSystem::Init(transform::Transform* hierarchy, gfxc::TextRenderer* 
 void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
                              const glm::ivec2 resolution)
 {
+    meshesByShader.clear();
+    
     // Render the meshes
-    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, resolution](component::Component* component) {
-        const component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
+    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam](component::Component* component) {
+        component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
             // Check the layer
             if (!cam->IsLayerRendered(meshRenderer->layer)) return;
@@ -47,28 +49,32 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
             const Material* material = meshRenderer->GetMaterial();
             if (material == nullptr) return;
             
-            // Use the shader
-            material->shader->Use();
+            this->meshesByShader[material->shader].push_back(meshRenderer);
+        }
+    });
+
+    // Iterate through all the meshes, by their shader
+    for (auto& shaderMeshes : meshesByShader)
+    {
+        Shader* shader = shaderMeshes.first;
+        shader->Use();
+
+        SetGlobalUniforms(shader, cam);
+
+        for (auto meshRenderer : shaderMeshes.second)
+        {
+            const Material* material = meshRenderer->GetMaterial();
 
             // Set the uniforms
-            SetGlobalUniforms(
-                material->shader,
-                // TODO: Deprecate meshScale
-                meshRenderer->transform->GetModelMatrix() * transform::Transform::GetScalingMatrix(meshRenderer->meshScale),
-                meshRenderer->renderInWorldSpace,
-                meshRenderer->texture,
-                meshRenderer->texScale,
-                meshRenderer->color,
-                cam,
-                resolution
-            );
-            SetUniforms(material, meshRenderer->GetMaterialOverrides());
+            SetLocalUniforms(material->shader, meshRenderer, cam, resolution);
+            
+            SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
             
             // Render the mesh
             const Mesh *mesh = MeshResourceManager::meshes[meshRenderer->meshName];
             mesh->Render();
         }
-    });
+    }
 
     // Render the text
     m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
@@ -81,49 +87,11 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
 
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
-    const glm::mat4& modelMatrix,
-    const bool renderInWorldSpace,
-    const std::string texture,
-    const glm::vec2 texScale,
-    const glm::vec4 meshColor,
-    component::Camera* cam,
-    glm::ivec2 resolution
+    component::Camera* cam
 )
 {
-    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE,
-        renderInWorldSpace
-            ? glm::value_ptr(cam->GetViewMatrix())
-            : glm::value_ptr(glm::mat4(1.0f)));
-    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, 
-        renderInWorldSpace
-            ? glm::value_ptr(cam->GetProjectionMatrix())
-            : glm::value_ptr(glm::ortho(0.0f, static_cast<float>(resolution.x),
-                    0.0f, static_cast<float>(resolution.y), 0.01f, 500.0f)));
-    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    
     const GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
     glUniform3fv(eye_position, 1, glm::value_ptr(cam->transform->GetWorldPosition()));
-
-    // TODO: Find a better way to send multiple textures
-    // Send texture data
-    if (!texture.empty())
-    {
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, TextureLoader::GetTextureIdByName(texture));
-        glUniform1i(glGetUniformLocation(shader->program, "texture_color"), 1);
-        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 1);
-    }
-    else {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 0);
-    }
-
-    // Send texture scale
-    glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(texScale));
-
-    // Send mesh color
-    glUniform4fv(glGetUniformLocation(shader->program, "mesh_color"), 1, glm::value_ptr(meshColor));
 
     // Send light information
     int cnt = 0;
@@ -181,7 +149,49 @@ void RenderingSystem::SetGlobalUniforms(
 
 }
 
-void RenderingSystem::SetUniforms(const Material* material, const MaterialOverrides* materialOverrides)
+void RenderingSystem::SetLocalUniforms(
+    ShaderBase* shader,
+    component::MeshRenderer* meshRenderer,
+    component::Camera* cam,
+    glm::ivec2 resolution
+)
+{
+    glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE,
+        meshRenderer->renderInWorldSpace
+            ? glm::value_ptr(cam->GetViewMatrix())
+            : glm::value_ptr(glm::mat4(1.0f)));
+    glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, 
+        meshRenderer->renderInWorldSpace
+            ? glm::value_ptr(cam->GetProjectionMatrix())
+            : glm::value_ptr(glm::ortho(0.0f, static_cast<float>(resolution.x),
+                    0.0f, static_cast<float>(resolution.y), 0.01f, 500.0f)));
+
+    glm::mat4 modelMatrix = meshRenderer->transform->GetModelMatrix() * transform::Transform::GetScalingMatrix(meshRenderer->meshScale);
+    glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+
+    // TODO: Find a better way to send multiple textures
+    // Send texture data
+    if (!meshRenderer->texture.empty())
+    {
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, TextureLoader::GetTextureIdByName(meshRenderer->texture));
+        glUniform1i(glGetUniformLocation(shader->program, "texture_color"), 1);
+        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 1);
+    }
+    else {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 0);
+    }
+
+    // Send texture scale
+    glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(meshRenderer->texScale));
+
+    // Send mesh color
+    glUniform4fv(glGetUniformLocation(shader->program, "mesh_color"), 1, glm::value_ptr(meshRenderer->color));
+}
+
+void RenderingSystem::SetShaderSpecificUniforms(const Material* material, const MaterialOverrides* materialOverrides)
 {
     // Add all params
     SetIntUniforms(material, materialOverrides);
