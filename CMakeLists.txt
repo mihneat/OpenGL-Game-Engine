@@ -181,8 +181,13 @@ endif()
 
 
 # Link third-party libraries
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(src/external/json-develop)
+
 target_link_libraries(${target_name} PRIVATE
     ${OPENGL_LIBRARIES}
+    nlohmann_json::nlohmann_json
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")

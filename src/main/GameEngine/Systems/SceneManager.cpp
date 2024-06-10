@@ -1,7 +1,12 @@
 ﻿#include "SceneManager.h"
 
+#include <fstream>
+
+#include "nlohmann/json.hpp"
+
 using namespace std;
 using namespace component;
+using json = nlohmann::json;
 
 std::unordered_map<std::string, transform::Transform *> SceneManager::loadedScenes;
 
@@ -23,8 +28,9 @@ void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
         }
     }
     
-    // TODO: Read scene at given path
-    // 
+    // Read scene at given path
+    std::ifstream f(scenePath);
+    json data = json::parse(f);
 }
 
 void SceneManager::UnloadScene(std::string scenePath)

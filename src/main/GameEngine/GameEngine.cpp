@@ -37,12 +37,12 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    const string defaultScene = PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS, "Scenes", "EmptyScene.scene");
+    string activeScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "SteepScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     
     LightManager::Init();
-    SceneManager::LoadScene(defaultScene);
+    SceneManager::LoadScene(activeScene);
 }
 
 GameEngine::~GameEngine()
