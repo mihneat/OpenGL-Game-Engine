@@ -95,7 +95,6 @@ void GameEngine::ReloadScene()
     {
         mainCam = nullptr;
         secondaryCams.clear();
-        markedForDestruction.clear();
         
         DeleteComponents(hierarchy);
 
@@ -119,7 +118,7 @@ void GameEngine::CreateHierarchy()
     managers::GameInstance::gameInstance->AttachTransform(gameInstance);
 
     // The following components are added by the user within the editor
-    gameInstance->AddComponent(new GameManager(gameInstance, this));
+    gameInstance->AddComponent(new GameManager(gameInstance));
     
     // Create the player
     Transform* player = PrefabManager::CreatePlayer(hierarchy);
@@ -283,29 +282,33 @@ void GameEngine::FrameEnd()
     glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 }
 
-void GameEngine::DestroyObject(Transform* object)
-{
-    markedForDestruction.insert(object);
-}
-
 void GameEngine::DestroyMarkedObjects()
 {
-    auto it = markedForDestruction.begin();
-    while (it != markedForDestruction.end()) {
-        // Store the current object
-        Transform* object = *it;
-        
-        // Get the next object
-        ++it;
+    // Transform recursion into iterative with a stack
+    stack<Transform*> transformStack;
+    transformStack.push(hierarchy);
 
-        // Remove the child from its parent
-        object->parent->RemoveChild(object);
+    // Go through all transforms in the scene
+    while (!transformStack.empty()) {
+        // Update the root
+        Transform* currentTransform = transformStack.top();
+        transformStack.pop();
 
-        // Recursively destroy the object
-        DeleteComponents(object);
+        if (currentTransform->markedForDeletion) {
+            // Remove the child from its parent
+            currentTransform->parent->RemoveChild(currentTransform);
+
+            // Recursively destroy the object
+            DeleteComponents(currentTransform);
+            
+            continue;
+        }
+
+        // Add all of root's children to the stack
+        for (int i = 0; i < currentTransform->GetChildCount(); ++i) {
+            transformStack.push(currentTransform->GetChild(i));
+        }
     }
-
-    markedForDestruction.clear();
 }
 
 
@@ -569,11 +572,6 @@ void GameEngine::DeleteComponents(Transform* currentTransform)
             delete component;
         }, [](Transform* _) { },
         [this](Transform* transform) {
-            // Remove any children from the objects marked for destruction
-            // TODO: Does this break the iteration through the set??
-            if (this->markedForDestruction.find(transform) != this->markedForDestruction.end())
-                markedForDestruction.erase(transform);
-            
             delete transform;
         }
     );

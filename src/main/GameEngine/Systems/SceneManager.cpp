@@ -1,14 +1,16 @@
 ﻿#include "SceneManager.h"
 
 #include <fstream>
+#include <iostream>
 
-#include "nlohmann/json.hpp"
+#include "main/GameEngine/Serialization/ObjectSerializer.h"
 
 using namespace std;
+using namespace transform;
 using namespace component;
 using json = nlohmann::json;
 
-std::unordered_map<std::string, transform::Transform *> SceneManager::loadedScenes;
+std::unordered_map<std::string, Transform *> SceneManager::loadedScenes;
 
 void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
 {
@@ -30,7 +32,8 @@ void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
     
     // Read scene at given path
     std::ifstream f(scenePath);
-    json data = json::parse(f);
+    Transform* root = ObjectSerializer::DeserializeRootObject(json::parse(f));
+    std::cout << "HEY\n";
 }
 
 void SceneManager::UnloadScene(std::string scenePath)

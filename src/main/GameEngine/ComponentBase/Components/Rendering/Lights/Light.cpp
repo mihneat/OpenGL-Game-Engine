@@ -8,9 +8,9 @@ using namespace loaders;
 using namespace component;
 using namespace transform;
 
-Light::Light(transform::Transform* transform, int lightType) : Component(transform)
+Light::Light(Transform* transform) : Component(transform)
 {
-	lightIndex = LightManager::AddLight((LightManager::LightType)lightType);
+	lightIndex = LightManager::AddLight(LightManager::Point);
 }
 
 Light::~Light()
@@ -21,10 +21,16 @@ Light::~Light()
 
 void Light::UpdateLightValues() const
 {
+	LightManager::lights[lightIndex].type = (LightManager::LightType)type;
 	LightManager::lights[lightIndex].intensity = intensity;
 	LightManager::lights[lightIndex].position = position;
 	LightManager::lights[lightIndex].color = glm::vec3(color);
 	LightManager::lights[lightIndex].direction = direction;
+}
+
+void Light::ChangeType(int newType)
+{
+	this->type = newType;
 }
 
 void Light::ChangeIntensity(float newIntensity)

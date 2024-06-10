@@ -71,9 +71,9 @@ namespace component
         transform::Transform* transform;
 
     protected:
-        bool enabled;
-        bool hasAwakeActivated;
-        bool hasStartActivated;
+        bool enabled = true;
+        bool hasAwakeActivated = false;
+        bool hasStartActivated = false;
 
         friend class transform::Transform;
         friend class GUIManager;

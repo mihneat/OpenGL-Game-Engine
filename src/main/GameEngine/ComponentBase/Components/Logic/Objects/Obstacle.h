@@ -15,8 +15,8 @@ namespace component
         MARK_SERIALIZABLE
         
     public:
-        Obstacle(transform::Transform* transform, float collisionRadius, bool isHazard = true) : Component(transform), player(NULL), t(0.0f), despawnDistance(220.0f),
-            previousPlayerPosition(glm::vec3()), playerRadius(4.0f), collisionRadius(collisionRadius), isHazard(isHazard) { }
+        Obstacle(transform::Transform* transform, float collisionRadius = 3.0f, bool isHazard = true) : Component(transform),
+            collisionRadius(collisionRadius), isHazard(isHazard) { }
         ~Obstacle() { }
 
         void Awake();
@@ -28,14 +28,14 @@ namespace component
     protected:
         component::GameManager* gameManager;
 
-        const float playerRadius;
+        float playerRadius = 4.0f;
 
-        SERIALIZE_FIELD float collisionRadius;
-        SERIALIZE_FIELD bool isHazard;
+        SERIALIZE_FIELD float collisionRadius = 3.0f;
+        SERIALIZE_FIELD bool isHazard = true;
 
-        transform::Transform* player;
-        glm::vec3 previousPlayerPosition;
+        transform::Transform* player = nullptr;
+        glm::vec3 previousPlayerPosition = glm::vec3();
 
-        float t, despawnDistance;
+        float t = 0.0f, despawnDistance = 220.0f;
     };
 }

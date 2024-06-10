@@ -22,6 +22,11 @@ namespace prefabManager {
     class PrefabManager;
 }
 
+namespace transform
+{
+    class Transform;
+}
+
 namespace m1
 {
     class GameEngine : public gfxc::SimpleScene
@@ -37,8 +42,6 @@ namespace m1
         void DestroyObject(transform::Transform* object);
 
     private:
-        std::unordered_set<transform::Transform*> markedForDestruction;
-
         void FrameStart() override;
         void PreUpdate() override;
         void Update(float deltaTimeSeconds) override;

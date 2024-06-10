@@ -148,6 +148,11 @@ Transform* Transform::Instantiate(Transform* transform)
     return transform;
 }
 
+void Transform::Destroy(Transform* transform)
+{
+    transform->markedForDeletion = true;
+}
+
 glm::mat4 Transform::GetTranslationMatrix(glm::vec3 translate)
 {
     return glm::transpose(glm::mat4(

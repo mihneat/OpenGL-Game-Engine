@@ -4,10 +4,17 @@
 #include "utils/glm_utils.h"
 #include <vector>
 
+#include "main/GameEngine/Systems/SceneManager.h"
+
 class GUIManager;
 
 namespace component {
     class Component;
+}
+
+namespace m1
+{
+    class GameEngine;
 }
 
 namespace transform
@@ -60,6 +67,8 @@ namespace transform
 
         // TODO: Refactor this, it probably needs a GUID of a serialized object??
         static Transform* Instantiate(Transform* transform);
+
+        static void Destroy(Transform* transform);
 
         component::Component* GetComponentByIndex(unsigned int index);
         int GetComponentCount();
@@ -129,7 +138,11 @@ namespace transform
         glm::mat4 manualRotationMatrix;
 
         std::string tag;
+
+    private:
+        bool markedForDeletion = false;
         
         friend class GUIManager;
+        friend class m1::GameEngine;
     };
 }   // namespace transform2D

@@ -1,26 +1,56 @@
 {
-    "root": [
+  "root": [
+    {
+      "name": "New Transform",
+      "tag": "",
+      "manualRotation": false,
+      "position": {
+        "x": 1.0,
+        "y": 2.0,
+        "z": 3.0
+      },
+      "rotation": {
+        "x": 4.0,
+        "y": 5.0,
+        "z": 6.0
+      },
+      "scale": {
+        "x": 7.0,
+        "y": 8.0,
+        "z": 9.0
+      },
+      "components": [
         {
-            "name": "",
-            "position": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "components": [
-                {
-                    "className": "",
-                    "enabled": true,
-                    "attributes": [
-                        {
-                            "name": "",
-                            "type": "",
-                            "value": 1
-                        }
-                    ]
-                }
-            ],
-            "children": []
+          "className": "TEST",
+          "enabled": true,
+          "attributes": [
+          ]
         }
-    ] 
+      ],
+      "children": [
+        {
+          "name": "Child",
+          "tag": "",
+          "manualRotation": false,
+          "position": {
+            "x": 11.0,
+            "y": 12.0,
+            "z": 13.0
+          },
+          "rotation": {
+            "x": 14.0,
+            "y": 15.0,
+            "z": 16.0
+          },
+          "scale": {
+            "x": 17.0,
+            "y": 18.0,
+            "z": 19.0
+          },
+          "components": [],
+          "children": []
+        }
+      ]
+    }
+  ]
 }

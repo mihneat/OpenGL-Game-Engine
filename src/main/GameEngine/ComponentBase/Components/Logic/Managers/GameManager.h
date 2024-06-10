@@ -34,20 +34,12 @@ namespace component
             LightningMcQueen
         };
 
-        GameManager(transform::Transform* transform, m1::GameEngine* scene) : Component(transform),
-            scene(scene), score(0), highScore(0), runs(1), gameState(Start), gameSpeed(Medium),
-            defaultSkyColor(glm::vec4(30, 5, 82, 255) / 255.0f),    // Blue-y: 30, 5, 82, 255    // Purple-y: 38, 6, 59, 255
-            endSkyColor(glm::vec4(194, 21, 56, 76) / 255.0f)
-        {
-            currentSkyColor = defaultSkyColor;
-        }
+        GameManager(transform::Transform* transform) : Component(transform) { }
 
     protected:
-        m1::GameEngine* scene;
-
-        SERIALIZE_FIELD int score;
-        SERIALIZE_FIELD int highScore;
-        SERIALIZE_FIELD int runs;
+        SERIALIZE_FIELD int score = 0;
+        SERIALIZE_FIELD int highScore = 0;
+        SERIALIZE_FIELD int runs = 1;
 
     public:
         void KeyPress(const int key, const int mods) override;
@@ -65,8 +57,6 @@ namespace component
         GameState GetGameState() { return gameState; }
         GameSpeed GetGameSpeed() { return gameSpeed; }
 
-        m1::GameEngine* GetSceneReference();
-
         void UpdateScore(const int value) { score += value; highScore = std::max(highScore, score); }
         void AddResetable(IResetable* resetable) { resetables.insert(resetable); }
         void DeleteResetable(IResetable* resetable) { resetables.erase(resetable); }
@@ -75,12 +65,13 @@ namespace component
         void EndGame();
 
     private:
-        GameState gameState;
-        GameSpeed gameSpeed;
+        GameState gameState = Start;
+        GameSpeed gameSpeed = Medium;
 
-        SERIALIZE_FIELD glm::vec4 currentSkyColor;
-        SERIALIZE_FIELD glm::vec4 defaultSkyColor;
-        SERIALIZE_FIELD glm::vec4 endSkyColor;
+        // Blue-y: 30, 5, 82, 255, Purple-y: 38, 6, 59, 255
+        SERIALIZE_FIELD glm::vec4 currentSkyColor = glm::vec4(30, 5, 82, 255) / 255.0f;
+        SERIALIZE_FIELD glm::vec4 defaultSkyColor = glm::vec4(30, 5, 82, 255) / 255.0f;
+        SERIALIZE_FIELD glm::vec4 endSkyColor = glm::vec4(194, 21, 56, 76) / 255.0f;
 
         std::unordered_set<IResetable*> resetables;
 

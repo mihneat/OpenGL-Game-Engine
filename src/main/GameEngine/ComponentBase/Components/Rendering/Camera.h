@@ -17,7 +17,7 @@ namespace component
 namespace component
 {
     class MeshRenderer;
-    enum class LayerEnum;
+    // enum class LayerEnum;
 
     SERIALIZE_CLASS
     class Camera : public Component
@@ -30,6 +30,7 @@ namespace component
                 std::vector<int> layers, const bool autoResize = false) : Component(transform),
             viewportBottomLeft(viewportBottomLeft), viewportWidthHeight(viewportWidthHeight), autoResize(autoResize)
         {
+            // TODO: Probably move to Awake()
             Set(transform->GetLocalPosition(), center, up);
             distanceToTarget = glm::distance(center, transform->GetLocalPosition());
             SetProjection(60, 16.0f / 9.0f);
@@ -39,8 +40,8 @@ namespace component
             }
         }
 
-        Camera(transform::Transform* transform, const glm::vec3& center,
-            const glm::vec3& up, std::vector<int> layers) : Camera(transform,
+        Camera(transform::Transform* transform, const glm::vec3& center = glm::vec3(0),
+            const glm::vec3& up = glm::vec3_up, std::vector<int> layers = { 0, 1 }) : Camera(transform,
                 center, up, glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f), layers, true) { }
 
         ~Camera() { }
@@ -76,13 +77,13 @@ namespace component
         glm::vec4 GetViewportDimensions() { return glm::vec4(viewportBottomLeft.x, viewportBottomLeft.y,
             viewportWidthHeight.x, viewportWidthHeight.y); }
 
-        glm::vec2 viewportBottomLeft;
-        glm::vec2 viewportWidthHeight;
+        glm::vec2 viewportBottomLeft = glm::vec2();
+        glm::vec2 viewportWidthHeight = glm::vec2();
 
     protected:
         SERIALIZE_FIELD float distanceToTarget;
         glm::mat4 projectionMatrix;
-        SERIALIZE_FIELD bool autoResize;
+        SERIALIZE_FIELD bool autoResize = true;
 
         std::unordered_set<int> layers;
 

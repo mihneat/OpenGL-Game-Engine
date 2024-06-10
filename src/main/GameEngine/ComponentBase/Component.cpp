@@ -7,8 +7,6 @@ using namespace transform;
 Component::Component(Transform *transform)
 {
 	this->transform = transform;
-	hasStartActivated = false;
-	enabled = true;
 }
 
 

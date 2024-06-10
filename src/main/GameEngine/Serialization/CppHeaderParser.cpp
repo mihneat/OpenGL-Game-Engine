@@ -336,6 +336,7 @@ void GenerateSerializer(const SerializationResult& s)
     std::string includeTemplate;
     std::string serializedClassFieldsTemplate;
     std::string attributeResolverTemplate;
+    std::string componentFactoryTemplate;
     
     for (auto& it : s)
     {
@@ -377,31 +378,23 @@ void GenerateSerializer(const SerializationResult& s)
 
         attributeResolver.append("        return nullptr;\n")
             .append("    }\n\n");
-        
-        /**
-         * Template(CLASS_NAME, ATTRIBUTE_NAME[]):
-         *
-         * if (dynamic_cast<|CLASS_NAME|*>(instance) != nullptr)
-         * {
-         *      |CLASS_NAME|* obj = dynamic_cast<|CLASS_NAME|*>(instance);
-         *
-         *      ||FOR_EACH ATTRIBUTE_NAME||
-         *      if (attributeName == "|ATTRIBUTE_NAME|")
-         *          return &obj->|ATTRIBUTE_NAME|;
-         *
-         *      ||END_FOR_EACH||
-         *      return nullptr;
-         * }
-         *
-         */
         attributeResolverTemplate.append(attributeResolver);
+
+        // Step 4 - Form the component factory
+        std::string componentFactory("    if (className == \"");
+        componentFactory.append(it.second.className)
+            .append("\") return new ")
+            .append(it.second.className)
+            .append("(parent);\n");
+        componentFactoryTemplate.append(componentFactory);
     }
 
-    // Step 4 - Form the final file
+    // Step 5 - Form the final file
     const std::unordered_map<std::string, std::string> templates = {
         {"{{INCLUDE_HEADERS}}", includeTemplate},
         {"{{SERIALIZED_CLASS_FIELDS}}", serializedClassFieldsTemplate},
         {"{{ATTRIBUTE_RESOLVER}}", attributeResolverTemplate},
+        {"{{COMPONENT_FACTORY}}", componentFactoryTemplate}
     };
     
     std::ifstream fin(modelPath);
@@ -490,24 +483,6 @@ void CppHeaderParser::GenerateSerializedData()
     std::cout << "Header file iteration complete\n";
 
     // Generate the Serializer file
-    // TODO: Remove hardcode
-    // const ClassInfo obstacleClassInfo = {
-    //     R"(src\main\GameEngine\ComponentBase\Components\Logic\Objects\Obstacle.h)",
-    //     "Obstacle",
-    //     std::vector<SerializedField>{
-    //                 { "collisionRadius", FieldTypeFloat },
-    //                 { "isHazard", FieldTypeBool }
-    //     }
-    // };
-    // result[obstacleClassInfo.className] = obstacleClassInfo;
-    //
-    // const ClassInfo groundStickClassInfo = {
-    //     R"(src\main\GameEngine\ComponentBase\Components\Logic\Player\GroundStick.h)",
-    //     "GroundStick",
-    //     std::vector<SerializedField>{}
-    // };
-    // result[groundStickClassInfo.className] = groundStickClassInfo;
-
     GenerateSerializer(result);
     std::cout << "Generated new Serialize.cpp\n";
     
@@ -547,4 +522,27 @@ std::string SerializedField::GetTypeName() const
         std::cerr << "[CppHeaderParser] Field type is unimplemented!!\n";
         return "FieldTypeUnimplemented";
     }
+}
+
+FieldType SerializedField::GetFromTypeName(const std::string& str)
+{
+    if (str == "FieldTypeBool")
+        return FieldTypeBool;
+    if (str == "FieldTypeInt")
+        return FieldTypeInt;
+    if (str == "FieldTypeFloat")
+        return FieldTypeFloat;
+    if (str == "FieldTypeVec2")
+        return FieldTypeVec2;
+    if (str == "FieldTypeVec3")
+        return FieldTypeVec3;
+    if (str == "FieldTypeColour")
+        return FieldTypeColour;
+    if (str == "FieldTypeString")
+        return FieldTypeString;
+    if (str == "FieldTypeTransform")
+        return FieldTypeTransform;
+
+    std::cerr << "[CppHeaderParser] Couldn't find type from string!!\n";
+    return FieldTypeUnimplemented;
 }

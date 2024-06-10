@@ -22,6 +22,8 @@ struct SerializedField
     FieldType type;
 
     std::string GetTypeName() const;
+    static FieldType GetFromTypeName(const std::string& str);
+    
 };
 
 struct ClassInfo

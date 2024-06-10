@@ -26,11 +26,6 @@ MeshRenderer::MeshRenderer(
 {
     this->type = meshType;
     this->baseMeshName = std::string(meshName);
-    std::string colorString = std::string(to_string(static_cast<int>(meshColor.r * 255.0f)))
-        .append(to_string(static_cast<int>(meshColor.g * 255.0f)))
-        .append(to_string(static_cast<int>(meshColor.b * 255.0f)))
-        .append(to_string(static_cast<int>(meshColor.a * 255.0f)));
-    this->meshName = std::string(meshName) + colorString;
     this->meshScale = meshScale;
 	this->color = meshColor;
     this->debugOnly = debugOnly;
@@ -39,13 +34,6 @@ MeshRenderer::MeshRenderer(
     this->texture = "";
     this->material = material;
     this->materialOverrides = nullptr;
-
-    generateMesh = true;
-
-    if (meshNames.find(this->meshName) == meshNames.end()) {
-        meshNames.insert(this->meshName);
-        MeshFactory();
-    }
 }
 
 MeshRenderer::~MeshRenderer()
@@ -54,11 +42,22 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Init()
 {
+    if (initialized) return;
+    
+    std::string colorString = std::string(to_string(static_cast<int>(color.r * 255.0f)))
+        .append(to_string(static_cast<int>(color.g * 255.0f)))
+        .append(to_string(static_cast<int>(color.b * 255.0f)))
+        .append(to_string(static_cast<int>(color.a * 255.0f)));
+    this->meshName = std::string(baseMeshName) + colorString;
+
+    generateMesh = true;
 
     if (meshNames.find(this->meshName) == meshNames.end()) {
         meshNames.insert(this->meshName);
         MeshFactory();
     }
+
+    initialized = true;
 }
 
 /// <summary>

@@ -43,6 +43,9 @@ namespace component
         SERIALIZE_FIELD glm::vec2 position;
         gfxc::TextRenderer* textRenderer;
 
+    private:
+        bool initialized = false;
+
         friend class rendering::RenderingSystem;
     };
 }   // namespace component

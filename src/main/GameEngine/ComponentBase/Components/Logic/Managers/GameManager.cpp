@@ -46,11 +46,6 @@ void GameManager::MouseBtnPress(const int mouseX, const int mouseY,
     }
 }
 
-m1::GameEngine* GameManager::GetSceneReference()
-{
-    return scene;
-}
-
 void GameManager::ResetGame()
 {
     // If the game is playing / ended, increment run count on reset

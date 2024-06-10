@@ -508,3 +508,42 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
     return nullptr;
 }
+
+Component* Serializer::ComponentFactory(const std::string& className, transform::Transform* parent)
+{
+    if (className == "Camera") return new Camera(parent);
+    if (className == "CameraFollow") return new CameraFollow(parent);
+    if (className == "DirectionalLight") return new DirectionalLight(parent);
+    if (className == "DistanceDisplay") return new DistanceDisplay(parent);
+    if (className == "GameManager") return new GameManager(parent);
+    if (className == "GameOverDisplay") return new GameOverDisplay(parent);
+    if (className == "GroundStick") return new GroundStick(parent);
+    if (className == "HighScoreDisplay") return new HighScoreDisplay(parent);
+    if (className == "LifeDisplay") return new LifeDisplay(parent);
+    if (className == "Light") return new Light(parent);
+    if (className == "MeshRenderer") return new MeshRenderer(parent);
+    if (className == "ObjectSpawner") return new ObjectSpawner(parent);
+    if (className == "Obstacle") return new Obstacle(parent);
+    if (className == "OrthoCameraFollow") return new OrthoCameraFollow(parent);
+    if (className == "PlayerController") return new PlayerController(parent);
+    if (className == "PointLight") return new PointLight(parent);
+    if (className == "RunsDisplay") return new RunsDisplay(parent);
+    if (className == "ScoreDisplay") return new ScoreDisplay(parent);
+    if (className == "SpeedSelectionDisplay") return new SpeedSelectionDisplay(parent);
+    if (className == "SpotLight") return new SpotLight(parent);
+    if (className == "StartRunDisplay") return new StartRunDisplay(parent);
+    if (className == "SteepShaderParams") return new SteepShaderParams(parent);
+    if (className == "Sun") return new Sun(parent);
+    if (className == "TextRenderer") return new TextRenderer(parent);
+    if (className == "UiPanel") return new UiPanel(parent);
+    if (className == "UpdateLightPosition") return new UpdateLightPosition(parent);
+
+    /**
+     * Template(CLASS_NAME):
+     *
+     * if (className == "|CLASS_NAME|") return new |CLASS_NAME|(parent);
+     * 
+     */
+    
+    return nullptr;
+}

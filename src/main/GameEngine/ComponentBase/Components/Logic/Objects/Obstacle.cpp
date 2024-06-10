@@ -45,20 +45,19 @@ void Obstacle::Update(const float deltaTime)
         }
 
         // Destroy the object
-        gameManager->GetSceneReference()->DestroyObject(transform);
+        Transform::Destroy(transform);
     }
 
     // Distance dependant
     t += (player->GetWorldPosition() - previousPlayerPosition).z;
     previousPlayerPosition = player->GetWorldPosition();
 
-    if (t > despawnDistance) {
-        gameManager->GetSceneReference()->DestroyObject(transform);
-    }
+    if (t > despawnDistance)
+        Transform::Destroy(transform);
 }
 
 void Obstacle::Reset()
 {
     // Delete the object
-    gameManager->GetSceneReference()->DestroyObject(transform);
+    Transform::Destroy(transform);
 }

@@ -46,6 +46,9 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
         
         component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
+            // Initialize the mesh
+            meshRenderer->Init();
+            
             // Check the layer
             if (!cam->IsLayerRendered(meshRenderer->layer)) return;
 
@@ -87,8 +90,10 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
     // TODO: Temporary variable until making a full canvas system
     if (renderText)
         m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
-            const component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
+            component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
             if (text != nullptr) {
+                if (text->textRenderer == nullptr) return;
+                
                 text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
             }
         });

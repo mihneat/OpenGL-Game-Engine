@@ -64,3 +64,16 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
     return nullptr;
 }
+
+Component* Serializer::ComponentFactory(const std::string& className, transform::Transform* parent)
+{
+{{COMPONENT_FACTORY}}
+    /**
+     * Template(CLASS_NAME):
+     *
+     * if (className == "|CLASS_NAME|") return new |CLASS_NAME|(parent);
+     * 
+     */
+    
+    return nullptr;
+}

@@ -52,9 +52,9 @@ namespace component
 
         MeshRenderer(
             transform::Transform* transform,
-            MeshEnum meshType,
-            std::string meshName,
-            const rendering::Material* material,
+            MeshEnum meshType = Cube,
+            std::string meshName = "New Mesh",
+            const rendering::Material* material = nullptr,
             LayerEnum layer = Default,
             glm::vec3 meshScale = glm::vec3(1.0f),
             glm::vec4 meshColor = glm::vec4(1.0f),
@@ -82,11 +82,11 @@ namespace component
         static std::unordered_set<std::string> meshNames;
 
     protected:
-        MeshEnum type;
-        std::string baseMeshName;
+        MeshEnum type = Cube;
+        std::string baseMeshName = "New Mesh";
         std::string meshName;
-        SERIALIZE_FIELD glm::vec4 color;
-        SERIALIZE_FIELD glm::vec3 meshScale;
+        SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
+        SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1);
 
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
@@ -96,14 +96,16 @@ namespace component
 
     private:
         SERIALIZE_FIELD bool debugOnly = false;
-        bool generateMesh;
-        bool renderInWorldSpace;
-        LayerEnum layer;
-        std::string texture;
+        bool generateMesh = true;
+        bool renderInWorldSpace = true;
+        LayerEnum layer = Default;
+        std::string texture = "";
         SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
         const rendering::Material* material = nullptr;
         rendering::MaterialOverrides* materialOverrides = nullptr;
+
+        bool initialized = false;
 
         void MeshFactory();
         void LoadMesh(const std::string name, const std::string path);
