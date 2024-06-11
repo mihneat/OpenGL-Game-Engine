@@ -34,7 +34,7 @@ void Component::SetHasStartActivated()
 	hasStartActivated = true;
 }
 
-bool Component::IsActive()
+bool Component::IsActive() const
 {
 	return enabled;
 }

@@ -13,6 +13,11 @@ using namespace transform;
 
 void CameraFollow::Start()
 {
+	// TODO: Temporary until implementing transform drag n drops
+	// Find the player
+	followTarget = transform->GetTransformByTag("Player");
+
+	// Get the camera
 	mainCam = transform->GetComponent<Camera>();
 
 	// Get the forward position

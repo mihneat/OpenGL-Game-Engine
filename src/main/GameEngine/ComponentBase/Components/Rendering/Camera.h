@@ -80,10 +80,15 @@ namespace component
         glm::vec2 viewportBottomLeft = glm::vec2();
         glm::vec2 viewportWidthHeight = glm::vec2();
 
+        glm::vec4 skyboxColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
     protected:
         SERIALIZE_FIELD float distanceToTarget;
         glm::mat4 projectionMatrix;
         SERIALIZE_FIELD bool autoResize = true;
+
+        // TODO: Implement this functionality
+        // S ERIALIZE_FIELD bool isMainCam = false;
 
         std::unordered_set<int> layers;
 

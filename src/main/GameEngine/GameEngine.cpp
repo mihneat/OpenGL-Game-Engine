@@ -5,6 +5,7 @@
 #include "main/GameEngine/ComponentBase/Components/Rendering/Interfaces/IRenderable.h"
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <stack>
 
@@ -12,6 +13,7 @@
 #include "GUI/GUIManager.h"
 #include "Managers/GameInstance.h"
 #include "Managers/InputManager.h"
+#include "Serialization/ObjectSerializer.h"
 #include "Systems/FileSystem.h"
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
@@ -37,12 +39,15 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    string activeScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "SteepScene.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "SteepScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     
     LightManager::Init();
-    SceneManager::LoadScene(activeScene);
+
+    // TODO: Extend to multiple observers
+    // "Subscribe" to scene manager updates
+    SceneManager::engineRef = this;
 }
 
 GameEngine::~GameEngine()
@@ -69,13 +74,6 @@ void GameEngine::Init()
     CreateSceneCamera();
 
     ReloadScene();
-
-    // DEPRECATED - left here in case things break
-    // Update initial transforms
-    // UpdateTransforms(hierarchy);
-
-    // Start components
-    // StartComponents(hierarchy);
 }
 
 void GameEngine::CreateSceneCamera()
@@ -97,12 +95,52 @@ void GameEngine::ReloadScene()
         secondaryCams.clear();
         
         DeleteComponents(hierarchy);
-
+    
         hierarchy = nullptr;
     }
     
     CreateHierarchy();
-    renderingSystem->Init(hierarchy, textRenderer);
+    // SceneManager::LoadScene(startScene);
+    
+    FindCameras();
+    
+
+    // TEMP: Serialize the hierarchy
+    // nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
+    //
+    // ofstream fout(startScene);
+    // fout << sceneObj.dump(2);
+}
+
+void GameEngine::HandleSceneLoaded(Transform* root)
+{
+    if (hierarchy != nullptr)
+    {
+        mainCam = nullptr;
+        secondaryCams.clear();
+        
+        DeleteComponents(hierarchy);
+    }
+
+    hierarchy = root;
+}
+
+void GameEngine::FindCameras()
+{
+    ApplyToComponents(hierarchy, [this](Component* component) {
+        Camera* camera = dynamic_cast<Camera*>(component); 
+        if (camera != nullptr)
+        {
+            // TODO: Change after implementing "isMainCam" serialized bool
+            if (mainCam == nullptr)
+            {
+                mainCam = camera;
+                return;
+            }
+
+            secondaryCams.push_back(camera);
+        }
+    });
 }
 
 void GameEngine::CreateHierarchy()
@@ -124,10 +162,8 @@ void GameEngine::CreateHierarchy()
     Transform* player = PrefabManager::CreatePlayer(hierarchy);
 
     // Create the camera object
-    glm::ivec2 resolution = window->GetResolution();
     Transform* camera = PrefabManager::CreateCamera(hierarchy, player, window->props.aspectRatio,
-        glm::vec2(0.0f, 0.0f), glm::vec2(resolution.x, resolution.y));
-    this->mainCam = camera->GetComponent<Camera>();
+        glm::vec2(0.0f), glm::vec2(glm::vec2(0.0f)));
 
     // Create the ground
     Transform* ground = PrefabManager::CreateGround(hierarchy);
@@ -210,6 +246,10 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
 
 void GameEngine::RenderGameView()
 {
+    // Quit out early if no cameras are rendering
+    if (mainCam == nullptr)
+        return;
+    
     // Get the game FBO container
     const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetGameFBOContainer();
     fboContainer->Bind();
@@ -218,12 +258,12 @@ void GameEngine::RenderGameView()
     glViewport(0, 0, fboContainer->GetResolution().x, fboContainer->GetResolution().y);
     glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
     
-    // Set the "skybox" color (flat colour)
-    clearColor = managers::GameInstance::Get()->GetComponent<GameManager>()->GetSkyColor();
+    // Set the "skybox" color (flat color)
+    clearColor = mainCam->skyboxColor;
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderingSystem->Render(hierarchy, mainCam, fboContainer->GetResolution());
+    renderingSystem->Render(hierarchy, textRenderer, mainCam, fboContainer->GetResolution());
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
@@ -231,7 +271,7 @@ void GameEngine::RenderGameView()
         glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
             (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        renderingSystem->Render(hierarchy, cam, fboContainer->GetResolution());
+        renderingSystem->Render(hierarchy, textRenderer, cam, fboContainer->GetResolution());
     }
 
     // Upload FBO data to the texture
@@ -267,7 +307,7 @@ void GameEngine::RenderSceneView()
     // TODO: Why no work?
     // DrawCoordinateSystem();
 
-    renderingSystem->Render(hierarchy, sceneCamera, fboContainer->GetResolution(), false);
+    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), false);
 
     // Upload FBO data to the texture
     fboContainer->UploadDataToTexture();

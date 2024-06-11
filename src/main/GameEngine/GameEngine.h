@@ -16,6 +16,7 @@
 namespace component
 {
     class SceneCamera;
+    class SceneManager;
 }
 
 namespace prefabManager {
@@ -37,9 +38,7 @@ namespace m1
 
         void Init() override;
 
-        // TODO: This should be in a SceneManager, I believe
-        void ReloadScene();
-        void DestroyObject(transform::Transform* object);
+        void HandleSceneLoaded(transform::Transform* root);
 
     private:
         void FrameStart() override;
@@ -64,6 +63,8 @@ namespace m1
         void UpdateGameLogic(float deltaTimeSeconds);
         void RenderGameView();
         void RenderSceneView();
+        
+        void ReloadScene();
 
     public:
 
@@ -84,13 +85,15 @@ namespace m1
         
         void UpdateTransforms(transform::Transform* currentTransform);
 
+        void FindCameras();
+
         glm::vec4 clearColor;
         gfxc::TextRenderer* textRenderer;
 
         component::Camera* mainCam = nullptr;
         std::vector<component::Camera*> secondaryCams;
 
-        std::unordered_set<transform::Transform*> loadedHierarchies;
+        std::string startScene;
 
     private:
         rendering::RenderingSystem* renderingSystem;

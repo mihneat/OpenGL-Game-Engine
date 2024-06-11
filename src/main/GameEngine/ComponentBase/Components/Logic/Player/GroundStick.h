@@ -12,7 +12,7 @@ namespace component
         MARK_SERIALIZABLE
         
     public:
-        GroundStick(transform::Transform* transform) : Component(transform), player(NULL), offset(glm::vec3()) { }
+        GroundStick(transform::Transform* transform) : Component(transform) { }
         ~GroundStick() { }
 
         void Start();
@@ -20,6 +20,6 @@ namespace component
 
     protected:
         SERIALIZE_FIELD transform::Transform* player = nullptr;
-        SERIALIZE_FIELD glm::vec3 offset;
+        SERIALIZE_FIELD glm::vec3 offset = glm::vec3();
     };
 }

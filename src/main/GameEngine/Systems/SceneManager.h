@@ -3,6 +3,11 @@
 #include <string>
 #include <unordered_map>
 
+namespace m1
+{
+    class GameEngine;
+}
+
 namespace transform
 {
     class Transform;
@@ -26,7 +31,10 @@ namespace component
         static void UnloadScene(std::string scenePath);
 
     protected:
-        static std::unordered_map<std::string, transform::Transform *> loadedScenes;
+        static std::unordered_map<std::string, transform::Transform*> loadedScenes;
+        static m1::GameEngine* engineRef;
+
+        friend class m1::GameEngine;
     };
 }
 

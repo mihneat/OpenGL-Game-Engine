@@ -4,9 +4,69 @@
 #include <fstream>
 #include <filesystem>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "Serializer.h"
 #include "core/managers/resource_path.h"
+
+EnumInfo GetEnumInfo(std::ifstream& fin, const std::string& remainder)
+{
+    // Presume enum syntax is the same as in Component.h
+    std::string enumDeclaration;
+    
+    // Get lines until an open bracket is found, or the file ends
+    std::string line;
+    std::getline(fin, line, '{');
+    enumDeclaration.append(remainder).append(line);
+
+    std::string enumName;
+    char* buf = _strdup(enumDeclaration.c_str());
+
+    bool foundEnumKeyword = false;
+    char* token = strtok(buf, " \n\t{");
+    while (token != nullptr)
+    {
+        if (foundEnumKeyword)
+        {
+            enumName = std::string(token);
+            break;
+        }
+        
+        if (strcmp(token, "enum") == 0)
+            foundEnumKeyword = true;
+        
+        token = strtok(nullptr, " \n\t{");
+    }
+    
+    delete buf;
+
+    if (enumName.empty()) return {};
+
+    // Find the values
+    std::vector<std::string> values;
+    
+    std::getline(fin, line, '}');
+    std::string val;
+    std::stringstream strstream(line);
+    while (std::getline(strstream, val, ','))
+    {
+        buf = _strdup(val.c_str());
+
+        token = strtok(buf, " \n\t=");
+
+        values.emplace_back(token);
+    
+        delete buf;
+    }
+
+    std::cout << "Found enum: " << enumName << "\n";
+    for (auto& it : values)
+    {
+        std::cout << "  * " << it << "\n";
+    }
+
+    return {enumName, values};
+}
 
 std::pair<std::string, std::string> GetClassAndParentName(std::ifstream& fin, const std::string& remainder)
 {
@@ -92,7 +152,7 @@ std::pair<std::string, std::string> GetClassAndParentName(std::ifstream& fin, co
     return {className, parentName};
 }
 
-SerializedField GetSerializedField(std::ifstream& fin, const std::string& remainder)
+SerializedField GetSerializedField(std::ifstream& fin, const std::string& remainder, const std::vector<EnumInfo>& enums)
 {
     // Form the entire statement
     std::string statement;
@@ -135,6 +195,7 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
     // Try to find the attribute type
     bool isPointer = fieldDeclaration.find('*') != std::string::npos;
     FieldType type = FieldTypeUnimplemented;
+    std::string enumName = "";
     for (size_t i = 0; i < words.size() - 1; ++i)
     {
         const std::string& currWord = words[i];
@@ -216,6 +277,28 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
             
             break;
         }
+
+        // Search for enums
+        bool isEnum = false;
+        for (auto& enm : enums)
+        {
+            if (isPointer)
+                break;
+
+            if (currWord.find(enm.enumName) != std::string::npos)
+            {
+                enumName = enm.enumName;
+                isEnum = true;
+                break;
+            }
+        }
+
+        if (isEnum)
+        {
+            type = FieldTypeEnum;
+
+            break;
+        }
         
         if (currWord.find("Transform") != std::string::npos)
         {
@@ -227,11 +310,53 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
             break;
         }
     }
-    
-    return {attributeName, type};
+
+    // If all else fails and the next is a pointer, consider it a GUID-based item
+    if (type == FieldTypeUnimplemented && isPointer)
+        type = FieldTypeGUID;
+
+    return {attributeName, type, enumName};
 }
 
-ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath)
+std::vector<EnumInfo> ParseEnumsInHeader(const std::filesystem::path& headerPath)
+{
+    // Manually exclude classes
+    if (headerPath.filename() == "Component.h")
+    {
+        return {};
+    }
+
+    std::vector<EnumInfo> enums;
+    
+    static const std::string enumSerializationMacro("SERIALIZE_ENUM");
+    
+    std::ifstream fin(headerPath);
+
+    // Read the file line by line
+    std::string line;
+    while (std::getline(fin, line))
+    {
+        // Check for the enum serialization macro
+        size_t pos = line.find(enumSerializationMacro);
+        if (pos != std::string::npos)
+        {
+            // Search for the class name in the remainder of the line
+            std::string remainder = line.erase(0, pos + enumSerializationMacro.length());
+            EnumInfo res = GetEnumInfo(fin, remainder);
+            if (res.enumName.empty())
+            {
+                std::cerr << "Enum serialization macro must be placed right before an enum definition\n";
+                continue;
+            }
+
+            enums.push_back(res);
+        }
+    }
+
+    return enums;
+}
+
+ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath, const std::vector<EnumInfo>& enums)
 {
     // Manually exclude classes
     if (headerPath.filename() == "Component.h")
@@ -291,7 +416,7 @@ ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath)
         {
             // Search for the attribute info in the remainder of the line
             std::string remainder = line.erase(0, pos + attributeSerializationMacro.length());
-            SerializedField res = GetSerializedField(fin, remainder);
+            SerializedField res = GetSerializedField(fin, remainder, enums);
             if (res.name.empty())
             {
                 std::cerr << "Field serialization macro must be placed right before a field declaration\n";
@@ -317,7 +442,7 @@ ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath)
         std::cout << "Serialized fields:\n";
         for (auto& it : serializedFields)
         {
-            std::cout << "  * " << it.name << ": " << it.GetTypeName() << "\n";
+            std::cout << "  * " << it.name << ": " << it.GetTypeName() << " " << it.enumName << "\n";
         }
 
         std::cout << "\n";
@@ -328,7 +453,7 @@ ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath)
     return {};
 }
 
-void GenerateSerializer(const SerializationResult& s)
+void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo>& enums)
 {
     static const std::string modelPath = PATH_JOIN(ENGINE_PATH::GAME_ENGINE, "Serialization", "Serializer.model");
     static const std::string serializerPath = PATH_JOIN(ENGINE_PATH::GAME_ENGINE, "Serialization", "Serializer.cpp");
@@ -337,6 +462,7 @@ void GenerateSerializer(const SerializationResult& s)
     std::string serializedClassFieldsTemplate;
     std::string attributeResolverTemplate;
     std::string componentFactoryTemplate;
+    std::string enumValuePairsTemplate;
     
     for (auto& it : s)
     {
@@ -357,8 +483,12 @@ void GenerateSerializer(const SerializationResult& s)
             serializedClassFields.append("{\"")
                 .append(serializedField.name)
                 .append("\", ")
-                .append(serializedField.GetTypeName())
-                .append("},");
+                .append(serializedField.GetTypeName());
+
+            if (serializedField.type == FieldTypeEnum)
+                serializedClassFields.append(", \"").append(serializedField.enumName).append("\"");
+            
+            serializedClassFields.append("},");
         }
 
         serializedClassFields.append("}},\n");
@@ -389,12 +519,37 @@ void GenerateSerializer(const SerializationResult& s)
         componentFactoryTemplate.append(componentFactory);
     }
 
-    // Step 5 - Form the final file
+    for (auto& it : enums)
+    {
+        // Step 5 - Form the enum value pairs
+        std::string enumValuePairs("        {\"");
+        enumValuePairs.append(it.enumName)
+            .append("\", {");
+
+        int i = 0;
+        for (auto& enumValue : it.values)
+        {
+            enumValuePairs.append("{\"")
+                .append(enumValue)
+                .append("\", ")
+                .append(std::to_string(i));
+            
+            enumValuePairs.append("},");
+
+            ++i;
+        }
+
+        enumValuePairs.append("}},\n");
+        enumValuePairsTemplate.append(enumValuePairs);
+    }
+
+    // Step 6 - Form the final file
     const std::unordered_map<std::string, std::string> templates = {
         {"{{INCLUDE_HEADERS}}", includeTemplate},
         {"{{SERIALIZED_CLASS_FIELDS}}", serializedClassFieldsTemplate},
         {"{{ATTRIBUTE_RESOLVER}}", attributeResolverTemplate},
-        {"{{COMPONENT_FACTORY}}", componentFactoryTemplate}
+        {"{{COMPONENT_FACTORY}}", componentFactoryTemplate},
+        {"{{ENUM_VALUE_PAIRS}}", enumValuePairsTemplate}
     };
     
     std::ifstream fin(modelPath);
@@ -424,7 +579,9 @@ void CppHeaderParser::GenerateSerializedData()
     std::cout << "Header file parsing started!\n";
 
     SerializationResult result;
+    std::vector<EnumInfo> enums;
 
+    // Parse headers for serialized enums
     // Inspired from: https://stackoverflow.com/a/23658737
     for (std::filesystem::recursive_directory_iterator file(ENGINE_PATH::GAME_ENGINE), end; file != end; ++file)
     {
@@ -441,7 +598,31 @@ void CppHeaderParser::GenerateSerializedData()
             continue;
 
         // Parse the file
-        const ClassInfo classInfo = ParseHeaderFile(file->path());
+        std::vector<EnumInfo> currEnumInfos = ParseEnumsInHeader(file->path());
+        if (currEnumInfos.empty())
+            continue;
+
+        for (auto& currEnumInfo : currEnumInfos)
+            enums.push_back(currEnumInfo);
+    }
+    
+    // Parse headers for serialized classes and fields
+    for (std::filesystem::recursive_directory_iterator file(ENGINE_PATH::GAME_ENGINE), end; file != end; ++file)
+    {
+        // Ignore directories
+        if (is_directory(file->path()))
+            continue;
+
+        // Ignore files with no extension
+        if (!file->path().has_extension())
+            continue;
+
+        // Ignore files that are not .h or .hpp
+        if (file->path().extension().compare(".h") && file->path().extension().compare(".hpp"))
+            continue;
+
+        // Parse the file
+        const ClassInfo classInfo = ParseHeaderFile(file->path(), enums);
         if (classInfo.className.empty())
             continue;
         
@@ -483,7 +664,7 @@ void CppHeaderParser::GenerateSerializedData()
     std::cout << "Header file iteration complete\n";
 
     // Generate the Serializer file
-    GenerateSerializer(result);
+    GenerateSerializer(result, enums);
     std::cout << "Generated new Serialize.cpp\n";
     
     std::cout << "Header file parsing finished!\n";
@@ -513,9 +694,15 @@ std::string SerializedField::GetTypeName() const
         
     case FieldTypeString:
         return "FieldTypeString";
+
+    case FieldTypeEnum:
+        return "FieldTypeEnum";
         
     case FieldTypeTransform:
         return "FieldTypeTransform";
+        
+    case FieldTypeGUID:
+        return "FieldTypeGUID";
 
     case FieldTypeUnimplemented:
     default:
@@ -540,8 +727,12 @@ FieldType SerializedField::GetFromTypeName(const std::string& str)
         return FieldTypeColour;
     if (str == "FieldTypeString")
         return FieldTypeString;
+    if (str == "FieldTypeEnum")
+        return FieldTypeEnum;
     if (str == "FieldTypeTransform")
         return FieldTypeTransform;
+    if (str == "FieldTypeGUID")
+        return FieldTypeGUID;
 
     std::cerr << "[CppHeaderParser] Couldn't find type from string!!\n";
     return FieldTypeUnimplemented;

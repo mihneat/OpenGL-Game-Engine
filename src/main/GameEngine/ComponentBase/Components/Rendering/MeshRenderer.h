@@ -33,6 +33,7 @@ namespace component
         MARK_SERIALIZABLE
 
     public:
+        SERIALIZE_ENUM
         enum MeshEnum {
             Square,
             FragmentedSquare,
@@ -45,6 +46,7 @@ namespace component
             None
         };
 
+        SERIALIZE_ENUM
         enum LayerEnum {
             Default,
             UI
@@ -54,7 +56,7 @@ namespace component
             transform::Transform* transform,
             MeshEnum meshType = Cube,
             std::string meshName = "New Mesh",
-            const rendering::Material* material = nullptr,
+            rendering::Material* material = nullptr,
             LayerEnum layer = Default,
             glm::vec3 meshScale = glm::vec3(1.0f),
             glm::vec4 meshColor = glm::vec4(1.0f),
@@ -82,7 +84,7 @@ namespace component
         static std::unordered_set<std::string> meshNames;
 
     protected:
-        MeshEnum type = Cube;
+        SERIALIZE_FIELD MeshEnum type = Cube;
         std::string baseMeshName = "New Mesh";
         std::string meshName;
         SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
@@ -98,11 +100,11 @@ namespace component
         SERIALIZE_FIELD bool debugOnly = false;
         bool generateMesh = true;
         bool renderInWorldSpace = true;
-        LayerEnum layer = Default;
+        SERIALIZE_FIELD LayerEnum layer = Default;
         std::string texture = "";
         SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
-        const rendering::Material* material = nullptr;
+        rendering::Material* material = nullptr;
         rendering::MaterialOverrides* materialOverrides = nullptr;
 
         bool initialized = false;

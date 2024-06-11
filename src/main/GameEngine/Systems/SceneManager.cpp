@@ -3,14 +3,16 @@
 #include <fstream>
 #include <iostream>
 
+#include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/Serialization/ObjectSerializer.h"
 
 using namespace std;
 using namespace transform;
 using namespace component;
-using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
 
 std::unordered_map<std::string, Transform *> SceneManager::loadedScenes;
+m1::GameEngine* SceneManager::engineRef = nullptr;
 
 void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
 {
@@ -32,8 +34,11 @@ void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
     
     // Read scene at given path
     std::ifstream f(scenePath);
-    Transform* root = ObjectSerializer::DeserializeRootObject(json::parse(f));
-    std::cout << "HEY\n";
+    Transform* root = ObjectSerializer::DeserializeRootObject(ordered_json::parse(f));
+
+    // TODO: Actually notify the observers
+    // Notify observers
+    engineRef->HandleSceneLoaded(root);
 }
 
 void SceneManager::UnloadScene(std::string scenePath)

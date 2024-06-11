@@ -8,6 +8,9 @@
 // Check 'Component.h' for all serializable fields
 #define SERIALIZE_FIELD
 
+// Check 'Component.h' for exact structure
+#define SERIALIZE_ENUM
+
 // Check 'Component.h' for more details
 #define MARK_SERIALIZABLE friend class Serializer;
 
@@ -24,6 +27,19 @@
  * glm::vec4 <name>;
  * Transform* <name>;
  * 
+ */
+
+/**
+ * Enum structure:
+ *
+ * SERIALIZE_ENUM
+ * enum <name> {
+ *   <value1>,
+ *   <value2>,
+ *   ...
+ *   <valueN>
+ * }
+ *
  */
 
 struct SerializedField;
@@ -65,7 +81,7 @@ namespace component
         bool GetHasStartActivated();
         void SetHasStartActivated();
 
-        bool IsActive();
+        bool IsActive() const;
         void SetActive(bool active);
 
         transform::Transform* transform;

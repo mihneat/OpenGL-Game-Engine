@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "main/GameEngine/GameEngine.h"
 
+class ObjectSerializer;
+
 namespace managers
 {
     class GameInstance
@@ -22,5 +24,6 @@ namespace managers
         transform::Transform* attachedTransform = nullptr;
         
         friend class m1::GameEngine;
+        friend class ObjectSerializer;
     };
 }

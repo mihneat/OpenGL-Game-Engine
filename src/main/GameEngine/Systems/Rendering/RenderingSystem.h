@@ -16,8 +16,7 @@ namespace rendering
     class RenderingSystem
     {
     public:
-        void Init(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer);
-        void Render(transform::Transform* hierarchy, component::Camera* cam, const glm::ivec2 resolution, bool renderText = true);
+        void Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam, glm::ivec2 resolution, bool renderText = true);
         
     private:
         void SetGlobalUniforms(

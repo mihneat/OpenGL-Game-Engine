@@ -77,3 +77,24 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     
     return nullptr;
 }
+
+const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum(const std::string& enumName)
+{
+    static const std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> enumPairs = {
+        {"", {}},
+{{ENUM_VALUE_PAIRS}}
+        /**
+         * Template(ENUM_NAME, ENUM_VALUES[])
+         *
+         * {"|ENUM_NAME|", {||FOR_EACH ENUM_VALUES||{"|.NAME|", |.INDEX|}, ||END FOR_EACH||}}
+         *
+         */
+    };
+
+    // Try to find the enum
+    const auto it = enumPairs.find(enumName);
+    if (it != enumPairs.end())
+        return it->second;
+
+    return enumPairs.find("")->second;
+}

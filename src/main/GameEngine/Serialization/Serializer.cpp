@@ -53,24 +53,24 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"", std::vector<SerializedField>{}},
         {"Camera", std::vector<SerializedField>{{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},}},
         {"CameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"distanceToTarget", FieldTypeFloat},{"forwardFollowDistance", FieldTypeFloat},{"angleScale", FieldTypeFloat},{"retroAngleScale", FieldTypeFloat},{"isRetroCam", FieldTypeBool},}},
-        {"DirectionalLight", std::vector<SerializedField>{{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
+        {"DirectionalLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"DistanceDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
         {"GameOverDisplay", std::vector<SerializedField>{}},
         {"GroundStick", std::vector<SerializedField>{{"player", FieldTypeTransform},{"offset", FieldTypeVec3},}},
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
-        {"Light", std::vector<SerializedField>{{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"texScale", FieldTypeVec2},}},
+        {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"type", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texScale", FieldTypeVec2},}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
         {"PlayerController", std::vector<SerializedField>{{"acceleration", FieldTypeFloat},{"speed", FieldTypeFloat},{"maxSpeed", FieldTypeFloat},{"playerBody", FieldTypeTransform},{"tilt", FieldTypeFloat},{"tiltFactor", FieldTypeFloat},{"lives", FieldTypeInt},{"maxLives", FieldTypeInt},{"initialPosition", FieldTypeVec3},}},
-        {"PointLight", std::vector<SerializedField>{{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
+        {"PointLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"RunsDisplay", std::vector<SerializedField>{}},
         {"ScoreDisplay", std::vector<SerializedField>{}},
         {"SpeedSelectionDisplay", std::vector<SerializedField>{}},
-        {"SpotLight", std::vector<SerializedField>{{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
+        {"SpotLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"StartRunDisplay", std::vector<SerializedField>{}},
         {"SteepShaderParams", std::vector<SerializedField>{}},
         {"Sun", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"nightSpeed", FieldTypeFloat},}},
@@ -137,6 +137,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     if (dynamic_cast<DirectionalLight*>(instance) != nullptr)
     {
         DirectionalLight* obj = dynamic_cast<DirectionalLight*>(instance);
+
+        if (attributeName == "type")
+            return &obj->type;
 
         if (attributeName == "intensity")
             return &obj->intensity;
@@ -229,6 +232,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     {
         Light* obj = dynamic_cast<Light*>(instance);
 
+        if (attributeName == "type")
+            return &obj->type;
+
         if (attributeName == "intensity")
             return &obj->intensity;
 
@@ -248,6 +254,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     {
         MeshRenderer* obj = dynamic_cast<MeshRenderer*>(instance);
 
+        if (attributeName == "type")
+            return &obj->type;
+
         if (attributeName == "color")
             return &obj->color;
 
@@ -256,6 +265,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "debugOnly")
             return &obj->debugOnly;
+
+        if (attributeName == "layer")
+            return &obj->layer;
 
         if (attributeName == "texScale")
             return &obj->texScale;
@@ -361,6 +373,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     {
         PointLight* obj = dynamic_cast<PointLight*>(instance);
 
+        if (attributeName == "type")
+            return &obj->type;
+
         if (attributeName == "intensity")
             return &obj->intensity;
 
@@ -400,6 +415,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     if (dynamic_cast<SpotLight*>(instance) != nullptr)
     {
         SpotLight* obj = dynamic_cast<SpotLight*>(instance);
+
+        if (attributeName == "type")
+            return &obj->type;
 
         if (attributeName == "intensity")
             return &obj->intensity;
@@ -546,4 +564,27 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
      */
     
     return nullptr;
+}
+
+const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum(const std::string& enumName)
+{
+    static const std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> enumPairs = {
+        {"", {}},
+        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cube", 3},{"CubeMesh", 4},{"Sphere", 5},{"ZeldaHeart", 6},{"Cone", 7},{"None", 8},}},
+        {"LayerEnum", {{"Default", 0},{"UI", 1},}},
+
+        /**
+         * Template(ENUM_NAME, ENUM_VALUES[])
+         *
+         * {"|ENUM_NAME|", {||FOR_EACH ENUM_VALUES||{"|.NAME|", |.INDEX|}, ||END FOR_EACH||}}
+         *
+         */
+    };
+
+    // Try to find the enum
+    const auto it = enumPairs.find(enumName);
+    if (it != enumPairs.end())
+        return it->second;
+
+    return enumPairs.find("")->second;
 }

@@ -27,8 +27,14 @@ void World::Run()
     if (!window)
         return;
 
-    while (!window->ShouldClose())
+    while (true)
     {
+        if (window->ShouldClose())
+        {
+            // TODO: Check for unsaved changes
+            break;
+        }
+        
         LoopUpdate();
     }
 }

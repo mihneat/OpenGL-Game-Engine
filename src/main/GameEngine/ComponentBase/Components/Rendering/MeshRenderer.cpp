@@ -16,7 +16,7 @@ MeshRenderer::MeshRenderer(
 	Transform* transform,
     MeshEnum meshType,
 	string meshName,
-    const rendering::Material* material,
+    rendering::Material* material,
     LayerEnum layer,
     glm::vec3 meshScale,
     glm::vec4 meshColor,

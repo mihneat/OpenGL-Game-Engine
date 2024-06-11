@@ -51,8 +51,6 @@ namespace component
         int GetScore() { return score; }
         int GetHighScore() { return highScore; }
         int GetRuns() { return runs; }
-        glm::vec4 GetSkyColor() { return currentSkyColor; }
-        void SetSkyColor(glm::vec4 newSkyColor) { currentSkyColor = newSkyColor; }
 
         GameState GetGameState() { return gameState; }
         GameSpeed GetGameSpeed() { return gameSpeed; }

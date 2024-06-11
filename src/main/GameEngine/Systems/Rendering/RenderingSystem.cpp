@@ -11,26 +11,7 @@
 using namespace rendering;
 using namespace loaders;
 
-void RenderingSystem::Init(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer)
-{
-    // Initialize the meshes
-    m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
-        component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
-        if (meshRenderer != nullptr) {
-            meshRenderer->Init();
-        }
-    });
-
-    // Initialize the text
-    m1::GameEngine::ApplyToComponents(hierarchy, [this, textRenderer](component::Component* component) {
-        component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
-        if (text != nullptr) {
-            text->Init(textRenderer);
-        }
-    });
-}
-
-void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
+void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam,
                              const glm::ivec2 resolution, bool renderText)
 {
     // Clear rendering state
@@ -89,11 +70,10 @@ void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera*
     // Render the text
     // TODO: Temporary variable until making a full canvas system
     if (renderText)
-        m1::GameEngine::ApplyToComponents(hierarchy, [this](component::Component* component) {
+        m1::GameEngine::ApplyToComponents(hierarchy, [this, textRenderer](component::Component* component) {
             component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
             if (text != nullptr) {
-                if (text->textRenderer == nullptr) return;
-                
+                text->Init(textRenderer);
                 text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
             }
         });

@@ -34,8 +34,7 @@ Transform::Transform()
 
 Transform::Transform(Transform* parent, const std::string& name, std::string tag, bool manualRotation) : Transform()
 {
-    this->parent = parent;
-    this->parent->AddChild(this);
+    parent->AddChild(this);
     this->tag = tag;
     this->manualRotation = manualRotation;
     this->name = name;
@@ -68,13 +67,13 @@ void Transform::RemoveChild(Transform* child)
     }
 }
 
-Transform* Transform::GetChild(unsigned int index)
+Transform* Transform::GetChild(unsigned int index) const
 {
     index = min((int)index, this->GetChildCount() - 1);
     return this->children[index];
 }
 
-int Transform::GetChildCount()
+int Transform::GetChildCount() const
 {
     return (int)this->children.size();
 }
@@ -84,13 +83,13 @@ void Transform::AddComponent(Component* component)
     components.push_back(component);
 }
 
-Component* Transform::GetComponentByIndex(unsigned int index)
+Component* Transform::GetComponentByIndex(unsigned int index) const
 {
     index = min((int)index, this->GetComponentCount() - 1);
     return this->components[index];
 }
 
-int Transform::GetComponentCount()
+int Transform::GetComponentCount() const
 {
     return (int)this->components.size();
 }
@@ -224,27 +223,27 @@ void Transform::Rotate(glm::vec3 rotate)
     ComputeDirectionVectors();
 }
 
-glm::vec3 Transform::GetLocalPosition()
+glm::vec3 Transform::GetLocalPosition() const
 {
     return this->localPosition;
 }
 
-glm::vec3 Transform::GetWorldPosition()
+glm::vec3 Transform::GetWorldPosition() const
 {
     return glm::vec3(GetModelMatrix() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 }
 
-glm::vec3 Transform::GetLocalScale()
+glm::vec3 Transform::GetLocalScale() const
 {
     return this->localScale;
 }
 
-glm::vec3 Transform::GetWorldScale()
+glm::vec3 Transform::GetWorldScale() const
 {
     return this->worldScale;
 }
 
-glm::vec3 Transform::GetLocalRotation()
+glm::vec3 Transform::GetLocalRotation() const
 {
     return this->localRotation;
 }

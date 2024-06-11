@@ -31,8 +31,8 @@ namespace transform
         void AddChild(Transform* newChild);
         void RemoveChild(Transform* child);
         /* Safe function - if index is greater than childCount - 1, returns the last child. */
-        Transform* GetChild(unsigned int index);
-        int GetChildCount();
+        Transform* GetChild(unsigned int index) const;
+        int GetChildCount() const;
 
         void AddComponent(component::Component* component);
         template <class T> T* GetComponent()
@@ -70,11 +70,12 @@ namespace transform
 
         static void Destroy(Transform* transform);
 
-        component::Component* GetComponentByIndex(unsigned int index);
-        int GetComponentCount();
+        component::Component* GetComponentByIndex(unsigned int index) const;
+        int GetComponentCount() const;
 
-        std::string GetName() { return name; }
-        std::string GetTag() { return tag; }
+        std::string GetName() const { return name; }
+        std::string GetTag() const { return tag; }
+        bool GetManualRotation() const { return manualRotation; }
 
         // TODO: Make function static
         Transform* GetTransformByTag(std::string tag);
@@ -90,13 +91,13 @@ namespace transform
         void Scale(glm::vec3 scale);
         void Rotate(glm::vec3 eulerAngle);
 
-        glm::vec3 GetLocalPosition();
-        glm::vec3 GetWorldPosition();
-        glm::vec3 GetLocalScale();
-        glm::vec3 GetWorldScale();
-        glm::vec3 GetLocalRotation();
+        glm::vec3 GetLocalPosition() const;
+        glm::vec3 GetWorldPosition() const;
+        glm::vec3 GetLocalScale() const;
+        glm::vec3 GetWorldScale() const;
+        glm::vec3 GetLocalRotation() const;
 
-        glm::mat4 GetManualRotationMatrix() { return manualRotationMatrix; }
+        glm::mat4 GetManualRotationMatrix() const { return manualRotationMatrix; }
         void SetManualRotationMatrix(glm::mat4 rotationMatrix) { manualRotationMatrix = rotationMatrix; }
 
         void SetLocalPosition(glm::vec3 translate);

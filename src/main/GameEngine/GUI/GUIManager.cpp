@@ -12,6 +12,7 @@
 #include "main/GameEngine/Managers/TextureLoader.h"
 #include "main/GameEngine/Serialization/CppHeaderParser.h"
 #include "main/GameEngine/Serialization/Serializer.h"
+#include "main/GameEngine/Utils/Utils.h"
 
 #define BUF_SIZE 64
 
@@ -562,24 +563,15 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
         }
     }
 
+    for (int i = 0; i < prevIndent; ++i)
+        ImGui::TreePop();
+
     // Possible issue: the inspector is updated AFTER destroy but BEFORE new hierarchy
     // Might lead to an error/memory leak further down the road but I hope not!!
     if (!selectedTransformStillExists)
         lastSelectedTransform = nullptr;
     
     ImGui::End();
-}
-
-std::string ExtractClassName(const char* str)
-{
-    // Make a copy of the string
-    std::string fullClassName = std::string(str);
-    std::string delimiter = "::";
-
-    const size_t pos = fullClassName.rfind(delimiter);
-    std::string token = fullClassName.substr(pos + delimiter.length(), fullClassName.length() - pos);
-
-    return token;
 }
 
 bool SerializeBool(bool* data)
@@ -722,6 +714,49 @@ bool SerializeString(std::string* data)
     return true;
 }
 
+bool SerializeEnum(int* data, const std::string& enumName)
+{
+    if (data == nullptr)
+        return false;
+
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeEnum %p", (void*)data);
+
+    int value = *data;
+    auto& values = Serializer::GetValuePairsForEnum(enumName);
+
+    if (value >= values.size())
+    {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255,0,0,255));
+        ImGui::Text("Enum value out of range");
+        ImGui::PopStyleColor(1);
+
+        return true;
+    }
+    
+    static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview;
+    if (ImGui::BeginCombo(buf, values[value].first.c_str(), comboFlags))
+    {
+        for (int n = 0; n < values.size(); n++)
+        {
+            bool isSelected = (value == n);
+            if (ImGui::Selectable(values[n].first.c_str(), isSelected))
+            {
+                isSelected = n;
+                *data = n;
+            }
+    
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    return true;
+}
+
 bool SerializeTransform(transform::Transform** data)
 {
     if (data == nullptr)
@@ -789,9 +824,18 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
     case FieldTypeString:
         successful = SerializeString(static_cast<std::string*>(data));
         break;
+
+    case FieldTypeEnum:
+        successful = SerializeEnum(static_cast<int*>(data), attribute.enumName);
+        break;
         
     case FieldTypeTransform:
         successful = SerializeTransform(static_cast<transform::Transform**>(data));
+        break;
+        
+    case FieldTypeGUID:
+        // TODO: NOT. YET. probably have a class holding GUID/file metadata
+        successful = true; // SerializeColour(static_cast<glm::vec4*>(data));
         break;
 
     default:
@@ -855,7 +899,7 @@ void GUIManager::ShowInspector()
     for (int i = 0; i < this->lastSelectedTransform->GetComponentCount(); ++i) {
         component::Component* curr = this->lastSelectedTransform->GetComponentByIndex(i);
 
-        const std::string className = ExtractClassName(typeid(*curr).name());
+        const std::string className = Utils::ExtractClassName(typeid(*curr).name());
         
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         nodeOpen = ImGui::TreeNodeEx(curr, baseObjectNodeFlags, "");
