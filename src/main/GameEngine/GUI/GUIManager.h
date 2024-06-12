@@ -40,6 +40,8 @@ public:
     bool ShouldPause() const;
     bool ShouldReset() const;
     void UnmarkReset();
+    bool ShouldSave() const;
+    void UnmarkSave();
 
     bool IsSceneHovered() const;
 
@@ -93,6 +95,8 @@ private:
     bool markStateReset = false;
     bool markStatePlay = false;
     bool markStatePause = false;
+    
+    bool markStateSave = false;
 
     glm::ivec2 gameWindowResolution = {0, 0};
 

@@ -66,10 +66,9 @@ void SceneCamera::MouseScroll(const int mouseX, const int mouseY, const int offs
     if (!grabbed) return;
 
     static constexpr float speedIncreaseAmount = 5.0f;
-    static constexpr float superSpeedIncreaseAmount = 5.0f;
 
-    speed += glm::max(1.0f * offsetY * speedIncreaseAmount, 0.01f);
-    superSpeed += glm::max(1.0f * offsetY * superSpeedIncreaseAmount, 0.01f);
+    speed = glm::max(speed + 1.0f * offsetY * speedIncreaseAmount, 5.0f);
+    superSpeed = speed * 2;
     
 }
 

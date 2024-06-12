@@ -87,6 +87,14 @@ void GameEngine::CreateSceneCamera()
     sceneCamera->SetProjection(60, 16.0f / 9.0f);
 }
 
+void GameEngine::SaveSceneToFile()
+{
+    const nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
+    
+    ofstream fout(startScene);
+    fout << sceneObj.dump(2);
+}
+
 void GameEngine::ReloadScene()
 {
     // if (hierarchy != nullptr)
@@ -100,16 +108,9 @@ void GameEngine::ReloadScene()
     // }
     //
     // CreateHierarchy();
+    
     SceneManager::LoadScene(startScene);
-    
     FindCameras();
-    
-
-    // TEMP: Serialize the hierarchy
-    nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
-    
-    ofstream fout(startScene);
-    fout << sceneObj.dump(2);
 }
 
 void GameEngine::HandleSceneLoaded(Transform* root)
@@ -194,6 +195,11 @@ void GameEngine::FrameStart()
         ReloadScene();
         GUIManager::GetInstance()->UnmarkReset();
     }
+
+    if (GUIManager::GetInstance()->ShouldSave() && !GUIManager::GetInstance()->IsGamePlaying())
+        SaveSceneToFile();
+
+    GUIManager::GetInstance()->UnmarkSave();
     
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

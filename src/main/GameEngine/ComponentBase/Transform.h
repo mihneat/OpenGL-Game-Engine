@@ -113,9 +113,9 @@ namespace transform
 
         Transform* parent;
 
-        glm::vec3 forward;
-        glm::vec3 right;
-        glm::vec3 up;
+        glm::vec3 forward = glm::vec3_forward;
+        glm::vec3 right = glm::vec3_right;
+        glm::vec3 up = glm::vec3_up;
 
     protected:
         std::string name; 

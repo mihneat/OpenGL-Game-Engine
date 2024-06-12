@@ -266,10 +266,14 @@ void Transform::SetLocalRotation(glm::vec3 eulerAngle)
 
 void Transform::ComputeDirectionVectors()
 {
-    // Reset directions
-    up = glm::vec3_up;
-    right = glm::vec3_right;
-    forward = glm::vec3_forward;
+    // The root object cannot rotate
+    if (parent == nullptr)
+        return;
+    
+    // Reset directions to parent directions
+    up = parent->up;
+    right = parent->right;
+    forward = parent->forward;
 
     // Ox Rotation
     forward = glm::normalize(glm::vec3(

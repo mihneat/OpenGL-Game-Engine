@@ -57,6 +57,7 @@ namespace m1
         void OnGameWindowResize(int width, int height) override;
 
         void CreateSceneCamera();
+        void SaveSceneToFile();
         void CreateHierarchy();
         void DestroyMarkedObjects();
 

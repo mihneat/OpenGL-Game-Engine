@@ -25,6 +25,10 @@ void GUIInputListener::OnKeyPress(int key, int mods)
     if (key == GLFW_KEY_R && mods & GLFW_MOD_CONTROL)
         CppHeaderParser::GenerateSerializedData();
 
+    // Save scene
+    if (key == GLFW_KEY_S && mods & GLFW_MOD_CONTROL)
+        GUIManager::GetInstance()->markStateSave = true;
+
     // --== Window ==--
     // Show/Hide game window
     if (key == GLFW_KEY_G && mods & GLFW_MOD_CONTROL)

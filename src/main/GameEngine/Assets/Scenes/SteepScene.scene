@@ -1307,9 +1307,9 @@
           "tag": "Default",
           "manualRotation": false,
           "position": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0
+            "x": 1100.0,
+            "y": 670.0,
+            "z": -200.0
           },
           "rotation": {
             "x": 0.0,

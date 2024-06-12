@@ -81,7 +81,8 @@ void GUIManager::ShowMainMenuBar()
             if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { markStatePlay = true; }
             if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { markStatePause = true; }
             ImGui::Separator();
-            if (ImGui::MenuItem("Reset", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
+            if (ImGui::MenuItem("Save scene", "CTRL+S", nullptr, !this->gameIsPlaying)) { markStateSave = true; }
+            if (ImGui::MenuItem("Reserialize", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
             ImGui::EndMenu();
         }
         
@@ -1069,6 +1070,16 @@ bool GUIManager::ShouldReset() const
 void GUIManager::UnmarkReset()
 {
     markStateReset = false;
+}
+
+bool GUIManager::ShouldSave() const
+{
+    return markStateSave;
+}
+
+void GUIManager::UnmarkSave()
+{
+    markStateSave = false;
 }
 
 bool GUIManager::IsSceneHovered() const
