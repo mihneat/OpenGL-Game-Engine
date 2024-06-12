@@ -1,6 +1,8 @@
 #include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 
+#include <glm/gtc/quaternion.hpp>
+
 #include <iostream>
 
 using namespace std;
@@ -10,9 +12,9 @@ using namespace transform;
 void Camera::Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up)
 {
     transform->SetLocalPosition(position);
-    transform->forward = glm::normalize(center - position);
-    transform->right = glm::cross(transform->forward, up);
-    transform->up = glm::cross(transform->right, transform->forward);
+
+    const glm::qua quaternion = glm::quatLookAt(glm::normalize(position - center), up);
+    transform->SetLocalRotation(glm::eulerAngles(quaternion));
 }
 
 void Camera::MoveForward(float distance)
@@ -118,7 +120,7 @@ void Camera::SetOrtographic(const float width, const float height)
 glm::mat4 Camera::GetViewMatrix()
 {
     // Returns the view matrix
-    return glm::lookAt(transform->GetLocalPosition(), transform->GetLocalPosition() + transform->forward, transform->up);
+    return glm::lookAt(transform->GetLocalPosition(), transform->GetLocalPosition() + transform->forward, glm::vec3_up);
 }
 
 glm::vec3 Camera::GetTargetPosition()

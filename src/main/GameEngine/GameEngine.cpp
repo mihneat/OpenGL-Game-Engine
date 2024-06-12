@@ -9,6 +9,8 @@
 #include <vector>
 #include <stack>
 
+#include "main/GameEngine/Serialization/Serializer.h"
+#include "ComponentBase/Components/Rendering/Camera.h"
 #include "core/managers/resource_path.h"
 #include "GUI/GUIManager.h"
 #include "Managers/GameInstance.h"
@@ -23,7 +25,6 @@
 using namespace std;
 using namespace m1;
 using namespace loaders;
-using namespace component;
 using namespace rendering;
 using namespace transform;
 using namespace prefabManager;
@@ -200,6 +201,28 @@ void GameEngine::FrameStart()
         SaveSceneToFile();
 
     GUIManager::GetInstance()->UnmarkSave();
+
+    Transform* currTransform = GUIManager::GetInstance()->GetLastSelectedTransform();
+    std::string componentToCreate = GUIManager::GetInstance()->RetrieveComponentToCreate();
+    if (!componentToCreate.empty() && currTransform != nullptr)
+    {
+        // Create a new component and attach it to the currently selected object
+        currTransform->AddComponent(Serializer::ComponentFactory(componentToCreate, currTransform));
+    }
+
+    Component* componentToDelete = GUIManager::GetInstance()->RetrieveComponentToDelete();
+    if (componentToDelete != nullptr && currTransform != nullptr)
+        currTransform->RemoveComponent(componentToDelete);
+
+    Transform* transformToCreateChild = GUIManager::GetInstance()->RetrieveTransformToCreateChild();
+    if (transformToCreateChild != nullptr)
+        // Create a new empty child of the object
+        new Transform(transformToCreateChild);
+
+    Transform* transformToDelete = GUIManager::GetInstance()->RetrieveTransformToDelete();
+    if (transformToDelete != nullptr)
+        // Delete marked item
+        Transform::Destroy(transformToDelete);
     
     // Clear the color and depth buffers of the default FB
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -237,15 +260,15 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
     UpdateTransforms(hierarchy);
     
     // Check if game is active
-    if (!GUIManager::GetInstance()->IsGameActive())
-        return;
-
-    this->StartComponents(hierarchy);
-    this->UpdateTransforms(hierarchy);
-    this->UpdateComponents(hierarchy, deltaTimeSeconds);
-    this->UpdateTransforms(hierarchy);
-    this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
-    this->UpdateTransforms(hierarchy);
+    if (GUIManager::GetInstance()->IsGameActive())
+    {
+        this->StartComponents(hierarchy);
+        this->UpdateTransforms(hierarchy);
+        this->UpdateComponents(hierarchy, deltaTimeSeconds);
+        this->UpdateTransforms(hierarchy);
+        this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
+        this->UpdateTransforms(hierarchy);
+    }
 
     this->DestroyMarkedObjects();
 }

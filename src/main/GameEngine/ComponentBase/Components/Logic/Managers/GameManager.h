@@ -11,6 +11,8 @@ namespace m1 {
     class GameEngine;
 }
 
+class Serializer;
+
 namespace component
 {
     SERIALIZE_CLASS

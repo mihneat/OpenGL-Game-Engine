@@ -23,7 +23,7 @@ namespace transform
     {
     public:
         Transform();
-        Transform(Transform *parent, const std::string& name = "New Transform", std::string tag = "Default", bool manualRotation = false);
+        Transform(Transform *parent, const std::string& name = "New Transform", std::string tag = "Default");
         ~Transform();
 
         void Update();
@@ -35,6 +35,8 @@ namespace transform
         int GetChildCount() const;
 
         void AddComponent(component::Component* component);
+        void RemoveComponent(component::Component* component);
+        
         template <class T> T* GetComponent()
         {
             const char* desiredType = typeid(T).name();
@@ -75,7 +77,6 @@ namespace transform
 
         std::string GetName() const { return name; }
         std::string GetTag() const { return tag; }
-        bool GetManualRotation() const { return manualRotation; }
 
         // TODO: Make function static
         Transform* GetTransformByTag(std::string tag);
@@ -96,9 +97,6 @@ namespace transform
         glm::vec3 GetLocalScale() const;
         glm::vec3 GetWorldScale() const;
         glm::vec3 GetLocalRotation() const;
-
-        glm::mat4 GetManualRotationMatrix() const { return manualRotationMatrix; }
-        void SetManualRotationMatrix(glm::mat4 rotationMatrix) { manualRotationMatrix = rotationMatrix; }
 
         void SetLocalPosition(glm::vec3 translate);
         void SetScale(glm::vec3 scale);
@@ -134,9 +132,6 @@ namespace transform
         std::vector<component::Component *> components;
 
         glm::mat4 modelMatrix;
-
-        bool manualRotation;
-        glm::mat4 manualRotationMatrix;
 
         std::string tag;
 

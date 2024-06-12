@@ -32,6 +32,8 @@ void World::Run()
         if (window->ShouldClose())
         {
             // TODO: Check for unsaved changes
+            // In imgui_demo.cpp, look for the line:
+            // if (ImGui::BeginPopupModal("Delete?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
             break;
         }
         

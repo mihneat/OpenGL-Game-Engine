@@ -83,6 +83,8 @@ void GUIManager::ShowMainMenuBar()
             ImGui::Separator();
             if (ImGui::MenuItem("Save scene", "CTRL+S", nullptr, !this->gameIsPlaying)) { markStateSave = true; }
             if (ImGui::MenuItem("Reserialize", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_NoSharedDelay))
+                ImGui::SetTooltip("Reserialization of scripts requires an editor restart.");
             ImGui::EndMenu();
         }
         
@@ -502,11 +504,24 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
         return;
     
     ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Hierarchy", &this->showHierarchy))
+    if (!ImGui::Begin("Hierarchy", &this->showHierarchy, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar))
     {
         // Early out if the window is collapsed, as an optimization.
         ImGui::End();
         return;
+    }
+    
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("New.."))
+        {
+            if (ImGui::MenuItem("Transform"))
+                transformToCreateChild = hierarchy;
+                
+            ImGui::EndMenu();
+        }
+            
+        ImGui::EndMenuBar();
     }
 
     ImGuiTreeNodeFlags baseObjectNodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -545,9 +560,18 @@ void GUIManager::ShowHierarchy(transform::Transform* hierarchy)
                 objectNodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
         
             nodeOpen = ImGui::TreeNodeEx(currentTransform.transform, objectNodeFlags, "");
+            
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
-            {
                 lastSelectedTransform = currentTransform.transform;
+
+            if (ImGui::BeginPopupContextItem())
+            {
+                if (ImGui::Selectable("Add New Transform"))
+                    transformToCreateChild = currentTransform.transform;
+                if (ImGui::Selectable("Delete"))
+                    transformToDelete = currentTransform.transform;
+                
+                ImGui::EndPopup();
             }
         
             ImGui::SameLine();
@@ -932,11 +956,35 @@ void GUIManager::ShowInspector()
         return;
     
     ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Inspector", &this->showInspector))
+    if (!ImGui::Begin("Inspector", &this->showInspector, ImGuiWindowFlags_MenuBar))
     {
         // Early out if the window is collapsed, as an optimization.
         ImGui::End();
         return;
+    }
+    
+    if (ImGui::BeginMenuBar())
+    {
+        ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(FLT_MAX, 350));
+        if (ImGui::BeginMenu("Add Component..", this->lastSelectedTransform != nullptr))
+        {
+            static ImGuiTextFilter filter;
+            filter.Draw();
+            const std::vector<std::string>& classNames = Serializer::GetSerializedClasses(); 
+            for (int i = 0; i < classNames.size(); i++)
+                if (filter.PassFilter(classNames[i].c_str()))
+                {
+                    if (ImGui::Selectable(classNames[i].c_str()))
+                    {
+                        componentToCreate = classNames[i];
+                        filter.Clear();
+                    }
+                }
+                
+            ImGui::EndMenu();
+        }
+            
+        ImGui::EndMenuBar();
     }
 
     if (this->lastSelectedTransform == nullptr)
@@ -972,6 +1020,15 @@ void GUIManager::ShowInspector()
         
         ImGui::SetNextItemOpen(true, ImGuiCond_Once);
         nodeOpen = ImGui::TreeNodeEx(curr, baseObjectNodeFlags, "");
+
+        if (ImGui::BeginPopupContextItem())
+        {
+            if (ImGui::Selectable("Delete"))
+                componentToDelete = curr;
+                
+            ImGui::EndPopup();
+        }
+        
         ImGui::SameLine();
         ImGui::PushID(curr); ImGui::Checkbox("", &curr->enabled); ImGui::PopID();
         ImGui::SameLine();
@@ -1080,6 +1137,43 @@ bool GUIManager::ShouldSave() const
 void GUIManager::UnmarkSave()
 {
     markStateSave = false;
+}
+
+transform::Transform* GUIManager::GetLastSelectedTransform()
+{
+    return lastSelectedTransform;
+}
+
+transform::Transform* GUIManager::RetrieveTransformToCreateChild()
+{
+    transform::Transform* tmp = transformToCreateChild;
+    transformToCreateChild = nullptr;
+    
+    return tmp;
+}
+
+transform::Transform* GUIManager::RetrieveTransformToDelete()
+{
+    transform::Transform* tmp = transformToDelete;
+    transformToDelete = nullptr;
+    
+    return tmp;
+}
+
+std::string GUIManager::RetrieveComponentToCreate()
+{
+    std::string tmp = componentToCreate;
+    componentToCreate = "";
+    
+    return tmp;
+}
+
+component::Component* GUIManager::RetrieveComponentToDelete()
+{
+    component::Component* tmp = componentToDelete;
+    componentToDelete = nullptr;
+    
+    return tmp;
 }
 
 bool GUIManager::IsSceneHovered() const

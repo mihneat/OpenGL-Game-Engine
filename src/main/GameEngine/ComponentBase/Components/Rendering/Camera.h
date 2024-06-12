@@ -31,7 +31,7 @@ namespace component
             viewportBottomLeft(viewportBottomLeft), viewportWidthHeight(viewportWidthHeight), autoResize(autoResize)
         {
             // TODO: Probably move to Awake()
-            Set(transform->GetLocalPosition(), center, up);
+            // Set(transform->GetLocalPosition(), center + glm::vec3(0.1, 0.0, 0.0), up);
             distanceToTarget = glm::distance(center, transform->GetLocalPosition());
             SetProjection(60, 16.0f / 9.0f);
 

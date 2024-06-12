@@ -170,9 +170,7 @@ Transform* ObjectSerializer::DeserializeTransform(const ordered_json& transformO
     Transform* transform = new Transform(
         parent,
         DeserializeString(transformObj["name"]),
-        DeserializeString(transformObj["tag"]),
-        // TODO: Deprecate manual rotation :(
-        DeserializeBool(transformObj["manualRotation"])
+        DeserializeString(transformObj["tag"])
     );
     transform->Translate(DeserializeVec3(transformObj["position"]));
     transform->Rotate(DeserializeVec3(transformObj["rotation"]));
@@ -394,8 +392,6 @@ ordered_json SerializeTransform(const Transform* transform)
 
     transformObj["name"] = SerializeString(transform->GetName());
     transformObj["tag"] = SerializeString(transform->GetTag());
-    // TODO: Deprecate manual rotation :(
-    transformObj["manualRotation"] = SerializeBool(transform->GetManualRotation());
 
     transformObj["position"] = SerializeVec3(transform->GetLocalPosition());
     transformObj["rotation"] = SerializeVec3(transform->GetLocalRotation());

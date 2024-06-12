@@ -23,8 +23,8 @@ void SceneCamera::InputUpdate(float deltaTime, int mods)
 
     if (InputManager::KeyHold(GLFW_KEY_W))            TranslateForward(deltaTime);
     if (InputManager::KeyHold(GLFW_KEY_S))            TranslateForward(-deltaTime);
-    if (InputManager::KeyHold(GLFW_KEY_D))            TranslateRight(deltaTime);
-    if (InputManager::KeyHold(GLFW_KEY_A))            TranslateRight(-deltaTime);
+    if (InputManager::KeyHold(GLFW_KEY_A))            TranslateRight(deltaTime);
+    if (InputManager::KeyHold(GLFW_KEY_D))            TranslateRight(-deltaTime);
     if (InputManager::KeyHold(GLFW_KEY_E))            TranslateUpward(deltaTime);
     if (InputManager::KeyHold(GLFW_KEY_Q))            TranslateUpward(-deltaTime);
 }
@@ -36,7 +36,7 @@ void SceneCamera::MouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
     glm::vec2 deltaRads = { glm::radians(rotationSpeed * deltaX), glm::radians(rotationSpeed * deltaY) };
 
     RotateFirstPerson_OY(-deltaRads.x);
-    RotateFirstPerson_OX(-deltaRads.y);
+    RotateFirstPerson_OX(deltaRads.y);
 }
 
 

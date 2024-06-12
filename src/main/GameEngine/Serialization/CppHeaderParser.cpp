@@ -462,6 +462,7 @@ void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo
     std::string serializedClassFieldsTemplate;
     std::string attributeResolverTemplate;
     std::string componentFactoryTemplate;
+    std::string getClassNamesTemplate;
     std::string enumValuePairsTemplate;
     
     for (auto& it : s)
@@ -517,11 +518,16 @@ void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo
             .append(it.second.className)
             .append("(parent);\n");
         componentFactoryTemplate.append(componentFactory);
+
+        // Step 5 - Form the class names
+        std::string getClassNames("\"");
+        getClassNames.append(it.second.className).append("\",");
+        getClassNamesTemplate.append(getClassNames);
     }
 
     for (auto& it : enums)
     {
-        // Step 5 - Form the enum value pairs
+        // Step 6 - Form the enum value pairs
         std::string enumValuePairs("        {\"");
         enumValuePairs.append(it.enumName)
             .append("\", {");
@@ -543,13 +549,14 @@ void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo
         enumValuePairsTemplate.append(enumValuePairs);
     }
 
-    // Step 6 - Form the final file
+    // Step 7 - Form the final file
     const std::unordered_map<std::string, std::string> templates = {
         {"{{INCLUDE_HEADERS}}", includeTemplate},
         {"{{SERIALIZED_CLASS_FIELDS}}", serializedClassFieldsTemplate},
         {"{{ATTRIBUTE_RESOLVER}}", attributeResolverTemplate},
         {"{{COMPONENT_FACTORY}}", componentFactoryTemplate},
-        {"{{ENUM_VALUE_PAIRS}}", enumValuePairsTemplate}
+        {"{{GET_CLASS_NAMES}}", getClassNamesTemplate},
+        {"{{ENUM_VALUE_PAIRS}}", enumValuePairsTemplate},
     };
     
     std::ifstream fin(modelPath);

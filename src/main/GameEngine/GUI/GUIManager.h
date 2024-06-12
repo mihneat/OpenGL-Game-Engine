@@ -42,6 +42,14 @@ public:
     void UnmarkReset();
     bool ShouldSave() const;
     void UnmarkSave();
+    
+    transform::Transform* GetLastSelectedTransform();
+
+    transform::Transform* RetrieveTransformToCreateChild();
+    transform::Transform* RetrieveTransformToDelete();
+    
+    std::string RetrieveComponentToCreate();
+    component::Component* RetrieveComponentToDelete();
 
     bool IsSceneHovered() const;
 
@@ -97,6 +105,12 @@ private:
     bool markStatePause = false;
     
     bool markStateSave = false;
+
+    transform::Transform* transformToCreateChild = nullptr;
+    transform::Transform* transformToDelete = nullptr;
+
+    std::string componentToCreate;
+    component::Component* componentToDelete = nullptr;
 
     glm::ivec2 gameWindowResolution = {0, 0};
 

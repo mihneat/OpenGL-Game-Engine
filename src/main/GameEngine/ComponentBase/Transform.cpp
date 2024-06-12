@@ -19,24 +19,20 @@ Transform::Transform()
     this->localRotation = glm::vec3(0.0f);
     this->worldRotation = glm::vec3(0.0f);
 
-    this->parent = NULL;
+    this->parent = nullptr;
     this->modelMatrix = glm::mat4(1.0f);
 
     this->up = glm::vec3_up;
     this->right = glm::vec3_right;
     this->forward = glm::vec3_forward;
 
-    this->tag = "Default";
-
-    this->manualRotation = false;
-    this->manualRotationMatrix = glm::mat4(1.0f);
+    this->tag = "New Transform";
 }
 
-Transform::Transform(Transform* parent, const std::string& name, std::string tag, bool manualRotation) : Transform()
+Transform::Transform(Transform* parent, const std::string& name, std::string tag) : Transform()
 {
     parent->AddChild(this);
     this->tag = tag;
-    this->manualRotation = manualRotation;
     this->name = name;
 }
 
@@ -47,6 +43,7 @@ Transform::~Transform()
 
 void Transform::Update()
 {
+    ComputeDirectionVectors();
     UpdateWorldCoordinates();
     ComputeModelMatrix();
 }
@@ -81,6 +78,17 @@ int Transform::GetChildCount() const
 void Transform::AddComponent(Component* component)
 {
     components.push_back(component);
+}
+
+void Transform::RemoveComponent(Component* component)
+{
+    for (auto it = components.begin(); it != components.end(); ++it) {
+        if (*it == component) {
+            components.erase(it);
+            delete component;
+            return;
+        }
+    }
 }
 
 Component* Transform::GetComponentByIndex(unsigned int index) const
@@ -346,7 +354,7 @@ glm::mat4 Transform::ComputeModelMatrix()
     newModelMatrix *= GetScalingMatrix(this->localScale);
 
     // Rotate it
-    newModelMatrix *= manualRotation ? GetManualRotationMatrix() : GetRotationMatrix(this->localRotation);
+    newModelMatrix *= GetRotationMatrix(this->localRotation);
 
     // Cache it
     modelMatrix = newModelMatrix;

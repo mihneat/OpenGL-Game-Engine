@@ -578,6 +578,19 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     return nullptr;
 }
 
+const std::vector<std::string>& Serializer::GetSerializedClasses()
+{
+    static const std::vector<std::string> classNames = {"Camera","CameraFollow","DirectionalLight","DistanceDisplay","GameManager","GameOverDisplay","GroundStick","HighScoreDisplay","LifeDisplay","Light","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","UiPanel","UpdateLightPosition",};
+    /**
+     * Template(CLASS_NAME):
+     *
+     * "|CLASS_NAME|",
+     * 
+     */
+    
+    return classNames;
+}
+
 const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum(const std::string& enumName)
 {
     static const std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> enumPairs = {

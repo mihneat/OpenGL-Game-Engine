@@ -42,9 +42,8 @@ Transform* PrefabManager::CreateCamera(Transform* parent, Transform* player, con
 
 Transform* PrefabManager::CreatePlayer(Transform* parent)
 {
-    // Create the empty player (SET TO MANUAL ROTATION)
-    Transform* player = new Transform(parent, "Player", "Player", true);
-    player->SetManualRotationMatrix(glm::rotate(glm::mat4(1.0f), glm::pi<float>() / 6.0f, glm::vec3_right));
+    // Create the empty player
+    Transform* player = new Transform(parent, "Player", "Player");
     player->AddComponent(new PlayerController(player));
 
     // Create the player mesh
