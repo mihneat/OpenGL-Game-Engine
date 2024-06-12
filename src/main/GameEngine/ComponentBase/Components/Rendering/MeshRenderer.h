@@ -8,6 +8,7 @@
 #include "main/GameEngine/Systems/Rendering/MaterialOverrides.h"
 #include "main/GameEngine/Systems/Rendering/Material.h"
 #include "main/GameEngine/Systems/Rendering/RenderingSystem.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 
 namespace prefabManager
 {
@@ -60,7 +61,7 @@ namespace component
             LayerEnum layer = Default,
             glm::vec3 meshScale = glm::vec3(1.0f),
             glm::vec4 meshColor = glm::vec4(1.0f),
-            bool renderUI = true,
+            bool renderInWorldSpace = true,
             bool debugOnly = false
         );
         ~MeshRenderer();
@@ -70,7 +71,8 @@ namespace component
         void Init();
 
         void SetColor(glm::vec4 newColor);
-        void SetTexture(std::string newTexture, glm::vec2 newTexScale = glm::vec2(1.0f));
+        void SetTexture(rendering::Texture* newTexture);
+        void SetTextureScale(glm::vec2 newTexScale);
         void SetMaterialOverrides(rendering::MaterialOverrides* materialOverrides);
 
         const rendering::Material* GetMaterial() const { return material; }
@@ -99,12 +101,12 @@ namespace component
     private:
         SERIALIZE_FIELD bool debugOnly = false;
         bool generateMesh = true;
-        bool renderInWorldSpace = true;
+        SERIALIZE_FIELD bool renderInWorldSpace = true;
         SERIALIZE_FIELD LayerEnum layer = Default;
-        std::string texture = "";
+        SERIALIZE_FIELD rendering::Texture* texture = nullptr;
         SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
-        rendering::Material* material = nullptr;
+        SERIALIZE_FIELD rendering::Material* material = nullptr;
         rendering::MaterialOverrides* materialOverrides = nullptr;
 
         bool initialized = false;

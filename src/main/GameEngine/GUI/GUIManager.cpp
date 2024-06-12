@@ -11,7 +11,9 @@
 #include "core/world.h"
 #include "main/GameEngine/Managers/TextureLoader.h"
 #include "main/GameEngine/Serialization/CppHeaderParser.h"
+#include "main/GameEngine/Serialization/Database.h"
 #include "main/GameEngine/Serialization/Serializer.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 #include "main/GameEngine/Utils/Utils.h"
 
 #define BUF_SIZE 64
@@ -786,6 +788,73 @@ std::string FormatString(const std::string& str)
     return formattedString;
 }
 
+bool SerializeGUID(void* data)
+{
+    if (data == nullptr)
+        return false;
+
+    static char buf[BUF_SIZE] = {};
+    memset(buf, 0, BUF_SIZE);
+    snprintf(buf, BUF_SIZE - 1, "##SerializeGUID %p", data);
+    
+    // Hardcode a few serializable types :)
+    SerializedObject obj = Database::GetByGUID("");
+    if (static_cast<rendering::Material**>(data) != nullptr)
+        obj = Database::GetByPtr(*static_cast<rendering::Material**>(data));
+    else if (static_cast<rendering::Texture**>(data) != nullptr)
+        obj = Database::GetByPtr(*static_cast<rendering::Texture**>(data));
+
+    if (obj.name.empty())
+    {
+        ImGui::Text("Missing object GUID");
+        return true;
+    }
+
+    // ImGui::Text("Name: %s, GUID: %s", obj.name.c_str(), obj.guid.c_str());
+
+    const std::map<std::string, SerializedObject>& objs = Database::GetByType(obj.type);
+
+    // TODO: Only do this when opening a window / the dropdown
+    // Transform into a vector
+    int value = 0, i = 0;
+    std::vector<SerializedObject> values;
+    for (auto& it : objs)
+    {
+        if (obj.ptr == it.second.ptr)
+            value = i;
+            
+        values.push_back(it.second);
+
+        ++i;
+    }
+    
+    static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview;
+    if (ImGui::BeginCombo(buf, values[value].name.c_str(), comboFlags))
+    {
+        for (int n = 0; n < values.size(); n++)
+        {
+            bool isSelected = (value == n);
+            if (ImGui::Selectable(values[n].name.c_str(), isSelected))
+            {
+                isSelected = n;
+
+                // TODO: Make a function out of this
+                if (static_cast<rendering::Material**>(data) != nullptr)
+                    *static_cast<rendering::Material**>(data) = static_cast<rendering::Material*>(values[n].ptr);
+                else if (static_cast<rendering::Texture**>(data) != nullptr)
+                    obj = Database::GetByPtr(*static_cast<rendering::Texture**>(data));
+            }
+    
+            // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
+
+    return true;
+}
+
 void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* data)
 {
     ImGui::AlignTextToFramePadding();
@@ -834,8 +903,7 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
         break;
         
     case FieldTypeGUID:
-        // TODO: NOT. YET. probably have a class holding GUID/file metadata
-        successful = true; // SerializeColour(static_cast<glm::vec4*>(data));
+        successful = SerializeGUID(data);
         break;
 
     default:

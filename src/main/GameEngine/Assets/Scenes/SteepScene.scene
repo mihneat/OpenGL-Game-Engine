@@ -197,6 +197,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 4
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -221,11 +226,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": true
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 0
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100001"
                       }
                     }
                   ]
@@ -258,6 +287,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 3
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -282,11 +316,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": true
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 0
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100001"
                       }
                     }
                   ]
@@ -319,6 +377,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 3
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -343,11 +406,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": true
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 0
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100001"
                       }
                     }
                   ]
@@ -382,6 +469,11 @@
               "enabled": true,
               "attributes": [
                 {
+                  "name": "type",
+                  "type": "FieldTypeEnum",
+                  "value": 5
+                },
+                {
                   "name": "color",
                   "type": "FieldTypeColour",
                   "value": {
@@ -406,11 +498,35 @@
                   "value": true
                 },
                 {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
                   "name": "texScale",
                   "type": "FieldTypeVec2",
                   "value": {
                     "x": 1.0,
                     "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100001"
                   }
                 }
               ]
@@ -520,6 +636,11 @@
           "enabled": true,
           "attributes": [
             {
+              "name": "type",
+              "type": "FieldTypeEnum",
+              "value": 1
+            },
+            {
               "name": "color",
               "type": "FieldTypeColour",
               "value": {
@@ -544,11 +665,35 @@
               "value": false
             },
             {
+              "name": "renderInWorldSpace",
+              "type": "FieldTypeBool",
+              "value": true
+            },
+            {
+              "name": "layer",
+              "type": "FieldTypeEnum",
+              "value": 0
+            },
+            {
+              "name": "texture",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "200001"
+              }
+            },
+            {
               "name": "texScale",
               "type": "FieldTypeVec2",
               "value": {
                 "x": 4.0,
                 "y": 4.0
+              }
+            },
+            {
+              "name": "material",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "100002"
               }
             }
           ]
@@ -616,6 +761,11 @@
           "className": "DirectionalLight",
           "enabled": true,
           "attributes": [
+            {
+              "name": "type",
+              "type": "FieldTypeInt",
+              "value": 0
+            },
             {
               "name": "intensity",
               "type": "FieldTypeFloat",
@@ -1236,6 +1386,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 6
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -1260,11 +1415,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": false
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 1
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100003"
                       }
                     }
                   ]
@@ -1297,6 +1476,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 6
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -1321,11 +1505,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": false
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 1
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100003"
                       }
                     }
                   ]
@@ -1358,6 +1566,11 @@
                   "enabled": true,
                   "attributes": [
                     {
+                      "name": "type",
+                      "type": "FieldTypeEnum",
+                      "value": 6
+                    },
+                    {
                       "name": "color",
                       "type": "FieldTypeColour",
                       "value": {
@@ -1382,11 +1595,35 @@
                       "value": false
                     },
                     {
+                      "name": "renderInWorldSpace",
+                      "type": "FieldTypeBool",
+                      "value": false
+                    },
+                    {
+                      "name": "layer",
+                      "type": "FieldTypeEnum",
+                      "value": 1
+                    },
+                    {
+                      "name": "texture",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": ""
+                      }
+                    },
+                    {
                       "name": "texScale",
                       "type": "FieldTypeVec2",
                       "value": {
                         "x": 1.0,
                         "y": 1.0
+                      }
+                    },
+                    {
+                      "name": "material",
+                      "type": "FieldTypeGUID",
+                      "value": {
+                        "guid": "100003"
                       }
                     }
                   ]
@@ -1841,7 +2078,15 @@
         {
           "className": "SteepShaderParams",
           "enabled": true,
-          "attributes": []
+          "attributes": [
+            {
+              "name": "groundMat",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "100002"
+              }
+            }
+          ]
         }
       ],
       "children": []

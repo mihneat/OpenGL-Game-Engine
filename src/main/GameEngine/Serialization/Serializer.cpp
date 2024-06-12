@@ -61,7 +61,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"type", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texScale", FieldTypeVec2},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"type", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture", FieldTypeGUID},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID},}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
@@ -72,7 +72,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"SpeedSelectionDisplay", std::vector<SerializedField>{}},
         {"SpotLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"StartRunDisplay", std::vector<SerializedField>{}},
-        {"SteepShaderParams", std::vector<SerializedField>{}},
+        {"SteepShaderParams", std::vector<SerializedField>{{"groundMat", FieldTypeGUID},}},
         {"Sun", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"nightSpeed", FieldTypeFloat},}},
         {"TextRenderer", std::vector<SerializedField>{{"scale", FieldTypeFloat},{"color", FieldTypeColour},{"text", FieldTypeString},{"position", FieldTypeVec2},}},
         {"UiPanel", std::vector<SerializedField>{{"anchorTop", FieldTypeBool},{"anchorRight", FieldTypeBool},{"offsetTop", FieldTypeFloat},{"offsetRight", FieldTypeFloat},}},
@@ -266,11 +266,20 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         if (attributeName == "debugOnly")
             return &obj->debugOnly;
 
+        if (attributeName == "renderInWorldSpace")
+            return &obj->renderInWorldSpace;
+
         if (attributeName == "layer")
             return &obj->layer;
 
+        if (attributeName == "texture")
+            return &obj->texture;
+
         if (attributeName == "texScale")
             return &obj->texScale;
+
+        if (attributeName == "material")
+            return &obj->material;
 
         return nullptr;
     }
@@ -444,6 +453,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     if (dynamic_cast<SteepShaderParams*>(instance) != nullptr)
     {
         SteepShaderParams* obj = dynamic_cast<SteepShaderParams*>(instance);
+
+        if (attributeName == "groundMat")
+            return &obj->groundMat;
 
         return nullptr;
     }

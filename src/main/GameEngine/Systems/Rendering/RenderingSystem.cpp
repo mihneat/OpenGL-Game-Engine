@@ -165,10 +165,10 @@ void RenderingSystem::SetLocalUniforms(
 
     // TODO: Find a better way to send multiple textures
     // Send texture data
-    if (!meshRenderer->texture.empty())
+    if (meshRenderer->texture != nullptr)
     {
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, TextureLoader::GetTextureIdByName(meshRenderer->texture));
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture->GetTextureID());
         glUniform1i(glGetUniformLocation(shader->program, "texture_color"), 1);
         glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 1);
     }

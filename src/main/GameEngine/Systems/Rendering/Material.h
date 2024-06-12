@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "Shader.h"
 #include "ShaderParams.h"
+#include "main/GameEngine/ComponentBase/Component.h"
 
 namespace rendering
 {

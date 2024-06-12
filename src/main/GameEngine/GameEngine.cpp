@@ -89,27 +89,27 @@ void GameEngine::CreateSceneCamera()
 
 void GameEngine::ReloadScene()
 {
-    if (hierarchy != nullptr)
-    {
-        mainCam = nullptr;
-        secondaryCams.clear();
-        
-        DeleteComponents(hierarchy);
-    
-        hierarchy = nullptr;
-    }
-    
-    CreateHierarchy();
-    // SceneManager::LoadScene(startScene);
+    // if (hierarchy != nullptr)
+    // {
+    //     mainCam = nullptr;
+    //     secondaryCams.clear();
+    //     
+    //     DeleteComponents(hierarchy);
+    //
+    //     hierarchy = nullptr;
+    // }
+    //
+    // CreateHierarchy();
+    SceneManager::LoadScene(startScene);
     
     FindCameras();
     
 
     // TEMP: Serialize the hierarchy
-    // nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
-    //
-    // ofstream fout(startScene);
-    // fout << sceneObj.dump(2);
+    nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
+    
+    ofstream fout(startScene);
+    fout << sceneObj.dump(2);
 }
 
 void GameEngine::HandleSceneLoaded(Transform* root)

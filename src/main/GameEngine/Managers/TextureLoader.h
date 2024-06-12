@@ -1,6 +1,7 @@
 #pragma once
 
 #include "main/GameEngine/GameEngine.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 #include <iostream>
 #include <unordered_map>
 
@@ -33,11 +34,13 @@ namespace loaders
         static void InitTextures();
         static void LoadTexture(const std::string& texId, const std::string& texPath);
         static std::string GetTextureNameFromEnum(TextureName texName);
+        static rendering::Texture* GetTextureByEnum(TextureName texName);
         static int GetTextureIdByName(const std::string& textureName);
+        static rendering::Texture* GetTextureByName(const std::string& textureName);
 
     private:
         static std::unordered_map<TextureName, std::string> texToId;
-        static std::unordered_map<std::string, Texture2D*> mapTextures;
+        static std::unordered_map<std::string, rendering::Texture*> mapTextures;
         static bool isInitialized;
     };
 }   // namespace loaders

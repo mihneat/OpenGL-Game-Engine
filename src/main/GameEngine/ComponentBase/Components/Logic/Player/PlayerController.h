@@ -6,6 +6,7 @@
 #include "main/GameEngine/ComponentBase/Component.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/Interfaces/IResetable.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 
 namespace component
 {
@@ -65,7 +66,8 @@ namespace component
         SERIALIZE_FIELD glm::vec3 initialPosition;
 
         int skinIndex;
-        std::vector<int> skins;
+        
+        std::vector<rendering::Texture*> skins;
 
         GameManager* gameManager = nullptr;
     };

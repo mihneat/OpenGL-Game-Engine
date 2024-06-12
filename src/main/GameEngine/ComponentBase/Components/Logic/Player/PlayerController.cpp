@@ -27,10 +27,11 @@ void PlayerController::Start()
 	// Set player lives
 	lives = maxLives;
 
+	// TODO: Database access until serialization of vectors
 	// Add the player skins
-	skins.push_back(TextureLoader::Player2);
-	skins.push_back(TextureLoader::Player);
-	skins.push_back(TextureLoader::Player3);
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player2));
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player));
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player3));
 	ChangeSkin();
 }
 
@@ -105,7 +106,7 @@ void PlayerController::Reset()
 
 void PlayerController::ChangeSkin()
 {
-	transform->GetChild(0)->GetChild(0)->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum((TextureLoader::TextureName)skins[skinIndex]));
+	transform->GetChild(0)->GetChild(0)->GetComponent<MeshRenderer>()->SetTexture(skins[skinIndex]);
 }
 
 void PlayerController::KeyPress(const int key, const int mods)

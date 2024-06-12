@@ -20,18 +20,18 @@ MeshRenderer::MeshRenderer(
     LayerEnum layer,
     glm::vec3 meshScale,
     glm::vec4 meshColor,
-    bool renderUI,
+    bool renderInWorldSpace,
     bool debugOnly
 ) : Component(transform)
 {
     this->type = meshType;
-    this->baseMeshName = std::string(meshName);
+    this->baseMeshName = transform->GetName(); // std::string(meshName);
     this->meshScale = meshScale;
 	this->color = meshColor;
     this->debugOnly = debugOnly;
-    this->renderInWorldSpace = renderUI;
+    this->renderInWorldSpace = renderInWorldSpace;
     this->layer = layer;
-    this->texture = "";
+    this->texture = nullptr;
     this->material = material;
     this->materialOverrides = nullptr;
 }
@@ -86,10 +86,14 @@ void MeshRenderer::SetColor(glm::vec4 newColor)
     this->meshName = newMeshName;
 }
 
-void MeshRenderer::SetTexture(std::string newTexture, glm::vec2 newTexScale)
+void MeshRenderer::SetTexture(rendering::Texture* newTexture)
 {
-    texture = newTexture;
-    texScale = newTexScale;
+    this->texture = newTexture;
+}
+
+void MeshRenderer::SetTextureScale(glm::vec2 newTexScale)
+{
+    this->texScale = newTexScale;
 }
 
 void MeshRenderer::SetMaterialOverrides(rendering::MaterialOverrides* materialOverrides)

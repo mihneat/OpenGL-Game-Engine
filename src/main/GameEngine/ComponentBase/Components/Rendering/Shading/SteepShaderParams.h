@@ -23,7 +23,7 @@ namespace component
     protected:
         transform::Transform* player = nullptr;
         glm::vec3 previousPlayerPos = glm::vec3();
-        rendering::Material* groundMat = nullptr;
+        SERIALIZE_FIELD rendering::Material* groundMat = nullptr;
 
     private:
         glm::vec2 offset = glm::vec2();

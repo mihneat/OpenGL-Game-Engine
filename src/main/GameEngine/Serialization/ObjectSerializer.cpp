@@ -3,10 +3,12 @@
 #include <iostream>
 
 #include "CppHeaderParser.h"
+#include "Database.h"
 #include "Serializer.h"
 #include "main/GameEngine/ComponentBase/Component.h"
 #include "main/GameEngine/Managers/GameInstance.h"
 #include "main/GameEngine/Utils/Utils.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 
 using namespace std;
 using namespace transform;
@@ -64,6 +66,13 @@ string DeserializeString(const ordered_json& stringObj)
     return stringObj;
 }
 
+void* DeserializeGUID(const ordered_json& guidObj) // const Guid& guid)
+{
+    const SerializedObject& obj = Database::GetByGUID(guidObj["guid"]);
+
+    return obj.ptr;
+}
+
 void DeserializeAttribute(const ordered_json& attributeObj, Component* instance)
 {
     const FieldType type = SerializedField::GetFromTypeName(DeserializeString(attributeObj["type"]));
@@ -110,8 +119,18 @@ void DeserializeAttribute(const ordered_json& attributeObj, Component* instance)
         break;
         
     case FieldTypeGUID:
-        // TODO: Focus on enums first
-        // *static_cast<std::string*>(data) = DeserializeString(attributeObj["value"]);
+        // Hardcode a few serializable types :)
+        if (static_cast<rendering::Material**>(data) != nullptr)
+        {
+            *static_cast<rendering::Material**>(data) = static_cast<rendering::Material*>(DeserializeGUID(attributeObj["value"]));
+            break;
+        }
+        if (static_cast<rendering::Texture**>(data) != nullptr)
+        {
+            *static_cast<rendering::Texture**>(data) = static_cast<rendering::Texture*>(DeserializeGUID(attributeObj["value"]));
+            break;
+        }
+        std::cerr << "Pointer type is not serializable\n";
         break;
         
     case FieldTypeUnimplemented:
@@ -250,6 +269,16 @@ ordered_json SerializeString(string tString)
     return tString;
 }
 
+ordered_json SerializeGUID(void* ptr)
+{
+    ordered_json guidObj;
+
+    const SerializedObject& obj = Database::GetByPtr(ptr);
+    guidObj["guid"] = obj.guid;
+
+    return guidObj;
+}
+
 ordered_json SerializeAttribute(Component* instance, const SerializedField& attribute)
 {
     ordered_json attributeObj;
@@ -259,7 +288,7 @@ ordered_json SerializeAttribute(Component* instance, const SerializedField& attr
     
     const FieldType type = attribute.type;
     void* data = Serializer::GetAttributeReference(instance, attribute.name);
-
+    
     switch (type)
     {
     case FieldTypeBool:
@@ -300,13 +329,24 @@ ordered_json SerializeAttribute(Component* instance, const SerializedField& attr
         break;
         
     case FieldTypeGUID:
-        // TODO: Implement after enums
-        // attributeObj["value"] = SerializeColor(*static_cast<glm::vec4*>(data));
-        break;
+        // Hardcode a few serializable types :)
+        if (static_cast<rendering::Material**>(data) != nullptr)
+        {
+            attributeObj["value"] = SerializeGUID(*static_cast<rendering::Material**>(data));
+            break;
+        }
+        if (static_cast<rendering::Texture**>(data) != nullptr)
+        {
+            attributeObj["value"] = SerializeGUID(*static_cast<rendering::Texture**>(data));
+            break;
+        }
+        std::cerr << "Pointer type is not serializable\n";
+        
+        return ordered_json::object();
         
     case FieldTypeUnimplemented:
         std::cerr << "[SceneManager] Type not implemented!\n";
-        break;
+        return ordered_json::object();
     }
 
     return attributeObj;
@@ -317,7 +357,11 @@ ordered_json SerializeAttributeArray(Component* component, const std::string& cl
     ordered_json attributesObj = ordered_json::array();
 
     for (const auto& attribute : Serializer::GetSerializedFieldsForClass(className))
-        attributesObj.push_back(SerializeAttribute(component, attribute));
+    {
+        ordered_json attributeObj = SerializeAttribute(component, attribute);
+        if (attributeObj != ordered_json::object())
+            attributesObj.push_back(attributeObj);
+    }
 
     return attributesObj;
 }

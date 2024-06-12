@@ -81,7 +81,8 @@ Transform* PrefabManager::CreateGround(Transform* parent)
     ground->Rotate(-glm::vec3(glm::pi<float>() / 6.0f, 0.0f, 0.0f)); // Slope incline
     ground->AddComponent(new MeshRenderer(ground, MeshRenderer::FragmentedSquare, "snowGround", MaterialManager::GetMaterial(MaterialManager::MAT_SCROLLABLE_TERRAIN),
         MeshRenderer::Default, glm::vec3(200.0f, 200.0f, 1.0f), glm::vec4(1.0f)));
-    ground->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::Snow), glm::vec2(4.0f));
+    ground->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::Snow));
+    ground->GetComponent<MeshRenderer>()->SetTextureScale(glm::vec2(4.0f));
     ground->AddComponent(new GroundStick(ground));
 
     return ground;
@@ -119,13 +120,14 @@ Transform* PrefabManager::CreateTree(Transform* parent)
     Transform* treeTrunk = new Transform(tree, "Trunk");
     treeTrunk->AddComponent(new MeshRenderer(treeTrunk, MeshRenderer::CubeMesh, "treeTrunk", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(5.6f, 30.0f, 5.6f), glm::vec4(1.0f))); // glm::vec4(128, 77, 33, 255) / 255.0f));
-    treeTrunk->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::TreeBark), glm::vec2(3.0f));
+    treeTrunk->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::TreeBark));
+    treeTrunk->GetComponent<MeshRenderer>()->SetTextureScale(glm::vec2(3.0f));
 
     Transform* treeCorona = new Transform(tree, "Corona");
     treeCorona->Translate(glm::vec3(0.0f, 20.0f, 0.0f));
     treeCorona->AddComponent(new MeshRenderer(treeCorona, MeshRenderer::CubeMesh, "treeCorona", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(20.0f), glm::vec4(1.0f))); // glm::vec4(98, 204, 53, 255) / 255.0f));
-    treeCorona->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::TreeCorona));
+    treeCorona->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::TreeCorona));
 
     // Create the light
     Transform* light = new Transform(treeCorona, "Light");
@@ -149,13 +151,13 @@ Transform* PrefabManager::CreateRock(Transform* parent)
     rock1->Translate(glm::vec3(-4.0f, 0.0f, -1.0f));
     rock1->AddComponent(new MeshRenderer(rock1, MeshRenderer::Sphere, "rock1", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(12.0f), glm::vec4(1.0f))); // glm::vec4(61, 53, 65, 255) / 255.0f));
-    rock1->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::Rock));
+    rock1->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::Rock));
 
     Transform* rock2 = new Transform(rock, "Rock2");
     rock2->Translate(glm::vec3(4.5f, 0.0f, 1.0f));
     rock2->AddComponent(new MeshRenderer(rock2, MeshRenderer::Sphere, "rock2", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(9.0f), glm::vec4(1.0f))); // glm::vec4(61, 53, 65, 255) / 255.0f));
-    rock2->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::Rock));
+    rock2->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::Rock));
 
     // Create the light
     Transform* light = new Transform(rock, "Light");
@@ -178,13 +180,13 @@ Transform* PrefabManager::CreateLightPole(Transform* parent)
     Transform* verticalPole = new Transform(lightPole, "Vertical Pole");
     verticalPole->AddComponent(new MeshRenderer(verticalPole, MeshRenderer::CubeMesh, "verticalPole", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(2.0f, 40.0f, 2.0f), glm::vec4(1.0f))); // glm::vec4(77, 54, 45, 255) / 255.0f));
-    verticalPole->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::LightPole));
+    verticalPole->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::LightPole));
 
     Transform* horizontalPole = new Transform(lightPole, "Horizontal Pole");
     horizontalPole->Translate(glm::vec3(0.0f, 20.0f, 0.0f));
     horizontalPole->AddComponent(new MeshRenderer(horizontalPole, MeshRenderer::CubeMesh, "horizontalPole", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(25.0f, 3.0f, 3.0f), glm::vec4(1.0f))); // glm::vec4(77, 54, 45, 255) / 255.0f));
-    horizontalPole->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::LightPole));
+    horizontalPole->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::LightPole));
 
     // Create the lights
     Transform* light1 = new Transform(horizontalPole, "Light 1");
@@ -214,7 +216,7 @@ Transform* PrefabManager::CreatePresent(Transform* parent)
     Transform* presentBox = new Transform(present, "Box");
     presentBox->AddComponent(new MeshRenderer(presentBox, MeshRenderer::CubeMesh, "presentBox", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(10.0f), glm::vec4(1.0f))); // glm::vec4(168, 7, 130, 255) / 255.0f));
-    presentBox->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum(TextureLoader::Present));
+    presentBox->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByEnum(TextureLoader::Present));
 
     // Create the light
     Transform* light = new Transform(presentBox, "Light");
