@@ -2,10 +2,11 @@
 #include "Shader.h"
 #include "ShaderParams.h"
 #include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/Serialization/SerializableObject.h"
 
 namespace rendering
 {
-    class Material
+    class Material : public SerializableObject
     {
     public:
         Material(Shader* shader);

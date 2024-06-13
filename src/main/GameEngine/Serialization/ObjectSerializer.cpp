@@ -66,7 +66,7 @@ string DeserializeString(const ordered_json& stringObj)
     return stringObj;
 }
 
-void* DeserializeGUID(const ordered_json& guidObj) // const Guid& guid)
+void* DeserializeGUID(const ordered_json& guidObj)
 {
     const SerializedObject& obj = Database::GetByGUID(guidObj["guid"]);
 
@@ -119,17 +119,12 @@ void DeserializeAttribute(const ordered_json& attributeObj, Component* instance)
         break;
         
     case FieldTypeGUID:
-        // Hardcode a few serializable types :)
-        if (static_cast<rendering::Material**>(data) != nullptr)
+        if (static_cast<SerializableObject**>(data) != nullptr)
         {
-            *static_cast<rendering::Material**>(data) = static_cast<rendering::Material*>(DeserializeGUID(attributeObj["value"]));
+            *static_cast<SerializableObject**>(data) = static_cast<SerializableObject*>(DeserializeGUID(attributeObj["value"]));
             break;
         }
-        if (static_cast<rendering::Texture**>(data) != nullptr)
-        {
-            *static_cast<rendering::Texture**>(data) = static_cast<rendering::Texture*>(DeserializeGUID(attributeObj["value"]));
-            break;
-        }
+        
         std::cerr << "Pointer type is not serializable\n";
         break;
         
@@ -327,15 +322,9 @@ ordered_json SerializeAttribute(Component* instance, const SerializedField& attr
         break;
         
     case FieldTypeGUID:
-        // Hardcode a few serializable types :)
-        if (static_cast<rendering::Material**>(data) != nullptr)
+        if (static_cast<SerializableObject**>(data) != nullptr)
         {
-            attributeObj["value"] = SerializeGUID(*static_cast<rendering::Material**>(data));
-            break;
-        }
-        if (static_cast<rendering::Texture**>(data) != nullptr)
-        {
-            attributeObj["value"] = SerializeGUID(*static_cast<rendering::Texture**>(data));
+            attributeObj["value"] = SerializeGUID(*static_cast<SerializableObject**>(data));
             break;
         }
         std::cerr << "Pointer type is not serializable\n";

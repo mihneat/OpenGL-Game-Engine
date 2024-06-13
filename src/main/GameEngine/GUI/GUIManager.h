@@ -84,7 +84,7 @@ private:
     bool showInspector = true;
     bool showPreferences = false;
     bool showDebugConsole = false;
-    bool showDemoWindow = true;
+    bool showDemoWindow = false;
 
     transform::Transform* lastSelectedTransform = nullptr;
     

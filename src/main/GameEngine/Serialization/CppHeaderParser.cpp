@@ -195,7 +195,7 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
     // Try to find the attribute type
     bool isPointer = fieldDeclaration.find('*') != std::string::npos;
     FieldType type = FieldTypeUnimplemented;
-    std::string enumName = "";
+    std::string typeName = "";
     for (size_t i = 0; i < words.size() - 1; ++i)
     {
         const std::string& currWord = words[i];
@@ -287,7 +287,7 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
 
             if (currWord.find(enm.enumName) != std::string::npos)
             {
-                enumName = enm.enumName;
+                typeName = enm.enumName;
                 isEnum = true;
                 break;
             }
@@ -309,13 +309,35 @@ SerializedField GetSerializedField(std::ifstream& fin, const std::string& remain
             
             break;
         }
+        
+        if (currWord.find("Material") != std::string::npos)
+        {
+            if (!isPointer)
+                break;
+
+            type = FieldTypeGUID;
+            typeName = "Material";
+            
+            break;
+        }
+        
+        if (currWord.find("Texture") != std::string::npos)
+        {
+            if (!isPointer)
+                break;
+
+            type = FieldTypeGUID;
+            typeName = "Texture";
+            
+            break;
+        }
     }
 
     // If all else fails and the next is a pointer, consider it a GUID-based item
     if (type == FieldTypeUnimplemented && isPointer)
         type = FieldTypeGUID;
 
-    return {attributeName, type, enumName};
+    return {attributeName, type, typeName};
 }
 
 std::vector<EnumInfo> ParseEnumsInHeader(const std::filesystem::path& headerPath)
@@ -442,7 +464,7 @@ ClassInfo ParseHeaderFile(const std::filesystem::path& headerPath, const std::ve
         std::cout << "Serialized fields:\n";
         for (auto& it : serializedFields)
         {
-            std::cout << "  * " << it.name << ": " << it.GetTypeName() << " " << it.enumName << "\n";
+            std::cout << "  * " << it.name << ": " << it.GetTypeName() << " " << it.typeName << "\n";
         }
 
         std::cout << "\n";
@@ -486,8 +508,8 @@ void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo
                 .append("\", ")
                 .append(serializedField.GetTypeName());
 
-            if (serializedField.type == FieldTypeEnum)
-                serializedClassFields.append(", \"").append(serializedField.enumName).append("\"");
+            if (serializedField.type == FieldTypeEnum || serializedField.type == FieldTypeGUID)
+                serializedClassFields.append(", \"").append(serializedField.typeName).append("\"");
             
             serializedClassFields.append("},");
         }

@@ -813,7 +813,7 @@ std::string FormatString(const std::string& str)
     return formattedString;
 }
 
-bool SerializeGUID(void* data)
+bool SerializeGUID(void* data, const std::string& typeName)
 {
     if (data == nullptr)
         return false;
@@ -822,26 +822,22 @@ bool SerializeGUID(void* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeGUID %p", data);
     
-    // Hardcode a few serializable types :)
-    SerializedObject obj = Database::GetByGUID("");
-    if (static_cast<rendering::Material**>(data) != nullptr)
-        obj = Database::GetByPtr(*static_cast<rendering::Material**>(data));
-    else if (static_cast<rendering::Texture**>(data) != nullptr)
-        obj = Database::GetByPtr(*static_cast<rendering::Texture**>(data));
+    SerializableObject** dataObj = static_cast<SerializableObject**>(data);
 
-    if (obj.name.empty())
+    std::cout << typeName << "\n";
+
+    if (dataObj == nullptr || typeName.empty())
     {
-        ImGui::Text("Missing object GUID");
+        ImGui::Text("Unknown type");
         return true;
     }
+        
+    SerializedObject obj = Database::GetByPtr(*dataObj);
 
-    // ImGui::Text("Name: %s, GUID: %s", obj.name.c_str(), obj.guid.c_str());
+    const std::map<std::string, SerializedObject>& objs = Database::GetByType(typeName);
 
-    const std::map<std::string, SerializedObject>& objs = Database::GetByType(obj.type);
-
-    // TODO: Only do this when opening a window / the dropdown
     // Transform into a vector
-    int value = 0, i = 0;
+    int value = -1, i = 0;
     std::vector<SerializedObject> values;
     for (auto& it : objs)
     {
@@ -854,20 +850,21 @@ bool SerializeGUID(void* data)
     }
     
     static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview;
-    if (ImGui::BeginCombo(buf, values[value].name.c_str(), comboFlags))
+    if (ImGui::BeginCombo(buf, value == -1 ? "None" : values[value].name.c_str(), comboFlags))
     {
+        bool isSelected = (value == -1);
+        if (ImGui::Selectable("None", isSelected))
+            value = -1;
+        
+        if (isSelected)
+            ImGui::SetItemDefaultFocus();
+        
         for (int n = 0; n < values.size(); n++)
         {
-            bool isSelected = (value == n);
+            isSelected = (value == n);
             if (ImGui::Selectable(values[n].name.c_str(), isSelected))
             {
-                isSelected = n;
-
-                // TODO: Make a function out of this
-                if (static_cast<rendering::Material**>(data) != nullptr)
-                    *static_cast<rendering::Material**>(data) = static_cast<rendering::Material*>(values[n].ptr);
-                else if (static_cast<rendering::Texture**>(data) != nullptr)
-                    obj = Database::GetByPtr(*static_cast<rendering::Texture**>(data));
+                value = n;
             }
     
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -876,6 +873,9 @@ bool SerializeGUID(void* data)
         }
         ImGui::EndCombo();
     }
+                
+    // Assign the new data
+    *dataObj = value == -1 ? nullptr : static_cast<SerializableObject*>(values[value].ptr);
 
     return true;
 }
@@ -920,7 +920,7 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
         break;
 
     case FieldTypeEnum:
-        successful = SerializeEnum(static_cast<int*>(data), attribute.enumName);
+        successful = SerializeEnum(static_cast<int*>(data), attribute.typeName);
         break;
         
     case FieldTypeTransform:
@@ -928,7 +928,7 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
         break;
         
     case FieldTypeGUID:
-        successful = SerializeGUID(data);
+        successful = SerializeGUID(data, attribute.typeName);
         break;
 
     default:

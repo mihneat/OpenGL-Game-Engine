@@ -22,7 +22,7 @@ struct SerializedField
 {
     std::string name;
     FieldType type;
-    std::string enumName = "";
+    std::string typeName = "";
 
     std::string GetTypeName() const;
     static FieldType GetFromTypeName(const std::string& str);
