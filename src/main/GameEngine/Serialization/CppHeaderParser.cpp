@@ -518,8 +518,8 @@ void GenerateSerializer(const SerializationResult& s, const std::vector<EnumInfo
         serializedClassFieldsTemplate.append(serializedClassFields);
 
         // Step 3 - Form the attribute resolver
-        std::string attributeResolver("    if (dynamic_cast<");
-        attributeResolver.append(it.second.className).append("*>(instance) != nullptr)\n")
+        std::string attributeResolver("    if (instance->GetName() == \"");
+        attributeResolver.append(it.second.className).append("\")\n")
             .append("    {\n")
             .append("        ").append(it.second.className).append("* obj = dynamic_cast<").append(it.second.className).append("*>(instance);\n\n");
 

@@ -8,6 +8,7 @@
 #include "components/transform.h"
 #include "core/engine.h"
 #include "core/managers/resource_path.h"
+#include "main/GameEngine/Systems/Rendering/ShaderResourceManager.h"
 
 using namespace gfxc;
 
@@ -268,10 +269,7 @@ void SimpleScene::ReloadShaders() const
     std::cout << "=============================" << std::endl;
     std::cout << std::endl;
 
-    for (auto &shader : shaders)
-    {
-        shader.second->Reload();
-    }
+    rendering::ShaderResourceManager::ReloadShaders();
 }
 
 

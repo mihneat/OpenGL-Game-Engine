@@ -9,7 +9,7 @@ namespace component
     SERIALIZE_CLASS
     class GroundStick : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(GroundStick)
         
     public:
         GroundStick(transform::Transform* transform) : Component(transform) { }

@@ -88,55 +88,59 @@ void RenderingSystem::SetGlobalUniforms(
     glUniform3fv(eye_position, 1, glm::value_ptr(cam->transform->GetWorldPosition()));
 
     // Send light information
+    static std::vector<std::string> lightIsUsedStrings;
+    static std::vector<std::string> lightTypeStrings;
+    static std::vector<std::string> lightIntensityStrings;
+    static std::vector<std::string> lightIsPositionStrings;
+    static std::vector<std::string> lightIsColorStrings;
+    static std::vector<std::string> lightIsDirectionStrings;
+    if (lightIsUsedStrings.empty())
+    {
+        for (int i = 0; i < LightManager::maxLights; ++i)
+        {
+            lightIsUsedStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].isUsed"));
+            lightTypeStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].type"));
+            lightIntensityStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].intensity"));
+            lightIsPositionStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].position"));
+            lightIsColorStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].color"));
+            lightIsDirectionStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].direction"));
+        } 
+    }
+    
     int cnt = 0;
-    static constexpr int MAX_BUF = 30;
-    static char* lightIsUsed = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
-    static char* lightType = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
-    static char* lightIntensity = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
-    static char* lightIsPosition = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
-    static char* lightIsColor = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
-    static char* lightIsDirection = static_cast<char*>(calloc(MAX_BUF, sizeof(char*))); 
     for (int i = 0; i < LightManager::maxLights; ++i)
     {
         if (LightManager::lights[i].isUsed == true) {
             ++cnt;
         }
-
-        // Modify the strings to the current index
-        snprintf(lightIsUsed, MAX_BUF, "lights[%d].isUsed", i);
-        snprintf(lightType, MAX_BUF, "lights[%d].type", i);
-        snprintf(lightIntensity, MAX_BUF, "lights[%d].intensity", i);
-        snprintf(lightIsPosition, MAX_BUF, "lights[%d].position", i);
-        snprintf(lightIsColor, MAX_BUF, "lights[%d].color", i);
-        snprintf(lightIsDirection, MAX_BUF, "lights[%d].direction", i);
-
+        
         {
-            const GLint location = glGetUniformLocation(shader->program, lightIsUsed);
+            const GLint location = glGetUniformLocation(shader->program, lightIsUsedStrings[i].c_str());
             glUniform1i(location, LightManager::lights[i].isUsed);
         }
 
         {
-            const GLint location = glGetUniformLocation(shader->program, lightType);
+            const GLint location = glGetUniformLocation(shader->program, lightTypeStrings[i].c_str());
             glUniform1i(location, LightManager::lights[i].type);
         }
 
         {
-            const GLint location = glGetUniformLocation(shader->program, lightIntensity);
+            const GLint location = glGetUniformLocation(shader->program, lightIntensityStrings[i].c_str());
             glUniform1f(location, LightManager::lights[i].intensity);
         }
 
         {
-            const GLint location = glGetUniformLocation(shader->program, lightIsPosition);
+            const GLint location = glGetUniformLocation(shader->program, lightIsPositionStrings[i].c_str());
             glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].position));
         }
 
         {
-            const GLint location = glGetUniformLocation(shader->program, lightIsColor);
+            const GLint location = glGetUniformLocation(shader->program, lightIsColorStrings[i].c_str());
             glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].color));
         }
 
         {
-            const GLint location = glGetUniformLocation(shader->program, lightIsDirection);
+            const GLint location = glGetUniformLocation(shader->program, lightIsDirectionStrings[i].c_str());
             glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].direction));
         }
     }

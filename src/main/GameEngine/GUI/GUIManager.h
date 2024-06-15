@@ -75,7 +75,7 @@ private:
 
     void LoadPreferences();
 
-    void DisplaySerializedField(const SerializedField& attribute, void* data);
+    bool DisplaySerializedField(const SerializedField& attribute, void* data);
     void DisplaySerializedTransform(transform::Transform* transform);
     
     bool showSceneWindow = true;

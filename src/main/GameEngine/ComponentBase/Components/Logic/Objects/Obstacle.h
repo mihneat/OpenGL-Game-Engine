@@ -12,7 +12,7 @@ namespace component
     SERIALIZE_CLASS
     class Obstacle : public Component, public IResetable
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(Obstacle)
         
     public:
         Obstacle(transform::Transform* transform, float collisionRadius = 3.0f, bool isHazard = true) : Component(transform),

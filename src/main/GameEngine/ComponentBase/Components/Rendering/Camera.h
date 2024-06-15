@@ -22,7 +22,7 @@ namespace component
     SERIALIZE_CLASS
     class Camera : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(Camera)
         
     public:
         Camera(transform::Transform* transform, const glm::vec3& center, const glm::vec3& up,

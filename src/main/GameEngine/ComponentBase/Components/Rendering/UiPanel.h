@@ -17,7 +17,7 @@ namespace component
     SERIALIZE_CLASS
     class UiPanel : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(UiPanel)
         
     public:
         UiPanel(transform::Transform* transform) : Component(transform),

@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class DirectionalLight : public Light
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(DirectionalLight)
         
     public:
         DirectionalLight(transform::Transform* transform);

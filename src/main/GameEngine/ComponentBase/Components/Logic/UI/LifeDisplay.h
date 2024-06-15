@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class LifeDisplay : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(LifeDisplay)
         
     public:
         LifeDisplay(transform::Transform* transform) : Component(transform) { }

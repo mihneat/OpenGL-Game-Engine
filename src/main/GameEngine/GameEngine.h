@@ -83,8 +83,6 @@ namespace m1
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
-        
-        void UpdateTransforms(transform::Transform* currentTransform);
 
         void FindCameras();
 

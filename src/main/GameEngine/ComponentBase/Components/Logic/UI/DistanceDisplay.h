@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class DistanceDisplay : public Component, public IResetable
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(DistanceDisplay)
         
     public:
         DistanceDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL),

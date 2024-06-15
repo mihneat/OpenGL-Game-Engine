@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class PointLight : public Light
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(PointLight)
         
     public:
         PointLight(transform::Transform* transform);

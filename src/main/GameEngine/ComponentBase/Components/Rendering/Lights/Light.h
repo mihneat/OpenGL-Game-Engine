@@ -17,7 +17,7 @@ namespace component
     SERIALIZE_CLASS
     class Light : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(Light)
         
     protected:
         Light(transform::Transform* transform);

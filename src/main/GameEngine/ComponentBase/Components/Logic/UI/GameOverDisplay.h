@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class GameOverDisplay : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(GameOverDisplay)
         
     public:
         GameOverDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL) { }

@@ -31,7 +31,7 @@ namespace component
     SERIALIZE_CLASS
     class MeshRenderer : public Component, public IRenderable
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(MeshRenderer)
 
     public:
         SERIALIZE_ENUM

@@ -11,7 +11,7 @@ namespace component
     SERIALIZE_CLASS
     class ObjectSpawner : public Component, public IResetable
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(ObjectSpawner)
         
     public:
         ObjectSpawner(transform::Transform* transform) : Component(transform), t(0.0f), spawnTime(1.0f), spawnTimeInterval(glm::vec2(0.1f, 0.2f)),

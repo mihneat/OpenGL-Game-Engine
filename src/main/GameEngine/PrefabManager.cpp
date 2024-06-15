@@ -193,6 +193,7 @@ Transform* PrefabManager::CreateLightPole(Transform* parent)
     light1->AddComponent(new UpdateLightPosition(light1));
     light1->AddComponent(new SpotLight(light1));
     light1->GetComponent<SpotLight>()->ChangeIntensity(300.0f);
+    light1->GetComponent<SpotLight>()->ChangeDirection(glm::vec3(0.0f, -1.0f, 0.0f));
     light1->GetComponent<SpotLight>()->ChangeColor(glm::vec4(250, 191, 77, 255) / 255.0f);
 
     Transform* light2 = new Transform(horizontalPole, "Light 2");
@@ -200,6 +201,7 @@ Transform* PrefabManager::CreateLightPole(Transform* parent)
     light2->AddComponent(new UpdateLightPosition(light2));
     light2->AddComponent(new SpotLight(light2));
     light2->GetComponent<SpotLight>()->ChangeIntensity(300.0f);
+    light2->GetComponent<SpotLight>()->ChangeDirection(glm::vec3(0.0f, -1.0f, 0.0f));
     light2->GetComponent<SpotLight>()->ChangeColor(glm::vec4(250, 191, 77, 255) / 255.0f);
 
     return lightPole;

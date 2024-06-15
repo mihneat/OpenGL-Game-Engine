@@ -11,7 +11,7 @@ namespace component
     SERIALIZE_CLASS
     class SteepShaderParams : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(SteepShaderParams)
         
     public:
         SteepShaderParams(transform::Transform* transform, rendering::Material* groundMat = nullptr) : Component(transform), groundMat(groundMat) { }

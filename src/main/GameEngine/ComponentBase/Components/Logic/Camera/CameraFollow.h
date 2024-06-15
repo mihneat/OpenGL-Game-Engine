@@ -12,7 +12,7 @@ namespace component
     SERIALIZE_CLASS
     class CameraFollow : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(CameraFollow)
         
     public:
         CameraFollow(transform::Transform* transform, transform::Transform* followTarget = nullptr,

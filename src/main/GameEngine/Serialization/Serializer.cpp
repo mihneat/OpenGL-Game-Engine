@@ -32,6 +32,7 @@
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Shading\SteepShaderParams.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Time\Sun.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\TextRenderer.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\TransformVisualizer.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\UiPanel.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\UpdateLightPosition.h"
 
@@ -55,7 +56,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"CameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"distanceToTarget", FieldTypeFloat},{"forwardFollowDistance", FieldTypeFloat},{"angleScale", FieldTypeFloat},{"retroAngleScale", FieldTypeFloat},{"isRetroCam", FieldTypeBool},}},
         {"DirectionalLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"DistanceDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
-        {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
+        {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"gameState", FieldTypeEnum, "GameState"},{"gameSpeed", FieldTypeEnum, "GameSpeed"},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
         {"GameOverDisplay", std::vector<SerializedField>{}},
         {"GroundStick", std::vector<SerializedField>{{"player", FieldTypeTransform},{"offset", FieldTypeVec3},}},
         {"HighScoreDisplay", std::vector<SerializedField>{}},
@@ -75,6 +76,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"SteepShaderParams", std::vector<SerializedField>{{"groundMat", FieldTypeGUID, "Material"},}},
         {"Sun", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"nightSpeed", FieldTypeFloat},}},
         {"TextRenderer", std::vector<SerializedField>{{"scale", FieldTypeFloat},{"color", FieldTypeColour},{"text", FieldTypeString},{"position", FieldTypeVec2},}},
+        {"TransformVisualizer", std::vector<SerializedField>{{"direction", FieldTypeEnum, "TransformDirection"},{"distance", FieldTypeFloat},}},
         {"UiPanel", std::vector<SerializedField>{{"anchorTop", FieldTypeBool},{"anchorRight", FieldTypeBool},{"offsetTop", FieldTypeFloat},{"offsetRight", FieldTypeFloat},}},
         {"UpdateLightPosition", std::vector<SerializedField>{}},
 
@@ -96,7 +98,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
 
 void* Serializer::GetAttributeReference(Component* instance, const std::string& attributeName)
 {
-    if (dynamic_cast<Camera*>(instance) != nullptr)
+    if (instance->GetName() == "Camera")
     {
         Camera* obj = dynamic_cast<Camera*>(instance);
 
@@ -109,7 +111,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<CameraFollow*>(instance) != nullptr)
+    if (instance->GetName() == "CameraFollow")
     {
         CameraFollow* obj = dynamic_cast<CameraFollow*>(instance);
 
@@ -134,7 +136,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<DirectionalLight*>(instance) != nullptr)
+    if (instance->GetName() == "DirectionalLight")
     {
         DirectionalLight* obj = dynamic_cast<DirectionalLight*>(instance);
 
@@ -156,7 +158,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<DistanceDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "DistanceDisplay")
     {
         DistanceDisplay* obj = dynamic_cast<DistanceDisplay*>(instance);
 
@@ -166,7 +168,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<GameManager*>(instance) != nullptr)
+    if (instance->GetName() == "GameManager")
     {
         GameManager* obj = dynamic_cast<GameManager*>(instance);
 
@@ -178,6 +180,12 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "runs")
             return &obj->runs;
+
+        if (attributeName == "gameState")
+            return &obj->gameState;
+
+        if (attributeName == "gameSpeed")
+            return &obj->gameSpeed;
 
         if (attributeName == "currentSkyColor")
             return &obj->currentSkyColor;
@@ -191,14 +199,14 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<GameOverDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "GameOverDisplay")
     {
         GameOverDisplay* obj = dynamic_cast<GameOverDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<GroundStick*>(instance) != nullptr)
+    if (instance->GetName() == "GroundStick")
     {
         GroundStick* obj = dynamic_cast<GroundStick*>(instance);
 
@@ -211,14 +219,14 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<HighScoreDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "HighScoreDisplay")
     {
         HighScoreDisplay* obj = dynamic_cast<HighScoreDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<LifeDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "LifeDisplay")
     {
         LifeDisplay* obj = dynamic_cast<LifeDisplay*>(instance);
 
@@ -228,7 +236,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<Light*>(instance) != nullptr)
+    if (instance->GetName() == "Light")
     {
         Light* obj = dynamic_cast<Light*>(instance);
 
@@ -250,7 +258,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<MeshRenderer*>(instance) != nullptr)
+    if (instance->GetName() == "MeshRenderer")
     {
         MeshRenderer* obj = dynamic_cast<MeshRenderer*>(instance);
 
@@ -284,7 +292,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<ObjectSpawner*>(instance) != nullptr)
+    if (instance->GetName() == "ObjectSpawner")
     {
         ObjectSpawner* obj = dynamic_cast<ObjectSpawner*>(instance);
 
@@ -303,7 +311,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<Obstacle*>(instance) != nullptr)
+    if (instance->GetName() == "Obstacle")
     {
         Obstacle* obj = dynamic_cast<Obstacle*>(instance);
 
@@ -316,7 +324,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<OrthoCameraFollow*>(instance) != nullptr)
+    if (instance->GetName() == "OrthoCameraFollow")
     {
         OrthoCameraFollow* obj = dynamic_cast<OrthoCameraFollow*>(instance);
 
@@ -344,7 +352,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<PlayerController*>(instance) != nullptr)
+    if (instance->GetName() == "PlayerController")
     {
         PlayerController* obj = dynamic_cast<PlayerController*>(instance);
 
@@ -378,7 +386,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<PointLight*>(instance) != nullptr)
+    if (instance->GetName() == "PointLight")
     {
         PointLight* obj = dynamic_cast<PointLight*>(instance);
 
@@ -400,28 +408,28 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<RunsDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "RunsDisplay")
     {
         RunsDisplay* obj = dynamic_cast<RunsDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<ScoreDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "ScoreDisplay")
     {
         ScoreDisplay* obj = dynamic_cast<ScoreDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<SpeedSelectionDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "SpeedSelectionDisplay")
     {
         SpeedSelectionDisplay* obj = dynamic_cast<SpeedSelectionDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<SpotLight*>(instance) != nullptr)
+    if (instance->GetName() == "SpotLight")
     {
         SpotLight* obj = dynamic_cast<SpotLight*>(instance);
 
@@ -443,14 +451,14 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<StartRunDisplay*>(instance) != nullptr)
+    if (instance->GetName() == "StartRunDisplay")
     {
         StartRunDisplay* obj = dynamic_cast<StartRunDisplay*>(instance);
 
         return nullptr;
     }
 
-    if (dynamic_cast<SteepShaderParams*>(instance) != nullptr)
+    if (instance->GetName() == "SteepShaderParams")
     {
         SteepShaderParams* obj = dynamic_cast<SteepShaderParams*>(instance);
 
@@ -460,7 +468,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<Sun*>(instance) != nullptr)
+    if (instance->GetName() == "Sun")
     {
         Sun* obj = dynamic_cast<Sun*>(instance);
 
@@ -473,7 +481,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<TextRenderer*>(instance) != nullptr)
+    if (instance->GetName() == "TextRenderer")
     {
         TextRenderer* obj = dynamic_cast<TextRenderer*>(instance);
 
@@ -492,7 +500,20 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<UiPanel*>(instance) != nullptr)
+    if (instance->GetName() == "TransformVisualizer")
+    {
+        TransformVisualizer* obj = dynamic_cast<TransformVisualizer*>(instance);
+
+        if (attributeName == "direction")
+            return &obj->direction;
+
+        if (attributeName == "distance")
+            return &obj->distance;
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "UiPanel")
     {
         UiPanel* obj = dynamic_cast<UiPanel*>(instance);
 
@@ -511,7 +532,7 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
-    if (dynamic_cast<UpdateLightPosition*>(instance) != nullptr)
+    if (instance->GetName() == "UpdateLightPosition")
     {
         UpdateLightPosition* obj = dynamic_cast<UpdateLightPosition*>(instance);
 
@@ -565,6 +586,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     if (className == "SteepShaderParams") return new SteepShaderParams(parent);
     if (className == "Sun") return new Sun(parent);
     if (className == "TextRenderer") return new TextRenderer(parent);
+    if (className == "TransformVisualizer") return new TransformVisualizer(parent);
     if (className == "UiPanel") return new UiPanel(parent);
     if (className == "UpdateLightPosition") return new UpdateLightPosition(parent);
 
@@ -580,7 +602,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 
 const std::vector<std::string>& Serializer::GetSerializedClasses()
 {
-    static const std::vector<std::string> classNames = {"Camera","CameraFollow","DirectionalLight","DistanceDisplay","GameManager","GameOverDisplay","GroundStick","HighScoreDisplay","LifeDisplay","Light","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","UiPanel","UpdateLightPosition",};
+    static const std::vector<std::string> classNames = {"Camera","CameraFollow","DirectionalLight","DistanceDisplay","GameManager","GameOverDisplay","GroundStick","HighScoreDisplay","LifeDisplay","Light","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","UiPanel","UpdateLightPosition",};
     /**
      * Template(CLASS_NAME):
      *
@@ -595,6 +617,9 @@ const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum
 {
     static const std::unordered_map<std::string, std::vector<std::pair<std::string, int>>> enumPairs = {
         {"", {}},
+        {"GameState", {{"Start", 0},{"Playing", 1},{"Ended", 2},}},
+        {"GameSpeed", {{"Snail", 0},{"Slow", 1},{"Medium", 2},{"Fast", 3},{"Cheetah", 4},{"LightningMcQueen", 5},}},
+        {"TransformDirection", {{"TransformDirectionForward", 0},{"TransformDirectionRight", 1},{"TransformDirectionUp", 2},{"TransformDirectionCenter", 3},}},
         {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cube", 3},{"CubeMesh", 4},{"Sphere", 5},{"ZeldaHeart", 6},{"Cone", 7},{"None", 8},}},
         {"LayerEnum", {{"Default", 0},{"UI", 1},}},
 

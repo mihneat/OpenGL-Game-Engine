@@ -110,7 +110,7 @@ float spot_light_contribution(light_source light)
         light_att_factor = pow(linear_att, 2);
     }
 
-    float attenuation_factor = 1 / (200 + 0.4 * (distance(light.position, world_position)) * (distance(light.position, world_position)));
+    float attenuation_factor = 1 / (1 + (distance(light.position, world_position)) * (distance(light.position, world_position)));
     float lightValue = light.intensity * attenuation_factor * light_att_factor * ( diffuse_light + specular_light );
 
 	return lightValue;

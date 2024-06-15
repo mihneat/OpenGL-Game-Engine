@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class HighScoreDisplay : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(HighScoreDisplay)
         
     public:
         HighScoreDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL) { }

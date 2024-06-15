@@ -11,6 +11,7 @@ namespace rendering
     {
     public:
         static Shader* GetShader(const std::string& shaderName);
+        static void ReloadShaders();
     
     private:
         static void AddShader(const std::string& shaderName, Shader* shader);

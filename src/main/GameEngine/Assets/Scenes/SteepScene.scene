@@ -39,6 +39,16 @@
               "value": 1
             },
             {
+              "name": "gameState",
+              "type": "FieldTypeEnum",
+              "value": 0
+            },
+            {
+              "name": "gameSpeed",
+              "type": "FieldTypeEnum",
+              "value": 2
+            },
+            {
               "name": "currentSkyColor",
               "type": "FieldTypeColour",
               "value": {
@@ -256,7 +266,97 @@
                   ]
                 }
               ],
-              "children": []
+              "children": [
+                {
+                  "name": "Hat",
+                  "tag": "Default",
+                  "position": {
+                    "x": 0.0,
+                    "y": 7.940000057220459,
+                    "z": 0.0
+                  },
+                  "rotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  },
+                  "scale": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  },
+                  "components": [
+                    {
+                      "className": "MeshRenderer",
+                      "enabled": true,
+                      "attributes": [
+                        {
+                          "name": "type",
+                          "type": "FieldTypeEnum",
+                          "value": 7
+                        },
+                        {
+                          "name": "color",
+                          "type": "FieldTypeColour",
+                          "value": {
+                            "r": 1.0,
+                            "g": 1.0,
+                            "b": 0.9254902005195618,
+                            "a": 1.0
+                          }
+                        },
+                        {
+                          "name": "meshScale",
+                          "type": "FieldTypeVec3",
+                          "value": {
+                            "x": 3.0,
+                            "y": 3.0,
+                            "z": 3.0
+                          }
+                        },
+                        {
+                          "name": "debugOnly",
+                          "type": "FieldTypeBool",
+                          "value": false
+                        },
+                        {
+                          "name": "renderInWorldSpace",
+                          "type": "FieldTypeBool",
+                          "value": true
+                        },
+                        {
+                          "name": "layer",
+                          "type": "FieldTypeEnum",
+                          "value": 0
+                        },
+                        {
+                          "name": "texture",
+                          "type": "FieldTypeGUID",
+                          "value": {
+                            "guid": "200002"
+                          }
+                        },
+                        {
+                          "name": "texScale",
+                          "type": "FieldTypeVec2",
+                          "value": {
+                            "x": 1.0,
+                            "y": 1.0
+                          }
+                        },
+                        {
+                          "name": "material",
+                          "type": "FieldTypeGUID",
+                          "value": {
+                            "guid": "100001"
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "children": []
+                }
+              ]
             },
             {
               "name": "Left Ski",
@@ -534,12 +634,12 @@
       "tag": "Default",
       "position": {
         "x": 0.0,
-        "y": 0.0,
-        "z": 0.0
+        "y": 4.28000020980835,
+        "z": 24.579999923706055
       },
       "rotation": {
-        "x": 0.0,
-        "y": 0.0,
+        "x": 0.2800000011920929,
+        "y": -3.140000104904175,
         "z": 0.0
       },
       "scale": {
@@ -2059,6 +2159,448 @@
         }
       ],
       "children": []
+    },
+    {
+      "name": "Axis",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [],
+      "children": [
+        {
+          "name": "Forward",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 5.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "type",
+                  "type": "FieldTypeEnum",
+                  "value": 3
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.0,
+                    "g": 0.0,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200001"
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100001"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "TransformVisualizer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "direction",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "distance",
+                  "type": "FieldTypeFloat",
+                  "value": 5.0
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "Right",
+          "tag": "Default",
+          "position": {
+            "x": 5.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "type",
+                  "type": "FieldTypeEnum",
+                  "value": 3
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 1.0,
+                    "g": 0.007843137718737125,
+                    "b": 0.06666667014360428,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200001"
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100001"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "TransformVisualizer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "direction",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
+                  "name": "distance",
+                  "type": "FieldTypeFloat",
+                  "value": 5.0
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "Up",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 5.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "type",
+                  "type": "FieldTypeEnum",
+                  "value": 3
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.054901961237192154,
+                    "g": 1.0,
+                    "b": 0.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200001"
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100001"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "TransformVisualizer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "direction",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "distance",
+                  "type": "FieldTypeFloat",
+                  "value": 5.0
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "Center",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "type",
+                  "type": "FieldTypeEnum",
+                  "value": 3
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200001"
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100001"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "TransformVisualizer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "direction",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "distance",
+                  "type": "FieldTypeFloat",
+                  "value": 5.0
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
     }
   ]
 }

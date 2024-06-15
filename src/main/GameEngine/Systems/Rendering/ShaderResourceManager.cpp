@@ -17,7 +17,15 @@ Shader* ShaderResourceManager::GetShader(const std::string& shaderName)
 
     return shaders[shaderName];
 }
-    
+
+void ShaderResourceManager::ReloadShaders()
+{
+    for (const auto &shader : shaders)
+    {
+        shader.second->Reload();
+    }
+}
+
 void ShaderResourceManager::AddShader(const std::string& shaderName, Shader* shader)
 {
     shaders[shaderName] = shader;

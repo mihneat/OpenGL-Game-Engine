@@ -10,7 +10,7 @@ namespace component
     SERIALIZE_CLASS
     class Sun : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(Sun)
         
     public:
         Sun(transform::Transform* transform) : Component(transform), speed(0.1f), nightSpeed(0.25f), dist(10000.0f), lightSource(NULL), sunPosition(glm::vec3()) { }

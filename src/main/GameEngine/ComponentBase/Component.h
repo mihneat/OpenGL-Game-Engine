@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "main/GameEngine/ComponentBase/Transform.h"
 
 // Check 'Component.h' for more details
@@ -12,7 +14,13 @@
 #define SERIALIZE_ENUM
 
 // Check 'Component.h' for more details
-#define MARK_SERIALIZABLE friend class Serializer;
+#define MARK_SERIALIZABLE(COMPONENT) \
+    friend class Serializer; \
+    \
+	std::string GetName () const \
+	{ \
+		return #COMPONENT; \
+	}
 
 /**
  * Serialized field types:
@@ -85,6 +93,8 @@ namespace component
         void SetActive(bool active);
 
         transform::Transform* transform;
+
+        virtual std::string GetName() const = 0;
 
     protected:
         bool enabled = true;

@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class SpeedSelectionDisplay : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(SpeedSelectionDisplay)
         
     public:
         SpeedSelectionDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL),

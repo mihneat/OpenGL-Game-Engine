@@ -19,7 +19,7 @@ namespace component
     SERIALIZE_CLASS
     class TextRenderer : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(TextRenderer)
         
     public:
         TextRenderer(

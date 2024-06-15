@@ -610,9 +610,11 @@ bool SerializeBool(bool* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeBool %p", (void*)data);
 
-    ImGui::Checkbox(buf, data);
+    bool changed = false;
+    
+    if (ImGui::Checkbox(buf, data)) changed = true;
 
-    return true;
+    return changed;
 }
 
 bool SerializeInt(int* data)
@@ -624,11 +626,13 @@ bool SerializeInt(int* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeInt %p", (void*)data);
 
-    ImGui::DragInt(buf, data, 1);
+    bool changed = false;
+    
+    if (ImGui::DragInt(buf, data, 1)) changed = true;
     
     MouseWrap(buf, true, false, ImGuiMouseCursor_ResizeEW);
 
-    return true;
+    return changed;
 }
 
 bool SerializeFloat(float* data)
@@ -640,11 +644,13 @@ bool SerializeFloat(float* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeFloat %p", (void*)data);
 
-    ImGui::DragFloat(buf, data, 0.02f);
+    bool changed = false;
+    
+    if (ImGui::DragFloat(buf, data, 0.02f)) changed = true;
         
     MouseWrap(buf, true, false, ImGuiMouseCursor_ResizeEW);
 
-    return true;
+    return changed;
 }
 
 bool SerializeVec2(glm::vec2* data)
@@ -656,7 +662,9 @@ bool SerializeVec2(glm::vec2* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeVec2 %p", (void*)data);
 
-    ImGui::DragFloat2(buf, reinterpret_cast<float*>(data), 0.02f);
+    bool changed = false;
+    
+    if (ImGui::DragFloat2(buf, reinterpret_cast<float*>(data), 0.02f)) changed = true;
 
     // Check ImGui::DragScalarN() for more information
     ImGui::PushID(buf);
@@ -669,7 +677,7 @@ bool SerializeVec2(glm::vec2* data)
     
     ImGui::PopID();
 
-    return true;
+    return changed;
 }
 
 bool SerializeVec3(glm::vec3* data)
@@ -681,7 +689,9 @@ bool SerializeVec3(glm::vec3* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeVec3 %p", (void*)data);
 
-    ImGui::DragFloat3(buf, reinterpret_cast<float*>(data), 0.02f);
+    bool changed = false;
+    
+    if (ImGui::DragFloat3(buf, reinterpret_cast<float*>(data), 0.02f)) changed = true;
 
     // Check ImGui::DragScalarN() for more information
     ImGui::PushID(buf);
@@ -694,7 +704,7 @@ bool SerializeVec3(glm::vec3* data)
     
     ImGui::PopID();
 
-    return true;
+    return changed;
 }
 
 bool SerializeColour(glm::vec4* data)
@@ -706,7 +716,9 @@ bool SerializeColour(glm::vec4* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeColour %p", (void*)data);
 
-    ImGui::ColorEdit4(buf, reinterpret_cast<float*>(data));
+    bool changed = false;
+    
+    if (ImGui::ColorEdit4(buf, reinterpret_cast<float*>(data))) changed = true;
 
     // Check ImGui::ColorEdit4() for more information
     ImGui::PushID(buf);
@@ -724,7 +736,7 @@ bool SerializeColour(glm::vec4* data)
     ImGui::PopID();
     ImGui::PopID();
 
-    return true;
+    return changed;
 }
 
 bool SerializeString(std::string* data)
@@ -736,9 +748,11 @@ bool SerializeString(std::string* data)
     memset(buf, 0, BUF_SIZE);
     snprintf(buf, BUF_SIZE - 1, "##SerializeString %p", (void*)data);
 
-    ImGui::InputText(buf, data);
+    bool changed = false;
+    
+    if (ImGui::InputText(buf, data)) changed = true;
 
-    return true;
+    return changed;
 }
 
 bool SerializeEnum(int* data, const std::string& enumName)
@@ -759,8 +773,10 @@ bool SerializeEnum(int* data, const std::string& enumName)
         ImGui::Text("Enum value out of range");
         ImGui::PopStyleColor(1);
 
-        return true;
+        return false;
     }
+
+    bool changed = false;
     
     static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview;
     if (ImGui::BeginCombo(buf, values[value].first.c_str(), comboFlags))
@@ -772,6 +788,7 @@ bool SerializeEnum(int* data, const std::string& enumName)
             {
                 isSelected = n;
                 *data = n;
+                changed = true;
             }
     
             // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
@@ -781,7 +798,7 @@ bool SerializeEnum(int* data, const std::string& enumName)
         ImGui::EndCombo();
     }
 
-    return true;
+    return changed;
 }
 
 bool SerializeTransform(transform::Transform** data)
@@ -791,26 +808,7 @@ bool SerializeTransform(transform::Transform** data)
 
     ImGui::Text("%s", *data == nullptr ? "NULL" : (*data)->GetName().c_str());
 
-    return true;
-}
-
-std::string FormatString(const std::string& str)
-{
-    std::string formattedString(str);
-    formattedString[0] = toupper(formattedString[0]);
-
-    // Insert a space before each capital letter
-    for (size_t i = 1; i < formattedString.length(); ++i)
-    {
-        if (formattedString[i] >= 'A' && formattedString[i] <= 'Z') {
-            formattedString.insert(i, " ");
-            
-            // Skip over the character
-            ++i;
-        }
-    }
-
-    return formattedString;
+    return false;
 }
 
 bool SerializeGUID(void* data, const std::string& typeName)
@@ -824,12 +822,10 @@ bool SerializeGUID(void* data, const std::string& typeName)
     
     SerializableObject** dataObj = static_cast<SerializableObject**>(data);
 
-    std::cout << typeName << "\n";
-
     if (dataObj == nullptr || typeName.empty())
     {
         ImGui::Text("Unknown type");
-        return true;
+        return false;
     }
         
     SerializedObject obj = Database::GetByPtr(*dataObj);
@@ -848,6 +844,8 @@ bool SerializeGUID(void* data, const std::string& typeName)
 
         ++i;
     }
+
+    int initValue = value;
     
     static ImGuiComboFlags comboFlags = ImGuiComboFlags_WidthFitPreview;
     if (ImGui::BeginCombo(buf, value == -1 ? "None" : values[value].name.c_str(), comboFlags))
@@ -877,10 +875,29 @@ bool SerializeGUID(void* data, const std::string& typeName)
     // Assign the new data
     *dataObj = value == -1 ? nullptr : static_cast<SerializableObject*>(values[value].ptr);
 
-    return true;
+    return value == initValue;
 }
 
-void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* data)
+std::string FormatString(const std::string& str)
+{
+    std::string formattedString(str);
+    formattedString[0] = toupper(formattedString[0]);
+
+    // Insert a space before each capital letter
+    for (size_t i = 1; i < formattedString.length(); ++i)
+    {
+        if (formattedString[i] >= 'A' && formattedString[i] <= 'Z') {
+            formattedString.insert(i, " ");
+            
+            // Skip over the character
+            ++i;
+        }
+    }
+
+    return formattedString;
+}
+
+bool GUIManager::DisplaySerializedField(const SerializedField& attribute, void* data)
 {
     ImGui::AlignTextToFramePadding();
     ImGui::SetNextItemWidth(100);
@@ -888,66 +905,71 @@ void GUIManager::DisplaySerializedField(const SerializedField& attribute, void* 
     ImGui::SameLine();
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 
-    int successful;
+    bool changed = false;
     switch (attribute.type)
     {
     case FieldTypeBool:
-        successful = SerializeBool(static_cast<bool*>(data));
+        changed = SerializeBool(static_cast<bool*>(data));
         break;
         
     case FieldTypeInt:
-        successful = SerializeInt(static_cast<int*>(data));
+        changed = SerializeInt(static_cast<int*>(data));
         break;
         
     case FieldTypeFloat:
-        successful = SerializeFloat(static_cast<float*>(data));
+        changed = SerializeFloat(static_cast<float*>(data));
         break;
         
     case FieldTypeVec2:
-        successful = SerializeVec2(static_cast<glm::vec2*>(data));
+        changed = SerializeVec2(static_cast<glm::vec2*>(data));
         break;
         
     case FieldTypeVec3:
-        successful = SerializeVec3(static_cast<glm::vec3*>(data));
+        changed = SerializeVec3(static_cast<glm::vec3*>(data));
         break;
         
     case FieldTypeColour:
-        successful = SerializeColour(static_cast<glm::vec4*>(data));
+        changed = SerializeColour(static_cast<glm::vec4*>(data));
         break;
         
     case FieldTypeString:
-        successful = SerializeString(static_cast<std::string*>(data));
+        changed = SerializeString(static_cast<std::string*>(data));
         break;
 
     case FieldTypeEnum:
-        successful = SerializeEnum(static_cast<int*>(data), attribute.typeName);
+        changed = SerializeEnum(static_cast<int*>(data), attribute.typeName);
         break;
         
     case FieldTypeTransform:
-        successful = SerializeTransform(static_cast<transform::Transform**>(data));
+        changed = SerializeTransform(static_cast<transform::Transform**>(data));
         break;
         
     case FieldTypeGUID:
-        successful = SerializeGUID(data, attribute.typeName);
+        changed = SerializeGUID(data, attribute.typeName);
         break;
 
     default:
         ImGui::Text("Unknown type %d", attribute.type);
         std::cout << "[GUIManager] Type '" << attribute.type << "' not implemented\n";
-        return;
+        return false;
     }
 
-    if (!successful)
-        std::cerr << "Data serialization failed for attribute " << attribute.name << " of type " << attribute.type << "\n";
+    return changed;
+
+    // if (!changed)
+    //     std::cerr << "Data serialization failed for attribute " << attribute.name << " of type " << attribute.type << "\n";
 }
 
 void GUIManager::DisplaySerializedTransform(transform::Transform* transform)
 {
     DisplaySerializedField({"name", FieldTypeString}, &transform->name);
     DisplaySerializedField({"tag", FieldTypeString}, &transform->tag);
-    DisplaySerializedField({"position", FieldTypeVec3}, &transform->localPosition);
-    DisplaySerializedField({"rotation", FieldTypeVec3}, &transform->localRotation);
-    DisplaySerializedField({"scale", FieldTypeVec3}, &transform->localScale);
+    const bool positionChanged = DisplaySerializedField({"position", FieldTypeVec3}, &transform->localPosition);
+    const bool rotationChanged = DisplaySerializedField({"rotation", FieldTypeVec3}, &transform->localRotation);
+    const bool scaleChanged = DisplaySerializedField({"scale", FieldTypeVec3}, &transform->localScale);
+
+    if (rotationChanged) transform->ComputeDirectionVectors();
+    if (positionChanged || scaleChanged) transform->ComputeModelMatrix();
 }
 
 void GUIManager::ShowInspector()

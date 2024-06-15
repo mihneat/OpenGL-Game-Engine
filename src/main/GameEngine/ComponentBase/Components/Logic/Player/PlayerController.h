@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class PlayerController : public Component, public IResetable
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(PlayerController)
         
     public:
         PlayerController(transform::Transform* transform) : Component(transform), speed(0.0f), maxSpeed(100.0f), acceleration(20.0f),

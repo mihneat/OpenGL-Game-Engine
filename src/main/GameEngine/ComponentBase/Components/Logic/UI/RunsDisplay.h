@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class RunsDisplay : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(RunsDisplay)
         
     public:
         RunsDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL) { }

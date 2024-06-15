@@ -13,7 +13,7 @@ namespace component
     SERIALIZE_CLASS
     class SpotLight : public Light
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(SpotLight)
         
     public:
         SpotLight(transform::Transform* transform);

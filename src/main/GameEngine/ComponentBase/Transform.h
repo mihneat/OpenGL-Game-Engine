@@ -26,8 +26,6 @@ namespace transform
         Transform(Transform *parent, const std::string& name = "New Transform", std::string tag = "Default");
         ~Transform();
 
-        void Update();
-
         void AddChild(Transform* newChild);
         void RemoveChild(Transform* child);
         /* Safe function - if index is greater than childCount - 1, returns the last child. */
@@ -81,12 +79,8 @@ namespace transform
         // TODO: Make function static
         Transform* GetTransformByTag(std::string tag);
 
-        static glm::mat4 GetTranslationMatrix(glm::vec3 translate);
         static glm::mat4 GetScalingMatrix(glm::vec3 scale);
-        static glm::mat4 GetRotationMatrix(glm::vec3 eulerAngle);
-        static glm::mat4 GetRotationMatrixOx(float radians);
-        static glm::mat4 GetRotationMatrixOy(float radians);
-        static glm::mat4 GetRotationMatrixOz(float radians);
+        glm::mat4 GetRotationMatrix() const;
 
         void Translate(glm::vec3 translate);
         void Scale(glm::vec3 scale);
@@ -95,19 +89,17 @@ namespace transform
         glm::vec3 GetLocalPosition() const;
         glm::vec3 GetWorldPosition() const;
         glm::vec3 GetLocalScale() const;
-        glm::vec3 GetWorldScale() const;
         glm::vec3 GetLocalRotation() const;
 
-        void SetLocalPosition(glm::vec3 translate);
-        void SetScale(glm::vec3 scale);
-        void SetLocalRotation(glm::vec3 eulerAngle);
+        void SetLocalPosition(const glm::vec3& translate);
+        void SetScale(const glm::vec3& scale);
+        void SetLocalRotation(const glm::vec3& eulerAngle);
 
+        void UpdateChildren(bool updateRotation = false);
         void ComputeDirectionVectors();
 
-        void UpdateWorldCoordinates();
-
         glm::mat4 GetModelMatrix() const;
-        glm::mat4 ComputeModelMatrix();
+        void ComputeModelMatrix();
 
         Transform* parent;
 
@@ -119,19 +111,15 @@ namespace transform
         std::string name; 
         
         glm::vec3 localPosition;
-        glm::vec3 worldPosition;
-
         glm::vec3 localScale;
-        glm::vec3 worldScale;
-
         glm::vec3 localRotation;
-        glm::vec3 worldRotation;
 
         std::vector<Transform*> children;
 
         std::vector<component::Component *> components;
 
         glm::mat4 modelMatrix;
+        glm::mat4 rotationMatrix;
 
         std::string tag;
 

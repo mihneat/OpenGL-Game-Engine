@@ -186,7 +186,13 @@ void GameEngine::CreateHierarchy()
 void GameEngine::FrameStart()
 {
     if (GUIManager::GetInstance()->ShouldPlay())
+    {
+        // Save the scene if the game is playing
+        if (!GUIManager::GetInstance()->IsGamePlaying())
+            SaveSceneToFile();
+        
         GUIManager::GetInstance()->ToggleGamePlaying();
+    }
     
     if (GUIManager::GetInstance()->ShouldPause())
         GUIManager::GetInstance()->ToggleGamePaused();
@@ -256,18 +262,12 @@ void GameEngine::Update(float deltaTimeSeconds)
 
 void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
 {
-    // Update transforms regardless if the game is playing or not
-    UpdateTransforms(hierarchy);
-    
     // Check if game is active
     if (GUIManager::GetInstance()->IsGameActive())
     {
         this->StartComponents(hierarchy);
-        this->UpdateTransforms(hierarchy);
         this->UpdateComponents(hierarchy, deltaTimeSeconds);
-        this->UpdateTransforms(hierarchy);
         this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
-        this->UpdateTransforms(hierarchy);
     }
 
     this->DestroyMarkedObjects();
@@ -304,7 +304,7 @@ void GameEngine::RenderGameView()
     }
 
     // Upload FBO data to the texture
-    fboContainer->UploadDataToTexture();
+    // fboContainer->UploadDataToTexture();
 }
 
 void GameEngine::RenderSceneView()
@@ -330,16 +330,12 @@ void GameEngine::RenderSceneView()
         GUIManager::GetInstance()->FinishTransformFocus();
     }
     
-    sceneCamera->transform->Update();
     sceneCamera->UpdateValues(fboContainer->GetResolution());
-
-    // TODO: Why no work?
-    // DrawCoordinateSystem();
 
     renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), false);
 
     // Upload FBO data to the texture
-    fboContainer->UploadDataToTexture();
+    // fboContainer->UploadDataToTexture();
 }
 
 // This function does something apparently
@@ -544,8 +540,6 @@ void GameEngine::OnGameWindowResize(int width, int height)
     ApplyToComponents(hierarchy, [width, height](Component* component) {
         component->WindowResize(width, height);
     });
-
-    UpdateTransforms(hierarchy);
 }
 
 void GameEngine::ApplyToComponents(
@@ -618,10 +612,7 @@ void GameEngine::UpdateComponents(Transform* currentTransform, const float delta
     // Update the transform and the components
     ApplyToComponents(currentTransform, [deltaTime](Component* component) {
         component->Update(deltaTime);
-        }, [](Transform* transform) {
-            transform->Update();
-        }
-        );
+        });
 }
 
 void GameEngine::LateUpdateComponents(Transform* currentTransform, const float deltaTime)
@@ -629,9 +620,7 @@ void GameEngine::LateUpdateComponents(Transform* currentTransform, const float d
     // Update the transform and the components
     ApplyToComponents(currentTransform, [deltaTime](Component* component) {
         component->LateUpdate(deltaTime);
-    }, [](Transform* transform) {
-            transform->Update();
-        });
+    });
 }
 
 void GameEngine::DeleteComponents(Transform* currentTransform)
@@ -644,14 +633,4 @@ void GameEngine::DeleteComponents(Transform* currentTransform)
             delete transform;
         }
     );
-}
-
-void GameEngine::UpdateTransforms(Transform* currentTransform)
-{
-    // Update the transform and the components
-    ApplyToComponents(currentTransform, [](Component* _) {},
-        [](Transform* transform) {
-            transform->Update();
-        }
-        );
 }

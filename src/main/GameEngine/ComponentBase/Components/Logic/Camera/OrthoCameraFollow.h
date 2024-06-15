@@ -12,7 +12,7 @@ namespace component
     SERIALIZE_CLASS
     class OrthoCameraFollow : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(OrthoCameraFollow)
         
     public:
         OrthoCameraFollow(transform::Transform* transform) : Component(transform) { }

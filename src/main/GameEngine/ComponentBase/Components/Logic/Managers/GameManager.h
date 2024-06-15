@@ -18,15 +18,17 @@ namespace component
     SERIALIZE_CLASS
     class GameManager : public Component
     {
-        MARK_SERIALIZABLE
+        MARK_SERIALIZABLE(GameManager)
         
     public:
+        SERIALIZE_ENUM
         enum GameState {
             Start,
             Playing,
             Ended
         };
 
+        SERIALIZE_ENUM
         enum GameSpeed {
             Snail,
             Slow,
@@ -65,8 +67,8 @@ namespace component
         void EndGame();
 
     private:
-        GameState gameState = Start;
-        GameSpeed gameSpeed = Medium;
+        SERIALIZE_FIELD GameState gameState = Start;
+        SERIALIZE_FIELD GameSpeed gameSpeed = Medium;
 
         // Blue-y: 30, 5, 82, 255, Purple-y: 38, 6, 59, 255
         SERIALIZE_FIELD glm::vec4 currentSkyColor = glm::vec4(30, 5, 82, 255) / 255.0f;
