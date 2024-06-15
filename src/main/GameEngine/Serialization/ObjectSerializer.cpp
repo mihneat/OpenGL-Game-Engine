@@ -78,6 +78,10 @@ void DeserializeAttribute(const ordered_json& attributeObj, Component* instance)
     const FieldType type = SerializedField::GetFromTypeName(DeserializeString(attributeObj["type"]));
     void* data = Serializer::GetAttributeReference(instance, DeserializeString(attributeObj["name"]));
 
+    // This might mean the name of the serialized attribute has changed
+    if (data == nullptr)
+        return;
+
     switch (type)
     {
     case FieldTypeBool:

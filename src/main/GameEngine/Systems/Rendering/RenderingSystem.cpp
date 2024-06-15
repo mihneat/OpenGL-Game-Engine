@@ -29,6 +29,9 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
         if (meshRenderer != nullptr) {
             // Initialize the mesh
             meshRenderer->Init();
+
+            // Check if the object has a mesh
+            if (meshRenderer->meshType == component::MeshRenderer::None) return;
             
             // Check the layer
             if (!cam->IsLayerRendered(meshRenderer->layer)) return;
@@ -62,7 +65,7 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
             SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
             
             // Render the mesh
-            const Mesh *mesh = MeshResourceManager::meshes[meshRenderer->meshName];
+            const Mesh *mesh = MeshResourceManager::meshes[std::to_string(meshRenderer->meshType)];
             mesh->Render();
         }
     }

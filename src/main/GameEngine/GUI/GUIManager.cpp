@@ -968,8 +968,8 @@ void GUIManager::DisplaySerializedTransform(transform::Transform* transform)
     const bool rotationChanged = DisplaySerializedField({"rotation", FieldTypeVec3}, &transform->localRotation);
     const bool scaleChanged = DisplaySerializedField({"scale", FieldTypeVec3}, &transform->localScale);
 
-    if (rotationChanged) transform->ComputeDirectionVectors();
-    if (positionChanged || scaleChanged) transform->ComputeModelMatrix();
+    if (rotationChanged) transform->UpdateChildren(true);
+    if (positionChanged || scaleChanged) transform->UpdateChildren();
 }
 
 void GUIManager::ShowInspector()

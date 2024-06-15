@@ -83,12 +83,10 @@ namespace component
         // To be implemented when needed
         // void ChangeMesh(std::string newMeshName);
 
-        static std::unordered_set<std::string> meshNames;
+        static std::unordered_set<MeshEnum> loadedMeshes;
 
     protected:
-        SERIALIZE_FIELD MeshEnum type = Cube;
-        std::string baseMeshName = "New Mesh";
-        std::string meshName;
+        SERIALIZE_FIELD MeshEnum meshType = Cube;
         SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
         SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1);
 

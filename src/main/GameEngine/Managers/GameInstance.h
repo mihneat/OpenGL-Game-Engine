@@ -24,6 +24,7 @@ namespace managers
         transform::Transform* attachedTransform = nullptr;
         
         friend class m1::GameEngine;
+        friend class prefabManager::PrefabManager;
         friend class ObjectSerializer;
     };
 }

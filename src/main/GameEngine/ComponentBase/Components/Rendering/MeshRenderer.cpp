@@ -10,7 +10,7 @@ using namespace component;
 using namespace component;
 using namespace transform;
 
-std::unordered_set<std::string> MeshRenderer::meshNames;
+std::unordered_set<MeshRenderer::MeshEnum> MeshRenderer::loadedMeshes;
 
 MeshRenderer::MeshRenderer(
 	Transform* transform,
@@ -24,8 +24,7 @@ MeshRenderer::MeshRenderer(
     bool debugOnly
 ) : Component(transform)
 {
-    this->type = meshType;
-    this->baseMeshName = transform->GetName(); // std::string(meshName);
+    this->meshType = meshType;
     this->meshScale = meshScale;
 	this->color = meshColor;
     this->debugOnly = debugOnly;
@@ -42,48 +41,16 @@ MeshRenderer::~MeshRenderer()
 
 void MeshRenderer::Init()
 {
-    if (initialized) return;
-    
-    std::string colorString = std::string(to_string(static_cast<int>(color.r * 255.0f)))
-        .append(to_string(static_cast<int>(color.g * 255.0f)))
-        .append(to_string(static_cast<int>(color.b * 255.0f)))
-        .append(to_string(static_cast<int>(color.a * 255.0f)));
-    this->meshName = std::string(baseMeshName) + colorString;
-
-    generateMesh = true;
-
-    if (meshNames.find(this->meshName) == meshNames.end()) {
-        meshNames.insert(this->meshName);
-        MeshFactory();
+    if (loadedMeshes.find(this->meshType) != loadedMeshes.end()) {
+        return;
     }
-
-    initialized = true;
+    
+    MeshFactory();
 }
 
-/// <summary>
-/// All of this hassle just to avoid a huge memory leak :)
-/// </summary>
 void MeshRenderer::SetColor(glm::vec4 newColor)
 {
     color = newColor;
-    std::string colorString = std::string(to_string(static_cast<int>(newColor.r * 255.0f)))
-        .append(to_string(static_cast<int>(newColor.g * 255.0f)))
-        .append(to_string(static_cast<int>(newColor.b * 255.0f)))
-        .append(to_string(static_cast<int>(newColor.a * 255.0f)));
-
-    // Create the new mesh name
-    std::string newMeshName = std::string(this->baseMeshName).append(colorString);
-
-    if (meshNames.find(newMeshName) == meshNames.end()) {
-        meshNames.insert(newMeshName);
-
-        this->meshName = newMeshName;
-        MeshFactory();
-
-        return;
-    }
-
-    this->meshName = newMeshName;
 }
 
 void MeshRenderer::SetTexture(rendering::Texture* newTexture)
@@ -103,10 +70,17 @@ void MeshRenderer::SetMaterialOverrides(rendering::MaterialOverrides* materialOv
 
 void MeshRenderer::MeshFactory()
 {
+    // Check if mesh has already been created
+    if (loadedMeshes.find(this->meshType) != loadedMeshes.end()) {
+        return;
+    }
+    
+    loadedMeshes.insert(this->meshType);
+    
     mesh_desc meshDescription;
     generateMesh = true;
 
-    switch (this->type) {
+    switch (this->meshType) {
     case Square:
         meshDescription = CreateSquare();
         break;
@@ -148,23 +122,23 @@ void MeshRenderer::MeshFactory()
         return;
     }
 
-    rendering::MeshResourceManager::GenerateMesh(meshName, meshDescription.drawMode, meshDescription.vertices, meshDescription.indices);
+    rendering::MeshResourceManager::GenerateMesh(std::to_string(meshType), meshDescription.drawMode, meshDescription.vertices, meshDescription.indices);
 }
 
 void MeshRenderer::LoadMesh(const std::string name, const std::string path)
 {
     generateMesh = false;
-    rendering::MeshResourceManager::LoadMesh(meshName, name, path);
+    rendering::MeshResourceManager::LoadMesh(std::to_string(meshType), name, path);
 }
 
 mesh_desc MeshRenderer::CreateSquare()
 {
     vector<VertexFormat> vertices
     {
-        VertexFormat(glm::vec3(-1, -1, 0), color), // 0
-        VertexFormat(glm::vec3(-1,  1, 0), color), // 1
-        VertexFormat(glm::vec3(1, -1, 0), color), // 2
-        VertexFormat(glm::vec3(1,  1, 0), color), // 3
+        VertexFormat(glm::vec3(-1, -1, 0), glm::vec3(1.0f), glm::vec3_forward, glm::vec2(1, 1)), // 0
+        VertexFormat(glm::vec3(-1,  1, 0), glm::vec3(1.0f), glm::vec3_forward, glm::vec2(1, 0)), // 1
+        VertexFormat(glm::vec3(1, -1, 0), glm::vec3(1.0f), glm::vec3_forward, glm::vec2(0, 1)), // 2
+        VertexFormat(glm::vec3(1,  1, 0), glm::vec3(1.0f), glm::vec3_forward, glm::vec2(0, 0)), // 3
     };
 
     vector<unsigned int> indices =
@@ -201,11 +175,11 @@ mesh_desc MeshRenderer::CreateFragmentedSquare()
             );
 
             texMat[l][c] = glm::vec2(
-                glm::mix(-1.0f, 1.0f, 1.0f * c / (fragCount - 1)),
-                glm::mix(-1.0f, 1.0f, 1.0f * l / (fragCount - 1))
+                glm::mix(1.0f, 0.0f, 1.0f * c / (fragCount - 1)),
+                glm::mix(1.0f, 0.0f, 1.0f * l / (fragCount - 1))
             );
 
-            vertices.push_back(VertexFormat(verticesMat[l][c], color, glm::vec3(0.0f, 0.0f, 1.0f), texMat[l][c]));
+            vertices.push_back(VertexFormat(verticesMat[l][c], glm::vec3(1.0f), glm::vec3_forward, texMat[l][c]));
         }
     }
 
@@ -235,7 +209,7 @@ mesh_desc MeshRenderer::CreateCircle(const int circleVertexCount, const bool mak
 {
     // Define the vertices array, initially only with the center
     vector<VertexFormat> vertices = {
-        VertexFormat(glm::vec3(0.0f, 0.0f, 0.0f), makeRainbow ? glm::vec3(1.0f) : color)
+        VertexFormat(glm::vec3(0.0f, 0.0f, 0.0f), makeRainbow ? glm::vec3(1.0f) : glm::vec3(1.0f))
     };
 
     // Create the indices vector, using the GL_TRIANGLE_FAN draw mode
@@ -258,7 +232,7 @@ mesh_desc MeshRenderer::CreateCircle(const int circleVertexCount, const bool mak
             // The color of the vertex
             makeRainbow
             ? glm::rgbColor(glm::vec3(360.0f / circleVertexCount * i, 1.0f, 1.0f))
-            : color));
+            : glm::vec3(1.0f)));
 
         // Add the new vertex to the indices vector
         indices.push_back(i + 1);
@@ -274,15 +248,15 @@ mesh_desc MeshRenderer::CreateCube()
 {
     //vector<VertexFormat> vertices
     //{
-    //    VertexFormat(glm::vec3(-1, -1, -1), color, glm::vec3(-1, -1, -1)), // 0
-    //    VertexFormat(glm::vec3(-1, -1,  1), color, glm::vec3(-1, -1,  1)), // 1
-    //    VertexFormat(glm::vec3(1, -1, -1), color, glm::vec3(1, -1, -1)), // 2
-    //    VertexFormat(glm::vec3(1, -1,  1), color, glm::vec3(1, -1,  1)), // 3
+    //    VertexFormat(glm::vec3(-1, -1, -1), glm::vec3(1.0f), glm::vec3(-1, -1, -1)), // 0
+    //    VertexFormat(glm::vec3(-1, -1,  1), glm::vec3(1.0f), glm::vec3(-1, -1,  1)), // 1
+    //    VertexFormat(glm::vec3(1, -1, -1), glm::vec3(1.0f), glm::vec3(1, -1, -1)), // 2
+    //    VertexFormat(glm::vec3(1, -1,  1), glm::vec3(1.0f), glm::vec3(1, -1,  1)), // 3
 
-    //    VertexFormat(glm::vec3(-1,  1, -1), color, glm::vec3(-1,  1, -1)), // 4
-    //    VertexFormat(glm::vec3(-1,  1,  1), color, glm::vec3(-1,  1,  1)), // 5
-    //    VertexFormat(glm::vec3(1,  1, -1), color, glm::vec3(1,  1, -1)), // 6
-    //    VertexFormat(glm::vec3(1,  1,  1), color, glm::vec3(1,  1,  1)), // 7
+    //    VertexFormat(glm::vec3(-1,  1, -1), glm::vec3(1.0f), glm::vec3(-1,  1, -1)), // 4
+    //    VertexFormat(glm::vec3(-1,  1,  1), glm::vec3(1.0f), glm::vec3(-1,  1,  1)), // 5
+    //    VertexFormat(glm::vec3(1,  1, -1), glm::vec3(1.0f), glm::vec3(1,  1, -1)), // 6
+    //    VertexFormat(glm::vec3(1,  1,  1), glm::vec3(1.0f), glm::vec3(1,  1,  1)), // 7
     //};
 
     //vector<unsigned int> indices =
@@ -309,45 +283,45 @@ mesh_desc MeshRenderer::CreateCube()
     vector<VertexFormat> vertices
     {
         // Face 2-3-0-1
-        VertexFormat(glm::vec3(-1, -1, -1), color, glm::vec3( 0, -1,  0)), // 0
-        VertexFormat(glm::vec3( 1, -1, -1), color, glm::vec3( 0, -1,  0)), // 1
-        VertexFormat(glm::vec3(-1, -1,  1), color, glm::vec3( 0, -1,  0)), // 2
-        VertexFormat(glm::vec3( 1, -1,  1), color, glm::vec3( 0, -1,  0)), // 3
+        VertexFormat(glm::vec3(-1, -1, -1), glm::vec3(1.0f), glm::vec3( 0, -1,  0), glm::vec2(0, 0)), // 0
+        VertexFormat(glm::vec3( 1, -1, -1), glm::vec3(1.0f), glm::vec3( 0, -1,  0), glm::vec2(0, 1)), // 1
+        VertexFormat(glm::vec3(-1, -1,  1), glm::vec3(1.0f), glm::vec3( 0, -1,  0), glm::vec2(1, 0)), // 2
+        VertexFormat(glm::vec3( 1, -1,  1), glm::vec3(1.0f), glm::vec3( 0, -1,  0), glm::vec2(1, 1)), // 3
 
 
         // Face 4-5-6-7
-        VertexFormat(glm::vec3(-1,  1,  1), color, glm::vec3( 0,  1,  0)), // 4
-        VertexFormat(glm::vec3( 1,  1,  1), color, glm::vec3( 0,  1,  0)), // 5
-        VertexFormat(glm::vec3(-1,  1, -1), color, glm::vec3( 0,  1,  0)), // 6
-        VertexFormat(glm::vec3( 1,  1, -1), color, glm::vec3( 0,  1,  0)), // 7
+        VertexFormat(glm::vec3(-1,  1,  1), glm::vec3(1.0f), glm::vec3( 0,  1,  0), glm::vec2(0, 0)), // 4
+        VertexFormat(glm::vec3( 1,  1,  1), glm::vec3(1.0f), glm::vec3( 0,  1,  0), glm::vec2(0, 1)), // 5
+        VertexFormat(glm::vec3(-1,  1, -1), glm::vec3(1.0f), glm::vec3( 0,  1,  0), glm::vec2(1, 0)), // 6
+        VertexFormat(glm::vec3( 1,  1, -1), glm::vec3(1.0f), glm::vec3( 0,  1,  0), glm::vec2(1, 1)), // 7
 
 
         // Face 0-1-4-5
-        VertexFormat(glm::vec3(-1, -1,  1), color, glm::vec3( 0,  0,  1)), // 8
-        VertexFormat(glm::vec3( 1, -1,  1), color, glm::vec3( 0,  0,  1)), // 9
-        VertexFormat(glm::vec3(-1,  1,  1), color, glm::vec3( 0,  0,  1)), // 10
-        VertexFormat(glm::vec3( 1,  1,  1), color, glm::vec3( 0,  0,  1)), // 11
+        VertexFormat(glm::vec3(-1, -1,  1), glm::vec3(1.0f), glm::vec3( 0,  0,  1), glm::vec2(0, 0)), // 8
+        VertexFormat(glm::vec3( 1, -1,  1), glm::vec3(1.0f), glm::vec3( 0,  0,  1), glm::vec2(0, 1)), // 9
+        VertexFormat(glm::vec3(-1,  1,  1), glm::vec3(1.0f), glm::vec3( 0,  0,  1), glm::vec2(1, 0)), // 10
+        VertexFormat(glm::vec3( 1,  1,  1), glm::vec3(1.0f), glm::vec3( 0,  0,  1), glm::vec2(1, 1)), // 11
 
 
         // Face 3-2-7-6
-        VertexFormat(glm::vec3( 1, -1, -1), color, glm::vec3( 0,  0, -1)), // 12
-        VertexFormat(glm::vec3(-1, -1, -1), color, glm::vec3( 0,  0, -1)), // 13
-        VertexFormat(glm::vec3( 1,  1, -1), color, glm::vec3( 0,  0, -1)), // 14
-        VertexFormat(glm::vec3(-1,  1, -1), color, glm::vec3( 0,  0, -1)), // 15
+        VertexFormat(glm::vec3( 1, -1, -1), glm::vec3(1.0f), glm::vec3( 0,  0, -1), glm::vec2(0, 0)), // 12
+        VertexFormat(glm::vec3(-1, -1, -1), glm::vec3(1.0f), glm::vec3( 0,  0, -1), glm::vec2(0, 1)), // 13
+        VertexFormat(glm::vec3( 1,  1, -1), glm::vec3(1.0f), glm::vec3( 0,  0, -1), glm::vec2(1, 0)), // 14
+        VertexFormat(glm::vec3(-1,  1, -1), glm::vec3(1.0f), glm::vec3( 0,  0, -1), glm::vec2(1, 1)), // 15
 
 
         // Face 1-3-5-7
-        VertexFormat(glm::vec3( 1, -1,  1), color, glm::vec3( 1,  0,  0)), // 16
-        VertexFormat(glm::vec3( 1, -1, -1), color, glm::vec3( 1,  0,  0)), // 17
-        VertexFormat(glm::vec3( 1,  1,  1), color, glm::vec3( 1,  0,  0)), // 18
-        VertexFormat(glm::vec3( 1,  1, -1), color, glm::vec3( 1,  0,  0)), // 19
+        VertexFormat(glm::vec3( 1, -1,  1), glm::vec3(1.0f), glm::vec3( 1,  0,  0), glm::vec2(0, 0)), // 16
+        VertexFormat(glm::vec3( 1, -1, -1), glm::vec3(1.0f), glm::vec3( 1,  0,  0), glm::vec2(0, 1)), // 17
+        VertexFormat(glm::vec3( 1,  1,  1), glm::vec3(1.0f), glm::vec3( 1,  0,  0), glm::vec2(1, 0)), // 18
+        VertexFormat(glm::vec3( 1,  1, -1), glm::vec3(1.0f), glm::vec3( 1,  0,  0), glm::vec2(1, 1)), // 19
 
 
         // Face 2-0-6-4
-        VertexFormat(glm::vec3(-1, -1, -1), color, glm::vec3(-1,  0,  0)), // 20
-        VertexFormat(glm::vec3(-1, -1,  1), color, glm::vec3(-1,  0,  0)), // 21
-        VertexFormat(glm::vec3(-1,  1, -1), color, glm::vec3(-1,  0,  0)), // 22
-        VertexFormat(glm::vec3(-1,  1,  1), color, glm::vec3(-1,  0,  0)), // 23
+        VertexFormat(glm::vec3(-1, -1, -1), glm::vec3(1.0f), glm::vec3(-1,  0,  0), glm::vec2(0, 0)), // 20
+        VertexFormat(glm::vec3(-1, -1,  1), glm::vec3(1.0f), glm::vec3(-1,  0,  0), glm::vec2(0, 1)), // 21
+        VertexFormat(glm::vec3(-1,  1, -1), glm::vec3(1.0f), glm::vec3(-1,  0,  0), glm::vec2(1, 0)), // 22
+        VertexFormat(glm::vec3(-1,  1,  1), glm::vec3(1.0f), glm::vec3(-1,  0,  0), glm::vec2(1, 1)), // 23
 
 
     };

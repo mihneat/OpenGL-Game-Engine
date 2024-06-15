@@ -184,7 +184,7 @@ void main()
     // Apply light to color
     vec4 lit_vertex;
     if (use_texture == 0) {
-        lit_vertex = vec4(light.x * frag_color.x, light.y * frag_color.y, light.z * frag_color.z, 1);
+        lit_vertex = vec4(light.x * frag_color.x * mesh_color.x, light.y * frag_color.y * mesh_color.y, light.z * frag_color.z * mesh_color.z, 1);
     } else {
         vec2 tex_offset = vec2(0);
         if (is_scrolling == 1) {
@@ -194,7 +194,7 @@ void main()
         // Ground size
         vec2 ground_size = vec2(1.0 / 200.0, 1.0 / (200 * sqrt(3) / 2.0));
 
-        vec4 tex = texture2D(texture_color, tex_scale * vec2(tex_coord.x - tex_offset.x * ground_size.x, tex_coord.y - tex_offset.y * ground_size.y));
+        vec4 tex = texture2D(texture_color, tex_scale * vec2(tex_coord.x + 0.5f * tex_offset.x * ground_size.x, tex_coord.y + 0.5f * tex_offset.y * ground_size.y));
         if (tex.a < 0.5) {
             discard;
         }

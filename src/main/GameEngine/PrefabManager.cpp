@@ -1,6 +1,7 @@
 #include "main/GameEngine/PrefabManager.h"
 
 #include "main/GameEngine/Managers/TextureLoader.h"
+#include "Managers/GameInstance.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
 #include "Systems/Rendering/MaterialManager.h"
 
@@ -11,6 +12,46 @@ using namespace rendering;
 using namespace component;
 using namespace transform;
 using namespace prefabManager;
+
+Transform* PrefabManager::CreateSteepScene()
+{
+    // Define the root-level Hierarchy transform
+    Transform* hierarchy = new Transform();
+
+    // Create a persistent singleton object
+    // The users should not declare their own singletons, but rather
+    // use the engine-created object
+    // TODO: Add the object to "DontDestroyOnLoad" when the functionality is added
+    Transform* gameInstance = new Transform(hierarchy, "Game Instance");
+    managers::GameInstance::gameInstance->AttachTransform(gameInstance);
+
+    // The following components are added by the user within the editor
+    gameInstance->AddComponent(new GameManager(gameInstance));
+    
+    // Create the player
+    Transform* player = PrefabManager::CreatePlayer(hierarchy);
+
+    // Create the camera object
+    Transform* camera = PrefabManager::CreateCamera(hierarchy, player, 16.0 / 9.0,
+        glm::vec2(0.0f), glm::vec2(glm::vec2(0.0f)));
+
+    // Create the ground
+    Transform* ground = PrefabManager::CreateGround(hierarchy);
+
+    // Create the sun
+    Transform* sun = PrefabManager::CreateSun(hierarchy);
+
+    // Create the object spawner
+    Transform* objectSpawner = PrefabManager::CreateObjectSpawner(hierarchy);
+
+    // Create the UI
+    Transform* rootUI = PrefabManager::CreateUI(hierarchy);
+
+    // Create the shader params
+    Transform* shaderParams = PrefabManager::CreateShaderParams(hierarchy);
+
+    return hierarchy;
+}
 
 Transform* PrefabManager::CreateCamera(Transform* parent, Transform* player, const float aspectRatio,
     const glm::vec2 viewportBottomLeft, const glm::vec2 viewportTopRight)
@@ -230,7 +271,7 @@ Transform* PrefabManager::CreatePresent(Transform* parent)
     return present;
 }
 
-Transform* PrefabManager::CreateUI(m1::GameEngine* scene, Transform* parent)
+Transform* PrefabManager::CreateUI(Transform* parent)
 {
     // Create the top-level object
     Transform* rootUI = new Transform(parent, "UI Root");

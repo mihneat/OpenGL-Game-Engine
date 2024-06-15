@@ -108,7 +108,7 @@ void GameEngine::ReloadScene()
     //     hierarchy = nullptr;
     // }
     //
-    // CreateHierarchy();
+    // hierarchy = PrefabManager::CreateSteepScene();
     
     SceneManager::LoadScene(startScene);
     FindCameras();
@@ -143,44 +143,6 @@ void GameEngine::FindCameras()
             secondaryCams.push_back(camera);
         }
     });
-}
-
-void GameEngine::CreateHierarchy()
-{
-    // Define the root-level Hierarchy transform
-    hierarchy = new Transform();
-
-    // Create a persistent singleton object
-    // The users should not declare their own singletons, but rather
-    // use the engine-created object
-    // TODO: Add the object to "DontDestroyOnLoad" when the functionality is added
-    Transform* gameInstance = new Transform(hierarchy, "Game Instance");
-    managers::GameInstance::gameInstance->AttachTransform(gameInstance);
-
-    // The following components are added by the user within the editor
-    gameInstance->AddComponent(new GameManager(gameInstance));
-    
-    // Create the player
-    Transform* player = PrefabManager::CreatePlayer(hierarchy);
-
-    // Create the camera object
-    Transform* camera = PrefabManager::CreateCamera(hierarchy, player, window->props.aspectRatio,
-        glm::vec2(0.0f), glm::vec2(glm::vec2(0.0f)));
-
-    // Create the ground
-    Transform* ground = PrefabManager::CreateGround(hierarchy);
-
-    // Create the sun
-    Transform* sun = PrefabManager::CreateSun(hierarchy);
-
-    // Create the object spawner
-    Transform* objectSpawner = PrefabManager::CreateObjectSpawner(hierarchy);
-
-    // Create the UI
-    Transform* rootUI = PrefabManager::CreateUI(this, hierarchy);
-
-    // Create the shader params
-    Transform* shaderParams = PrefabManager::CreateShaderParams(hierarchy);
 }
 
 void GameEngine::FrameStart()

@@ -62,7 +62,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"type", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
@@ -262,8 +262,8 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     {
         MeshRenderer* obj = dynamic_cast<MeshRenderer*>(instance);
 
-        if (attributeName == "type")
-            return &obj->type;
+        if (attributeName == "meshType")
+            return &obj->meshType;
 
         if (attributeName == "color")
             return &obj->color;

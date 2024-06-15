@@ -44,6 +44,7 @@ namespace prefabManager
     class PrefabManager
     {
     public:
+        static transform::Transform* CreateSteepScene();
         static transform::Transform* CreateCamera(transform::Transform* parent, transform::Transform* player,
             const float aspectRatio, const glm::vec2 viewportBottomLeft, const glm::vec2 viewportTopRight);
         static transform::Transform* CreatePlayer(transform::Transform* parent);
@@ -54,7 +55,7 @@ namespace prefabManager
         static transform::Transform* CreateRock(transform::Transform* parent);
         static transform::Transform* CreateLightPole(transform::Transform* parent);
         static transform::Transform* CreatePresent(transform::Transform* parent);
-        static transform::Transform* CreateUI(m1::GameEngine* scene, transform::Transform* parent);
+        static transform::Transform* CreateUI(transform::Transform* parent);
         static transform::Transform* CreateShaderParams(transform::Transform* parent);
 
     private:
