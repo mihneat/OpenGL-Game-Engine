@@ -26,8 +26,8 @@ uniform vec3 eye_position;
 uniform light_source lights[100]; // Max lights also need to be changed in LightManager.h
                                   // Also modify maximum 'for' value below
 
-//uniform vec4  fog_color;
-//uniform bool  render_fog;
+uniform vec4  fog_color;
+uniform bool  render_fog;
 
 uniform int is_scrolling;
 uniform vec2 scroll_amount;
@@ -205,7 +205,7 @@ void main()
     // lit_vertex = light * texture2D(texture_color, tex_coord);
 
     // Apply fog calculations and output them
-    // float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
-    out_color = lit_vertex;  // mix(lit_vertex, fog_color, alpha);
+    float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
+    out_color = mix(lit_vertex, fog_color, alpha);
 }
 

@@ -24,6 +24,7 @@ void TextureLoader::InitTexturesMap()
     texToId[Player] = "Player";
     texToId[Player2] = "Player2";
     texToId[Player3] = "Player3";
+    texToId[Heart] = "Heart";
 }
 
 void TextureLoader::InitTextures()
@@ -39,9 +40,12 @@ void TextureLoader::InitTextures()
     LoadTexture(texToId[TreeBark], "my_textures/steep/bark/bark.png");
     LoadTexture(texToId[Rock], "my_textures/steep/rock/rock.jpg");
     LoadTexture(texToId[LightPole], "my_textures/steep/metal/metal.jpg");
-    LoadTexture(texToId[Player], "my_textures/steep/player/player.jpg");
+    // LoadTexture(texToId[Player], "my_textures/steep/player/player.jpg");
+    LoadTexture(texToId[Player], "my_textures/steep/player/player.png");
     LoadTexture(texToId[Player2], "my_textures/steep/player/player2.jpg");
+    // LoadTexture(texToId[Player3], "my_textures/steep/player/player3.png");
     LoadTexture(texToId[Player3], "my_textures/steep/player/player3.png");
+    LoadTexture(texToId[Heart], "my_textures/steep/heart/heart.png");
 }
 
 void TextureLoader::LoadTexture(const std::string& texId, const std::string& texPath)

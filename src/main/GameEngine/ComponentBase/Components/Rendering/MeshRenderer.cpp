@@ -39,15 +39,6 @@ MeshRenderer::~MeshRenderer()
 {
 }
 
-void MeshRenderer::Init()
-{
-    if (loadedMeshes.find(this->meshType) != loadedMeshes.end()) {
-        return;
-    }
-    
-    MeshFactory();
-}
-
 void MeshRenderer::SetColor(glm::vec4 newColor)
 {
     color = newColor;
@@ -105,7 +96,7 @@ void MeshRenderer::MeshFactory()
         LoadMesh("sphere.obj", "primitives");
         break;
 
-    case ZeldaHeart:
+    case Heart:
         LoadMesh("zelda_heart.fbx", "my_models/steep/zelda_heart");
         break;
 

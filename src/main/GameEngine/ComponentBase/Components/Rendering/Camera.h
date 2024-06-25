@@ -49,7 +49,7 @@ namespace component
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
         void SetProjection(const float fov, const float aspectRatio);
-        void SetOrtographic(const float width, const float height);
+        void SetOrthographic(const float width, const float height);
 
         void MoveForward(float distance);
 

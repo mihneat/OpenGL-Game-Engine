@@ -1825,7 +1825,7 @@
                     {
                       "name": "meshType",
                       "type": "FieldTypeEnum",
-                      "value": 6
+                      "value": 0
                     },
                     {
                       "name": "color",
@@ -1841,9 +1841,9 @@
                       "name": "meshScale",
                       "type": "FieldTypeVec3",
                       "value": {
-                        "x": 70.0,
-                        "y": 70.0,
-                        "z": 70.0
+                        "x": 35.0,
+                        "y": 35.0,
+                        "z": 35.0
                       }
                     },
                     {
@@ -1865,7 +1865,7 @@
                       "name": "texture",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": ""
+                        "guid": "200010"
                       }
                     },
                     {
@@ -1880,7 +1880,7 @@
                       "name": "material",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": "100003"
+                        "guid": "100001"
                       }
                     }
                   ]
@@ -1914,7 +1914,7 @@
                     {
                       "name": "meshType",
                       "type": "FieldTypeEnum",
-                      "value": 6
+                      "value": 0
                     },
                     {
                       "name": "color",
@@ -1930,9 +1930,9 @@
                       "name": "meshScale",
                       "type": "FieldTypeVec3",
                       "value": {
-                        "x": 70.0,
-                        "y": 70.0,
-                        "z": 70.0
+                        "x": 35.0,
+                        "y": 35.0,
+                        "z": 35.0
                       }
                     },
                     {
@@ -1954,7 +1954,7 @@
                       "name": "texture",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": ""
+                        "guid": "200010"
                       }
                     },
                     {
@@ -1969,7 +1969,7 @@
                       "name": "material",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": "100003"
+                        "guid": "100001"
                       }
                     }
                   ]
@@ -2003,7 +2003,7 @@
                     {
                       "name": "meshType",
                       "type": "FieldTypeEnum",
-                      "value": 6
+                      "value": 0
                     },
                     {
                       "name": "color",
@@ -2019,9 +2019,9 @@
                       "name": "meshScale",
                       "type": "FieldTypeVec3",
                       "value": {
-                        "x": 70.0,
-                        "y": 70.0,
-                        "z": 70.0
+                        "x": 35.0,
+                        "y": 35.0,
+                        "z": 35.0
                       }
                     },
                     {
@@ -2043,7 +2043,7 @@
                       "name": "texture",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": ""
+                        "guid": "200010"
                       }
                     },
                     {
@@ -2058,7 +2058,7 @@
                       "name": "material",
                       "type": "FieldTypeGUID",
                       "value": {
-                        "guid": "100003"
+                        "guid": "100001"
                       }
                     }
                   ]

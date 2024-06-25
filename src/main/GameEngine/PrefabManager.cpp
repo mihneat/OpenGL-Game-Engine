@@ -316,16 +316,16 @@ Transform* PrefabManager::CreateUI(Transform* parent)
     // Create the lives
     Transform* life1 = new Transform(livesHolder, "Life 1");
     life1->Translate(glm::vec3(-100.0f, 0.0f, 0.0f));
-    life1->AddComponent(new MeshRenderer(life1, MeshRenderer::ZeldaHeart, "life1", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
+    life1->AddComponent(new MeshRenderer(life1, MeshRenderer::Heart, "life1", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
         glm::vec3(70.0f), glm::vec4(1.0f), false));
 
     Transform* life2 = new Transform(livesHolder, "Life 2");
-    life2->AddComponent(new MeshRenderer(life2, MeshRenderer::ZeldaHeart, "life2", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
+    life2->AddComponent(new MeshRenderer(life2, MeshRenderer::Heart, "life2", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
         glm::vec3(70.0f), glm::vec4(1.0f), false));
 
     Transform* life3 = new Transform(livesHolder, "Life 3");
     life3->Translate(glm::vec3( 100.0f, 0.0f, 0.0f));
-    life3->AddComponent(new MeshRenderer(life3, MeshRenderer::ZeldaHeart, "life3", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
+    life3->AddComponent(new MeshRenderer(life3, MeshRenderer::Heart, "life3", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE), MeshRenderer::UI,
         glm::vec3(70.0f), glm::vec4(1.0f), false));
 
     // Create the start run text

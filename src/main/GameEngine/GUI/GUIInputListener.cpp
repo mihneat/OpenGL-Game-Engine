@@ -38,13 +38,13 @@ void GUIInputListener::OnKeyPress(int key, int mods)
     if (key == GLFW_KEY_H && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->showHierarchy = !GUIManager::GetInstance()->showHierarchy;
     
-    // Show/Hide hierarchy window
+    // Show/Hide inspector window
     if (key == GLFW_KEY_I && mods & GLFW_MOD_CONTROL)
         GUIManager::GetInstance()->showInspector = !GUIManager::GetInstance()->showInspector;
     
-    // Show/Hide ImGui demo window
-    if (key == GLFW_KEY_D && mods & GLFW_MOD_CONTROL)
-        GUIManager::GetInstance()->showDemoWindow = !GUIManager::GetInstance()->showDemoWindow;
+    // // Show/Hide ImGui demo window
+    // if (key == GLFW_KEY_D && mods & GLFW_MOD_CONTROL)
+    //     GUIManager::GetInstance()->showDemoWindow = !GUIManager::GetInstance()->showDemoWindow;
 
     // --== Scene window ==--
     // Focus currently selected object

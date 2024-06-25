@@ -82,7 +82,7 @@ void GUIManager::ShowMainMenuBar()
             if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { markStatePause = true; }
             ImGui::Separator();
             if (ImGui::MenuItem("Save scene", "CTRL+S", nullptr, !this->gameIsPlaying)) { markStateSave = true; }
-            if (ImGui::MenuItem("Reserialize", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
+            if (ImGui::MenuItem("Serialise", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort | ImGuiHoveredFlags_NoSharedDelay))
                 ImGui::SetTooltip("Reserialization of scripts requires an editor restart.");
             ImGui::EndMenu();
@@ -96,15 +96,15 @@ void GUIManager::ShowMainMenuBar()
         
         if (ImGui::BeginMenu("Window"))
         {
-            ImGui::MenuItem("Save layout");
-            ImGui::MenuItem("Load layout");
-            ImGui::Separator();
+            // ImGui::MenuItem("Save layout");
+            // ImGui::MenuItem("Load layout");
+            // ImGui::Separator();
             ImGui::MenuItem("Scene", nullptr, &this->showSceneWindow);
             ImGui::MenuItem("Game", "CTRL+G", &this->showGameWindow);
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
-            ImGui::MenuItem("Debug console", nullptr, &this->showDebugConsole);
-            ImGui::MenuItem("ImGui Demo <3", "CTRL+D", &this->showDemoWindow);
+            // ImGui::MenuItem("Debug console", nullptr, &this->showDebugConsole);
+            // ImGui::MenuItem("ImGui Demo <3", "CTRL+D", &this->showDemoWindow);
             ImGui::EndMenu();
         }
         
@@ -379,6 +379,8 @@ void GUIManager::ShowGameWindow()
         "1280 x 720",
         "1600 x 900",
         "1920 x 1080",
+        "2560 x 1440",
+        "3840 x 2160",
     };
     static constexpr glm::ivec2 resolutions[] = {
         glm::ivec2(800, 600),   // 4:3
@@ -386,6 +388,8 @@ void GUIManager::ShowGameWindow()
         glm::ivec2(1280, 720),  // 16:9
         glm::ivec2(1600, 900),  // 16:9 
         glm::ivec2(1920, 1080), // 16:9
+        glm::ivec2(2560, 1440), // 16:9
+        glm::ivec2(3840, 2160), // 16:9
     };
     static const char* items[] = { "Free", "Fixed" };
     static int viewType = 1;
@@ -421,8 +425,24 @@ void GUIManager::ShowGameWindow()
             // Fixed View
             ImGui::Text("Resolution:");
             if (ImGui::BeginCombo(" ##Resolution Dropdown", resolutionTexts[fixedResolutionIndex], comboFlags))
-            {
-                for (int n = 0; n < IM_ARRAYSIZE(resolutions); n++)
+            {                
+                ImGui::Text("4:3");
+                ImGui::Separator();
+                for (int n = 0; n < 2; n++)
+                {
+                    const bool isSelected = (fixedResolutionIndex == n);
+                    if (ImGui::Selectable(resolutionTexts[n], isSelected))
+                        fixedResolutionIndex = n;
+
+                    // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+
+                ImGui::Spacing();
+                ImGui::Text("16:9");
+                ImGui::Separator();
+                for (int n = 2; n < 7; n++)
                 {
                     const bool isSelected = (fixedResolutionIndex == n);
                     if (ImGui::Selectable(resolutionTexts[n], isSelected))

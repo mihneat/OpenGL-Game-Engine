@@ -26,14 +26,19 @@
  * Serialized field types:
  *
  * NO const or unsigned
+ * Assignments are ALLOWED (even encouraged)
  *
- * bool <name>;
- * int <name>;
- * float <name>;
- * glm::vec2 <name>;
- * glm::vec3 <name>;
- * glm::vec4 <name>;
- * Transform* <name>;
+ * bool <name> [= ...];
+ * int <name> [= ...];
+ * float <name> [= ...];
+ * glm::vec2 <name> [= ...];
+ * glm::vec3 <name> [= ...];
+ * glm::vec4 <name> [= ...];
+ * <EnumName> <name> [= ...];
+ * Transform* <name> [= ...];
+ * rendering::Texture* <name> [= ...];
+ * rendering::Material* <name> [= ...];
+ * 
  * 
  */
 

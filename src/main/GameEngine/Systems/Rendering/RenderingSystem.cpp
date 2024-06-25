@@ -27,9 +27,6 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
         
         component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
-            // Initialize the mesh
-            meshRenderer->Init();
-
             // Check if the object has a mesh
             if (meshRenderer->meshType == component::MeshRenderer::None) return;
             
@@ -39,6 +36,9 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
             // Check if it's rendered during debug mode
             if (meshRenderer->debugOnly && !EditorRuntimeSettings::debugMode) return;
             
+            // Initialize the mesh
+            meshRenderer->MeshFactory();
+
             // Check if the renderer has a material
             const Material* material = meshRenderer->GetMaterial();
             if (material == nullptr) return;
@@ -76,8 +76,7 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
         m1::GameEngine::ApplyToComponents(hierarchy, [this, textRenderer](component::Component* component) {
             component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
             if (text != nullptr) {
-                text->Init(textRenderer);
-                text->textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
+                textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
             }
         });
 }

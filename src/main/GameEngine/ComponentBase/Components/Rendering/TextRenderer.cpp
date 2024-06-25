@@ -25,14 +25,6 @@ TextRenderer::~TextRenderer()
 {
 }
 
-void TextRenderer::Init(gfxc::TextRenderer* textRenderer)
-{
-    if (initialized) return;
-    
-    this->textRenderer = textRenderer;
-    initialized = true;
-}
-
 void TextRenderer::SetText(const std::string newText)
 {
     text = newText;

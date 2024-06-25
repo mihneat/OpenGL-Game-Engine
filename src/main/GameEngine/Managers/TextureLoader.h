@@ -27,7 +27,8 @@ namespace loaders
             LightPole,
             Player,
             Player2,
-            Player3
+            Player3,
+            Heart
         };
 
         static void InitTexturesMap();

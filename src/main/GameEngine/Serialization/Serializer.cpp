@@ -620,7 +620,7 @@ const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum
         {"GameState", {{"Start", 0},{"Playing", 1},{"Ended", 2},}},
         {"GameSpeed", {{"Snail", 0},{"Slow", 1},{"Medium", 2},{"Fast", 3},{"Cheetah", 4},{"LightningMcQueen", 5},}},
         {"TransformDirection", {{"TransformDirectionForward", 0},{"TransformDirectionRight", 1},{"TransformDirectionUp", 2},{"TransformDirectionCenter", 3},}},
-        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cube", 3},{"CubeMesh", 4},{"Sphere", 5},{"ZeldaHeart", 6},{"Cone", 7},{"None", 8},}},
+        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cube", 3},{"CubeMesh", 4},{"Sphere", 5},{"Heart", 6},{"Cone", 7},{"None", 8},}},
         {"LayerEnum", {{"Default", 0},{"UI", 1},}},
 
         /**

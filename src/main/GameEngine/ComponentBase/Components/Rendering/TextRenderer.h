@@ -41,7 +41,6 @@ namespace component
         SERIALIZE_FIELD glm::vec4 color;
         SERIALIZE_FIELD std::string text;
         SERIALIZE_FIELD glm::vec2 position;
-        gfxc::TextRenderer* textRenderer;
 
     private:
         bool initialized = false;

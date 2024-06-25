@@ -17,8 +17,6 @@ namespace utils
 
         unsigned int GetColorTextureID() const;
 
-        void UploadDataToTexture() const;
-
     private:
         void CreateFrameBuffer(glm::ivec2 resolution);
         void DeleteFrameBuffer();

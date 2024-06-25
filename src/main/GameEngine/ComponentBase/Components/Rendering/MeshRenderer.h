@@ -42,7 +42,7 @@ namespace component
             Cube,
             CubeMesh,
             Sphere,
-            ZeldaHeart,
+            Heart,
             Cone,
             None
         };
@@ -67,8 +67,6 @@ namespace component
         ~MeshRenderer();
 
         friend class rendering::RenderingSystem;
-
-        void Init();
 
         void SetColor(glm::vec4 newColor);
         void SetTexture(rendering::Texture* newTexture);

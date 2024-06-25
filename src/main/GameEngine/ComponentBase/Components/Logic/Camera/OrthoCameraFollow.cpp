@@ -19,7 +19,7 @@ void OrthoCameraFollow::Start()
 	isFixed = true;
 	cam->Set(glm::vec3(300.0f, 2000.0f, 0.0f), glm::vec3(300.0f, 0.0f, 0.0f), -glm::vec3_forward);
 
-	cam->SetOrtographic(fixedDimensions.x, fixedDimensions.y);
+	cam->SetOrthographic(fixedDimensions.x, fixedDimensions.y);
 }
 
 void OrthoCameraFollow::Update(const float deltaTime)
@@ -51,13 +51,13 @@ void OrthoCameraFollow::InputUpdate(const float deltaTime, const int mods)
 		// If zoomed out past the max, fix the camera
 		if (zoom >= 1.0f) {
 			isFixed = true;
-			cam->SetOrtographic(fixedDimensions.x, fixedDimensions.y);
+			cam->SetOrthographic(fixedDimensions.x, fixedDimensions.y);
 			return;
 		}
 
 		// Otherwise incrementally increase the height (zoom out)
 		zoom = glm::clamp(zoom + zoomSpeed * deltaTime, 0.0f, 1.0f);
-		cam->SetOrtographic(
+		cam->SetOrthographic(
 			glm::mix(minDimensions.x, maxDimensions.x, zoom),
 			glm::mix(minDimensions.y, maxDimensions.y, zoom)
 		);
@@ -72,7 +72,7 @@ void OrthoCameraFollow::InputUpdate(const float deltaTime, const int mods)
 
 		// Otherwise incrementally decrease the height (zoom in)
 		zoom = glm::clamp(zoom - zoomSpeed * deltaTime, 0.0f, 1.0f);
-		cam->SetOrtographic(
+		cam->SetOrthographic(
 			glm::mix(minDimensions.x, maxDimensions.x, zoom),
 			glm::mix(minDimensions.y, maxDimensions.y, zoom)
 		);

@@ -1,0 +1,63 @@
+{
+  "root": [
+    {
+      "name": "Game Instance",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [],
+      "children": []
+    },
+    {
+      "name": "Main Camera",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [
+        {
+          "className": "Camera",
+          "enabled": true,
+          "attributes": [
+            {
+              "name": "distanceToTarget",
+              "type": "FieldTypeFloat",
+              "value": 0.0
+            },
+            {
+              "name": "autoResize",
+              "type": "FieldTypeBool",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "children": []
+    }
+  ]
+}

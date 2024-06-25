@@ -109,23 +109,3 @@ void FBOContainer::DeleteFrameBuffer()
     glDeleteTextures(1, &colorTexture);
     glDeleteTextures(1, &depthTexture);
 }
-
-void FBOContainer::UploadDataToTexture() const
-{
-    // Read the pixels from the frame buffer
-    constexpr int channelCnt = 3; // RGB
-    unsigned char* imageData = new unsigned char[1ull * currentResolution.x * currentResolution.y * channelCnt];
-
-    glBindTexture(GL_TEXTURE_2D, colorTexture);
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-
-    // Save the framebuffer into the texture
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, currentResolution.x, currentResolution.y, GL_RGB, GL_UNSIGNED_BYTE, imageData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    // Unbind the texture
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Free the extra memory
-    delete[] imageData;
-}

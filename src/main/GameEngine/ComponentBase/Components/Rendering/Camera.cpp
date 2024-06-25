@@ -111,7 +111,7 @@ void Camera::SetProjection(const float fov, const float aspectRatio)
     projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 5000.0f);
 }
 
-void Camera::SetOrtographic(const float width, const float height)
+void Camera::SetOrthographic(const float width, const float height)
 {
     isProjection = false;
     projectionMatrix = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, 0.01f, 5000.0f);
@@ -143,7 +143,7 @@ void Camera::WindowResize(int width, int height)
             SetProjection(60.0f, 1.0f * width / (1.0f * height));
         } else
         {
-            SetOrtographic(width, height);
+            SetOrthographic(width, height);
         }
     }
 }
