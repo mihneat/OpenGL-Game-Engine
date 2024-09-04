@@ -25,6 +25,7 @@ class WindowProperties
     bool resizable;
     bool visible;
     bool fullScreen;
+    bool maximized;
     bool centered;
     bool hideOnClose;
     bool vSync;
@@ -90,6 +91,8 @@ class WindowObject
 
     // Update event listeners (key press / mouse move / window events)
     void UpdateObservers();
+
+    GLFWwindow* GetHandle();
 
  protected:
     // Frame time

@@ -8,6 +8,7 @@
 #include "main/GameEngine/Systems/Rendering/MaterialOverrides.h"
 #include "main/GameEngine/Systems/Rendering/Material.h"
 #include "main/GameEngine/Systems/Rendering/RenderingSystem.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 
 namespace prefabManager
 {
@@ -26,11 +27,14 @@ namespace component
         std::vector<unsigned int> indices;
         int drawMode;
     };
-
+    
+    SERIALIZE_CLASS
     class MeshRenderer : public Component, public IRenderable
     {
+        MARK_SERIALIZABLE(MeshRenderer)
 
     public:
+        SERIALIZE_ENUM
         enum MeshEnum {
             Square,
             FragmentedSquare,
@@ -38,11 +42,12 @@ namespace component
             Cube,
             CubeMesh,
             Sphere,
-            ZeldaHeart,
+            Heart,
             Cone,
             None
         };
 
+        SERIALIZE_ENUM
         enum LayerEnum {
             Default,
             UI
@@ -50,23 +55,22 @@ namespace component
 
         MeshRenderer(
             transform::Transform* transform,
-            MeshEnum meshType,
-            std::string meshName,
-            const rendering::Material* material,
+            MeshEnum meshType = Cube,
+            std::string meshName = "New Mesh",
+            rendering::Material* material = nullptr,
             LayerEnum layer = Default,
             glm::vec3 meshScale = glm::vec3(1.0f),
             glm::vec4 meshColor = glm::vec4(1.0f),
-            bool renderUI = true,
+            bool renderInWorldSpace = true,
             bool debugOnly = false
         );
         ~MeshRenderer();
 
         friend class rendering::RenderingSystem;
 
-        void Start();
-
         void SetColor(glm::vec4 newColor);
-        void SetTexture(std::string newTexture, glm::vec2 newTexScale = glm::vec2(1.0f));
+        void SetTexture(rendering::Texture* newTexture);
+        void SetTextureScale(glm::vec2 newTexScale);
         void SetMaterialOverrides(rendering::MaterialOverrides* materialOverrides);
 
         const rendering::Material* GetMaterial() const { return material; }
@@ -77,15 +81,12 @@ namespace component
         // To be implemented when needed
         // void ChangeMesh(std::string newMeshName);
 
-        static std::unordered_set<std::string> meshNames;
+        static std::unordered_set<MeshEnum> loadedMeshes;
 
     protected:
-        m1::GameEngine* scene;
-        MeshEnum type;
-        std::string baseMeshName;
-        std::string meshName;
-        glm::vec4 color;
-        glm::mat4 scaleMatrix;
+        SERIALIZE_FIELD MeshEnum meshType = Cube;
+        SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
+        SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1);
 
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
@@ -94,16 +95,17 @@ namespace component
         mesh_desc CreateRoad();
 
     private:
-        bool debugOnly;
-        long long meshIndex;
-        bool generateMesh;
-        bool renderUI;
-        LayerEnum layer;
-        std::string texture;
-        glm::vec2 texScale;
+        SERIALIZE_FIELD bool debugOnly = false;
+        bool generateMesh = true;
+        SERIALIZE_FIELD bool renderInWorldSpace = true;
+        SERIALIZE_FIELD LayerEnum layer = Default;
+        SERIALIZE_FIELD rendering::Texture* texture = nullptr;
+        SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
-        const rendering::Material* material;
-        rendering::MaterialOverrides* materialOverrides;
+        SERIALIZE_FIELD rendering::Material* material = nullptr;
+        rendering::MaterialOverrides* materialOverrides = nullptr;
+
+        bool initialized = false;
 
         void MeshFactory();
         void LoadMesh(const std::string name, const std::string path);

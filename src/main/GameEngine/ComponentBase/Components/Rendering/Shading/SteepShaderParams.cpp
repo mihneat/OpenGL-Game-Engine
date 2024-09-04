@@ -3,9 +3,10 @@
 #include <iostream>
 
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
+#include "main/GameEngine/Managers/GameInstance.h"
 
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 
@@ -17,7 +18,7 @@ void SteepShaderParams::Start()
 
 void SteepShaderParams::Update(const float deltaTime)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended) {
 		return;
 	}
 

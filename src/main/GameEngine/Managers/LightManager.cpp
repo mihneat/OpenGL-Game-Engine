@@ -42,3 +42,16 @@ void LightManager::DeleteLight(int index)
 	// Just set the light as unused
 	lights[index].isUsed = false;
 }
+
+void LightManager::ClearValues()
+{
+	for (int i = 0; i < maxLights; ++i) {
+		// Set the properties of light
+		if (!lights[i].isUsed) continue;
+		
+		lights[i].intensity = 0.0f;
+		lights[i].position = glm::vec3(0.0f);
+		lights[i].color = glm::vec3(1.0f);
+		lights[i].direction = glm::vec3_down;
+	}
+}

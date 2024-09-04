@@ -5,23 +5,30 @@
 #include "main/GameEngine/ComponentBase/Components/Rendering/Interfaces/IRenderable.h"
 
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <stack>
 
+#include "main/GameEngine/Serialization/Serializer.h"
+#include "ComponentBase/Components/Rendering/Camera.h"
 #include "core/managers/resource_path.h"
+#include "GUI/GUIManager.h"
+#include "Managers/GameInstance.h"
+#include "Managers/InputManager.h"
+#include "Serialization/ObjectSerializer.h"
 #include "Systems/FileSystem.h"
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
+#include "Systems/Editor/SceneCamera.h"
 #include "Systems/Rendering/MaterialManager.h"
 
 using namespace std;
 using namespace m1;
 using namespace loaders;
-using namespace component;
 using namespace rendering;
 using namespace transform;
 using namespace prefabManager;
-using namespace managers;
+using namespace component;
 
 
 /*
@@ -33,14 +40,15 @@ using namespace managers;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    const string defaultScene = PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS, "Scenes", "EmptyScene.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "SteepScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     
     LightManager::Init();
-    SceneManager::LoadScene(defaultScene);
 
-    useSceneCamera = false;
+    // TODO: Extend to multiple observers
+    // "Subscribe" to scene manager updates
+    SceneManager::engineRef = this;
 }
 
 GameEngine::~GameEngine()
@@ -55,140 +63,278 @@ void GameEngine::Init()
     textRenderer = new gfxc::TextRenderer(FileSystem::rootDirectory, resolution.x, resolution.y);
     textRenderer->Load(PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::FONTS, "Hack-Bold.TTF"), 30);
 
+    // Create the GameInstance singleton by retrieving it
+    managers::GameInstance::Get();
+
+    InputManager::window = window;
+    
     ShaderLoader::InitShaders();
     TextureLoader::InitTextures();
     MaterialManager::InitMaterials();
 
-    CreateHierarchy();
+    CreateSceneCamera();
 
-    // Update initial transforms
-    ApplyToComponents(hierarchy, [](Component* component) {},
-        [](Transform* transform) {
-            transform->Update();
-        }
-        );
-
-    // Start components
-    StartComponents(hierarchy);
+    ReloadScene();
 }
 
-void GameEngine::CreateHierarchy()
+void GameEngine::CreateSceneCamera()
 {
-    // Define the root-level Hierarchy transform
-    hierarchy = new Transform();
+    // Create the scene camera
+    Transform* sceneCamTransform = new Transform();
+    sceneCamTransform->Translate(glm::vec3(0.0f, 20.0f, -50.0f));
+    
+    sceneCamera = new SceneCamera(sceneCamTransform);
+    sceneCamTransform->AddComponent(sceneCamera);
+    sceneCamera->SetProjection(60, 16.0f / 9.0f);
+}
 
-    // Initialize singleton managers
-    Transform* gameManager = new Transform(hierarchy);
-    managers::GameManager::GetInstance(gameManager, this);
-    gameManager->AddComponent(managers::GameManager::GetInstance());
+void GameEngine::SaveSceneToFile()
+{
+    const nlohmann::ordered_json sceneObj = ObjectSerializer::SerializeRootObject(hierarchy);
+    
+    ofstream fout(startScene);
+    fout << sceneObj.dump(2);
+}
 
-    // Create the player
-    Transform* player = PrefabManager::CreatePlayer(hierarchy);
+void GameEngine::ReloadScene()
+{
+    // if (hierarchy != nullptr)
+    // {
+    //     mainCam = nullptr;
+    //     secondaryCams.clear();
+    //     
+    //     DeleteComponents(hierarchy);
+    //
+    //     hierarchy = nullptr;
+    // }
+    //
+    // hierarchy = PrefabManager::CreateSteepScene();
+    
+    SceneManager::LoadScene(startScene);
+    FindCameras();
+}
 
-    // Create the camera object
-    glm::ivec2 resolution = window->GetResolution();
-    Transform* camera = PrefabManager::CreateCamera(hierarchy, player, window->props.aspectRatio,
-        glm::vec2(0.0f, 0.0f), glm::vec2(resolution.x, resolution.y));
-    this->mainCam = camera->GetComponent<Camera>();
+void GameEngine::HandleSceneLoaded(Transform* root)
+{
+    if (hierarchy != nullptr)
+    {
+        mainCam = nullptr;
+        secondaryCams.clear();
+        
+        DeleteComponents(hierarchy);
+    }
 
-    // Create the ground
-    Transform* ground = PrefabManager::CreateGround(hierarchy);
+    hierarchy = root;
+}
 
-    // Create the sun
-    Transform* sun = PrefabManager::CreateSun(hierarchy);
+void GameEngine::FindCameras()
+{
+    ApplyToComponents(hierarchy, [this](Component* component) {
+        Camera* camera = dynamic_cast<Camera*>(component); 
+        if (camera != nullptr)
+        {
+            // TODO: Change after implementing "isMainCam" serialized bool
+            if (mainCam == nullptr)
+            {
+                mainCam = camera;
+                return;
+            }
 
-    // Create the object spawner
-    Transform* objectSpawner = PrefabManager::CreateObjectSpawner(hierarchy);
-
-    // Create the UI
-    Transform* rootUI = PrefabManager::CreateUI(this, hierarchy);
-
-    // Create the shader params
-    Transform* shaderParams = PrefabManager::CreateShaderParams(hierarchy);
+            secondaryCams.push_back(camera);
+        }
+    });
 }
 
 void GameEngine::FrameStart()
 {
-    // Clears the color buffer (using the previously set color) and depth buffer
-    clearColor = managers::GameManager::GetInstance()->GetSkyColor();
-    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    if (GUIManager::GetInstance()->ShouldPlay())
+    {
+        // Save the scene if the game is playing
+        if (!GUIManager::GetInstance()->IsGamePlaying())
+            SaveSceneToFile();
+        
+        GUIManager::GetInstance()->ToggleGamePlaying();
+    }
+    
+    if (GUIManager::GetInstance()->ShouldPause())
+        GUIManager::GetInstance()->ToggleGamePaused();
+    
+    if (GUIManager::GetInstance()->ShouldReset())
+    {
+        ReloadScene();
+        GUIManager::GetInstance()->UnmarkReset();
+    }
 
-    glm::ivec2 resolution = window->GetResolution();
+    if (GUIManager::GetInstance()->ShouldSave() && !GUIManager::GetInstance()->IsGamePlaying())
+        SaveSceneToFile();
+
+    GUIManager::GetInstance()->UnmarkSave();
+
+    Transform* currTransform = GUIManager::GetInstance()->GetLastSelectedTransform();
+    std::string componentToCreate = GUIManager::GetInstance()->RetrieveComponentToCreate();
+    if (!componentToCreate.empty() && currTransform != nullptr)
+    {
+        // Create a new component and attach it to the currently selected object
+        currTransform->AddComponent(Serializer::ComponentFactory(componentToCreate, currTransform));
+    }
+
+    Component* componentToDelete = GUIManager::GetInstance()->RetrieveComponentToDelete();
+    if (componentToDelete != nullptr && currTransform != nullptr)
+        currTransform->RemoveComponent(componentToDelete);
+
+    Transform* transformToCreateChild = GUIManager::GetInstance()->RetrieveTransformToCreateChild();
+    if (transformToCreateChild != nullptr)
+        // Create a new empty child of the object
+        new Transform(transformToCreateChild);
+
+    Transform* transformToDelete = GUIManager::GetInstance()->RetrieveTransformToDelete();
+    if (transformToDelete != nullptr)
+        // Delete marked item
+        Transform::Destroy(transformToDelete);
+    
+    // Clear the color and depth buffers of the default FB
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Set engine resolution
+    const glm::ivec2 resolution = window->GetResolution();
 
     // Sets the screen area where to draw
     glViewport(0, 0, resolution.x, resolution.y);
+    
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+// This executes before the input callbacks from world.cpp
+void GameEngine::PreUpdate()
+{
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    AwakeComponents(hierarchy);
 }
 
 void GameEngine::Update(float deltaTimeSeconds)
 {
-    // Update components
-    currCam = mainCam;
-    projectionMatrix = currCam->GetProjectionMatrix();
-    glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
-    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    UpdateGameLogic(deltaTimeSeconds);
+    RenderGameView();
+    RenderSceneView();
+}
 
-    float deltaTimeTrunc = ((int)(deltaTimeSeconds * 100000)) / 100000.0f;
-    this->StartComponents(hierarchy);
-    this->UpdateComponents(hierarchy, deltaTimeSeconds);
-    this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
+void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
+{
+    // Check if game is active
+    if (GUIManager::GetInstance()->IsGameActive())
+    {
+        this->StartComponents(hierarchy);
+        this->UpdateComponents(hierarchy, deltaTimeSeconds);
+        this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
+    }
 
     this->DestroyMarkedObjects();
+}
 
-    renderingSystem->Render(hierarchy, currCam, window);
+void GameEngine::RenderGameView()
+{
+    // Quit out early if no cameras are rendering
+    if (mainCam == nullptr)
+        return;
+    
+    // Get the game FBO container
+    const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetGameFBOContainer();
+    fboContainer->Bind();
+    
+    // Update rendering components
+    glViewport(0, 0, fboContainer->GetResolution().x, fboContainer->GetResolution().y);
+    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    
+    // Set the "skybox" color (flat color)
+    clearColor = mainCam->skyboxColor;
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // TODO: This was before 'DestroyMarkedObject', might cause errors (probably not)
-    // this->renderingSystem->Render(hierarchy);
+    renderingSystem->Render(hierarchy, textRenderer, mainCam, fboContainer->GetResolution());
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
         glClear(GL_DEPTH_BUFFER_BIT);
+        glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
+            (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        currCam = cam;
-        projectionMatrix = cam->GetProjectionMatrix();
-        glViewport((int)currCam->GetViewportDimensions().x, (int)currCam->GetViewportDimensions().y,
-            (int)currCam->GetViewportDimensions().z, (int)currCam->GetViewportDimensions().a);
-
-        renderingSystem->Render(hierarchy, currCam, window);
+        renderingSystem->Render(hierarchy, textRenderer, cam, fboContainer->GetResolution());
     }
 
+    // Upload FBO data to the texture
+    // fboContainer->UploadDataToTexture();
 }
+
+void GameEngine::RenderSceneView()
+{
+    // Get the scene FBO container
+    const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetSceneFBOContainer();
+    fboContainer->Bind();
+    
+    // Update rendering components
+    glViewport(0, 0, fboContainer->GetResolution().x, fboContainer->GetResolution().y);
+    glPolygonMode(GL_FRONT_AND_BACK, EditorRuntimeSettings::debugMode ? GL_LINE : GL_FILL);
+    
+    // Set the "skybox" color (flat colour)
+    constexpr glm::vec4 defaultSkyboxColor = glm::vec4(40, 40, 40, 255) / 255.0f;
+    glClearColor(defaultSkyboxColor.r, defaultSkyboxColor.g, defaultSkyboxColor.b, defaultSkyboxColor.a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Update the scene camera
+    Transform* transformToFocus = GUIManager::GetInstance()->GetTransformToFocus();
+    if (transformToFocus != nullptr && GUIManager::GetInstance()->IsSceneHovered())
+    {
+        sceneCamera->FocusTransform(transformToFocus);
+        GUIManager::GetInstance()->FinishTransformFocus();
+    }
+    
+    sceneCamera->UpdateValues(fboContainer->GetResolution());
+
+    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), false);
+
+    // Upload FBO data to the texture
+    // fboContainer->UploadDataToTexture();
+}
+
 // This function does something apparently
 // Buna Mihnea
 void GameEngine::FrameEnd()
 {
-    // DrawCoordinateSystem();
-
-    ApplyToComponents(hierarchy, [](Component* component) {                                                                                                                                                     // Hello
-        component->FrameEnd();
-    });
-}
-
-glm::vec2 GameEngine::GetResolution()
-{
-    glm::ivec2 resolution = window->GetResolution();
-    return glm::vec2((float)resolution.x, (float)resolution.y);
-}
-
-void GameEngine::DestroyObject(Transform* object)
-{
-    markedForDestruction.push(object);
+    // Bind back the default FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
 }
 
 void GameEngine::DestroyMarkedObjects()
 {
-    while (!markedForDestruction.empty()) {
-        // Get the first object
-        Transform* object = markedForDestruction.top();
-        markedForDestruction.pop();
+    // Transform recursion into iterative with a stack
+    stack<Transform*> transformStack;
+    transformStack.push(hierarchy);
 
-        // Remove the child from its parent
-        object->parent->RemoveChild(object);
+    // Go through all transforms in the scene
+    while (!transformStack.empty()) {
+        // Update the root
+        Transform* currentTransform = transformStack.top();
+        transformStack.pop();
 
-        // Recursively destroy the object
-        // PROBLEM: If a child of this object is ALSO marked for deletion, we might get
-        // double free errors, please keep this in mind :( fkin c++
-        DeleteComponents(object);
+        if (currentTransform->markedForDeletion) {
+            // Remove the child from its parent
+            currentTransform->parent->RemoveChild(currentTransform);
+
+            // Recursively destroy the object
+            DeleteComponents(currentTransform);
+            
+            continue;
+        }
+
+        // Add all of root's children to the stack
+        for (int i = 0; i < currentTransform->GetChildCount(); ++i) {
+            transformStack.push(currentTransform->GetChild(i));
+        }
     }
 }
 
@@ -201,6 +347,16 @@ void GameEngine::DestroyMarkedObjects()
 
 void GameEngine::OnInputUpdate(float deltaTime, int mods)
 {
+    // Update the scene camera
+    sceneCamera->InputUpdate(deltaTime, mods);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
     ApplyToComponents(hierarchy, [deltaTime, mods](Component* component) {
         component->InputUpdate(deltaTime, mods);
     });
@@ -209,9 +365,15 @@ void GameEngine::OnInputUpdate(float deltaTime, int mods)
 
 void GameEngine::OnKeyPress(int key, int mods)
 {
-    if (key == GLFW_KEY_F1) {
-        useSceneCamera = !useSceneCamera;
-    }
+    // Update the scene camera
+    sceneCamera->KeyPress(key, mods);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
 
     if (key == GLFW_KEY_F3) {
         EditorRuntimeSettings::debugMode = !EditorRuntimeSettings::debugMode;
@@ -225,6 +387,16 @@ void GameEngine::OnKeyPress(int key, int mods)
 
 void GameEngine::OnKeyRelease(int key, int mods)
 {
+    // Update the scene camera
+    sceneCamera->KeyRelease(key, mods);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
     ApplyToComponents(hierarchy, [key, mods](Component* component) {
         component->KeyRelease(key, mods);
     });
@@ -233,8 +405,18 @@ void GameEngine::OnKeyRelease(int key, int mods)
 
 void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
-    // Add mouse move event
+    // Update the scene camera
     const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseMove(mouseX, invertedMouseY, deltaX, deltaY);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
+    // Add mouse move event
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, deltaX, deltaY](Component* component) {
         component->MouseMove(mouseX, invertedMouseY, deltaX, deltaY);
     });
@@ -243,9 +425,19 @@ void GameEngine::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 
 void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseBtnPress(mouseX, invertedMouseY, button, mods);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
     // Add mouse button press event
     // Invert mouse position such that (0, 0) is on the bottom left
-    const int invertedMouseY = window->GetResolution().y - mouseY;
     ApplyToComponents(hierarchy, [mouseX, invertedMouseY, button, mods](Component* component) {
         component->MouseBtnPress(mouseX, invertedMouseY, button, mods);
     });
@@ -254,17 +446,59 @@ void GameEngine::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 
 void GameEngine::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseBtnRelease(mouseX, invertedMouseY, button, mods);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
     // Add mouse button release event
+    // Invert mouse position such that (0, 0) is on the bottom left
+    ApplyToComponents(hierarchy, [mouseX, invertedMouseY, button, mods](Component* component) {
+        component->MouseBtnRelease(mouseX, invertedMouseY, button, mods);
+    });
 }
 
 
 void GameEngine::OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY)
 {
+    // Update the scene camera
+    const int invertedMouseY = window->GetResolution().y - mouseY;
+    sceneCamera->MouseScroll(mouseX, invertedMouseY, offsetX, offsetY);
+    
+    // Check if game is active
+    if (!GUIManager::GetInstance()->IsGameActive())
+        return;
+    
+    if (!GUIManager::GetInstance()->ReceiveGameInput())
+        return;
+    
+    // Add mouse scroll event
+    // Invert mouse position such that (0, 0) is on the bottom left
+    ApplyToComponents(hierarchy, [mouseX, invertedMouseY, offsetX, offsetY](Component* component) {
+        component->MouseScroll(mouseX, invertedMouseY, offsetX, offsetY);
+    });
 }
 
 
 void GameEngine::OnWindowResize(int width, int height)
 {
+    // This is to be used during the BUILT version of the game
+    
+    // ApplyToComponents(hierarchy, [width, height](Component* component) {
+    //     component->WindowResize(width, height);
+    // });
+}
+
+void GameEngine::OnGameWindowResize(int width, int height)
+{
+    EditorRuntimeSettings::resolution = {width, height};
+    
     ApplyToComponents(hierarchy, [width, height](Component* component) {
         component->WindowResize(width, height);
     });
@@ -313,6 +547,16 @@ void GameEngine::ApplyToComponents(
     }
 }
 
+void GameEngine::AwakeComponents(Transform* currentTransform)
+{
+    // Start the components
+    ApplyToComponents(currentTransform, [](Component* component) {
+        if (!component->GetHasAwakeActivated()) {
+            component->SetHasAwakeActivated();
+            component->Awake();
+        }
+    });
+}
 
 void GameEngine::StartComponents(Transform* currentTransform)
 {
@@ -330,10 +574,7 @@ void GameEngine::UpdateComponents(Transform* currentTransform, const float delta
     // Update the transform and the components
     ApplyToComponents(currentTransform, [deltaTime](Component* component) {
         component->Update(deltaTime);
-        }, [](Transform* transform) {
-            transform->Update();
-        }
-        );
+        });
 }
 
 void GameEngine::LateUpdateComponents(Transform* currentTransform, const float deltaTime)
@@ -350,7 +591,7 @@ void GameEngine::DeleteComponents(Transform* currentTransform)
     ApplyToComponents(currentTransform, [](Component* component) {
             delete component;
         }, [](Transform* _) { },
-        [](Transform* transform) {
+        [this](Transform* transform) {
             delete transform;
         }
     );

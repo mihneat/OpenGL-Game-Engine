@@ -28,5 +28,8 @@ void UpdateLightPosition::Start()
 
 void UpdateLightPosition::Update(const float deltaTime)
 {
+	if (!light)
+		return;
+	
 	light->ChangePosition(transform->GetWorldPosition());
 }

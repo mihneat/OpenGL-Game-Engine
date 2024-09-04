@@ -10,8 +10,11 @@ namespace component
 {
     class TextRenderer;
 
+    SERIALIZE_CLASS
     class HighScoreDisplay : public Component
     {
+        MARK_SERIALIZABLE(HighScoreDisplay)
+        
     public:
         HighScoreDisplay(transform::Transform* transform) : Component(transform), textRenderer(NULL) { }
         ~HighScoreDisplay() { }

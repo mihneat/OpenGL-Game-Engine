@@ -11,6 +11,7 @@ namespace rendering
     {
     public:
         static Shader* GetShader(const std::string& shaderName);
+        static void ReloadShaders();
     
     private:
         static void AddShader(const std::string& shaderName, Shader* shader);
@@ -18,6 +19,7 @@ namespace rendering
     public:
         static const std::string SHADER_STANDARD;
         static const std::string SHADER_SIMPLE;
+        static const std::string SHADER_COLOR;
     
     private:
         static std::unordered_map<std::string, Shader*> shaders;

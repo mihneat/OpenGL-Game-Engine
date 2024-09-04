@@ -9,7 +9,7 @@
 #include "main/GameEngine/ComponentBase/Components/Rendering/MeshRenderer.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 
-namespace managers
+namespace component
 {
     class GameManager;
 }
@@ -17,17 +17,21 @@ namespace managers
 namespace component
 {
     class MeshRenderer;
-    enum class LayerEnum;
+    // enum class LayerEnum;
 
+    SERIALIZE_CLASS
     class Camera : public Component
     {
+        MARK_SERIALIZABLE(Camera)
+        
     public:
         Camera(transform::Transform* transform, const glm::vec3& center, const glm::vec3& up,
                 const glm::vec2 viewportBottomLeft, const glm::vec2 viewportWidthHeight, 
                 std::vector<int> layers, const bool autoResize = false) : Component(transform),
             viewportBottomLeft(viewportBottomLeft), viewportWidthHeight(viewportWidthHeight), autoResize(autoResize)
         {
-            Set(transform->GetLocalPosition(), center, up);
+            // TODO: Probably move to Awake()
+            // Set(transform->GetLocalPosition(), center + glm::vec3(0.1, 0.0, 0.0), up);
             distanceToTarget = glm::distance(center, transform->GetLocalPosition());
             SetProjection(60, 16.0f / 9.0f);
 
@@ -36,8 +40,8 @@ namespace component
             }
         }
 
-        Camera(transform::Transform* transform, const glm::vec3& center,
-            const glm::vec3& up, std::vector<int> layers) : Camera(transform,
+        Camera(transform::Transform* transform, const glm::vec3& center = glm::vec3(0),
+            const glm::vec3& up = glm::vec3_up, std::vector<int> layers = { 0, 1 }) : Camera(transform,
                 center, up, glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f), layers, true) { }
 
         ~Camera() { }
@@ -45,7 +49,7 @@ namespace component
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
         void SetProjection(const float fov, const float aspectRatio);
-        void SetOrtographic(const float width, const float height);
+        void SetOrthographic(const float width, const float height);
 
         void MoveForward(float distance);
 
@@ -73,14 +77,21 @@ namespace component
         glm::vec4 GetViewportDimensions() { return glm::vec4(viewportBottomLeft.x, viewportBottomLeft.y,
             viewportWidthHeight.x, viewportWidthHeight.y); }
 
-        glm::vec2 viewportBottomLeft;
-        glm::vec2 viewportWidthHeight;
+        glm::vec2 viewportBottomLeft = glm::vec2();
+        glm::vec2 viewportWidthHeight = glm::vec2();
+
+        glm::vec4 skyboxColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     protected:
-        float distanceToTarget;
+        SERIALIZE_FIELD float distanceToTarget;
         glm::mat4 projectionMatrix;
-        bool autoResize;
+        SERIALIZE_FIELD bool autoResize = true;
+
+        // TODO: Implement this functionality
+        // S ERIALIZE_FIELD bool isMainCam = false;
 
         std::unordered_set<int> layers;
+
+        bool isProjection = false;
     };
 }

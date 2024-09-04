@@ -8,21 +8,25 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class SteepShaderParams : public Component
     {
+        MARK_SERIALIZABLE(SteepShaderParams)
+        
     public:
-        SteepShaderParams(transform::Transform* transform, rendering::Material* groundMat) : Component(transform),
-            offset(glm::vec2()), player(nullptr), previousPlayerPos(glm::vec3()), groundMat(groundMat) { }
+        SteepShaderParams(transform::Transform* transform, rendering::Material* groundMat = nullptr) : Component(transform), groundMat(groundMat) { }
         ~SteepShaderParams() { }
 
         void Start();
         void Update(const float deltaTime);
 
-        glm::vec2 offset;
-
     protected:
-        transform::Transform* player;
-        glm::vec3 previousPlayerPos;
-        rendering::Material* groundMat;
+        transform::Transform* player = nullptr;
+        glm::vec3 previousPlayerPos = glm::vec3();
+        SERIALIZE_FIELD rendering::Material* groundMat = nullptr;
+
+    private:
+        glm::vec2 offset = glm::vec2();
+        
     };
 }   // namespace component

@@ -11,9 +11,11 @@ gfxc::CameraInput::CameraInput(Camera *camera)
     this->camera = camera;
 }
 
-
+// DEPRECATED - A new scene camera is being used, based on the new Camera system
 void gfxc::CameraInput::OnInputUpdate(float deltaTime, int mods)
 {
+    return;
+    
 	deltaTime *= 5;
 
     if (!window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT)) return;
@@ -41,8 +43,10 @@ void gfxc::CameraInput::OnInputUpdate(float deltaTime, int mods)
     camera->Update();
 }
 
-
+// DEPRECATED - A new scene camera is being used, based on the new Camera system
 void gfxc::CameraInput::OnKeyPress(int key, int mods) {
+    return;
+    
     if (mods)
     {
         return;
@@ -54,9 +58,11 @@ void gfxc::CameraInput::OnKeyPress(int key, int mods) {
     }
 }
 
-
+// DEPRECATED - A new scene camera is being used, based on the new Camera system
 void gfxc::CameraInput::OnMouseMove(int mouseX, int mouseY, int deltaX, int deltaY)
 {
+    return;
+    
     if (window->MouseHold(GLFW_MOUSE_BUTTON_RIGHT))
     {
         camera->RotateOY(-(float)deltaX);
@@ -65,18 +71,22 @@ void gfxc::CameraInput::OnMouseMove(int mouseX, int mouseY, int deltaX, int delt
     }
 }
 
-
+// DEPRECATED - A new scene camera is being used, based on the new Camera system
 void gfxc::CameraInput::OnMouseBtnPress(int mouseX, int mouseY, int button, int mods)
 {
+    return;
+    
     if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_RIGHT))
     {
         window->DisablePointer();
     }
 }
 
-
+// DEPRECATED - A new scene camera is being used, based on the new Camera system
 void gfxc::CameraInput::OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods)
 {
+    return;
+    
     if (IS_BIT_SET(button, GLFW_MOUSE_BUTTON_RIGHT))
     {
         window->ShowPointer();

@@ -9,13 +9,15 @@ namespace component
 {
     class Camera;
 
+    SERIALIZE_CLASS
     class CameraFollow : public Component
     {
+        MARK_SERIALIZABLE(CameraFollow)
+        
     public:
-        CameraFollow(transform::Transform* transform, transform::Transform* followTarget,
-            float distanceToTarget, float forwardFollowDistance) : Component(transform), followTarget(followTarget),
-            distanceToTarget(distanceToTarget), mainCam(NULL), isRetroCam(false),
-            forwardFollowDistance(forwardFollowDistance), forwardOffset(glm::vec3()), angleScale(0.7f), retroAngleScale(0.05f)
+        CameraFollow(transform::Transform* transform, transform::Transform* followTarget = nullptr,
+            float distanceToTarget = 100.0f, float forwardFollowDistance = 65.0f) : Component(transform), followTarget(followTarget),
+            distanceToTarget(distanceToTarget), forwardFollowDistance(forwardFollowDistance)
         { }
 
         ~CameraFollow() { }
@@ -27,15 +29,16 @@ namespace component
         void KeyRelease(const int key, const int mods);
 
     protected:
-        component::Camera* mainCam;
-        transform::Transform* followTarget;
-        float distanceToTarget;
+        Camera* mainCam = nullptr;
+        SERIALIZE_FIELD transform::Transform* followTarget = nullptr;
+        SERIALIZE_FIELD float distanceToTarget = 100.0f;
 
-        float forwardFollowDistance;
-        glm::vec3 forwardOffset;
+        SERIALIZE_FIELD float forwardFollowDistance = 65.0f;
+        glm::vec3 forwardOffset = glm::vec3();
         
-        const float angleScale, retroAngleScale;
+        SERIALIZE_FIELD float angleScale = 0.7f;
+        SERIALIZE_FIELD float retroAngleScale = 0.05f;
 
-        bool isRetroCam;
+        SERIALIZE_FIELD bool isRetroCam = false;
     };
 }

@@ -4,18 +4,7 @@
 
 #include "utils/memory_utils.h"
 
-using namespace managers;
 using namespace component;
-
-GameManager* GameManager::gameManager = nullptr;
-
-GameManager* GameManager::GetInstance(transform::Transform* transform, m1::GameEngine* scene)
-{
-    if (gameManager == nullptr) {
-        gameManager = new GameManager(transform, scene);
-    }
-    return gameManager;
-}
 
 void GameManager::KeyPress(const int key, const int mods)
 {
@@ -34,6 +23,19 @@ void GameManager::KeyPress(const int key, const int mods)
     }
 }
 
+void GameManager::MouseScroll(const int mouseX, const int mouseY, const int offsetX, const int offsetY)
+{
+    if (gameState == Start) {
+        if (offsetY < 0 && gameSpeed != LightningMcQueen) {
+            gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) + 1);
+        }
+
+        if (offsetY > 0 && gameSpeed != Snail) {
+            gameSpeed = static_cast<GameSpeed>(static_cast<int>(gameSpeed) - 1);
+        }
+    }
+}
+
 void GameManager::MouseBtnPress(const int mouseX, const int mouseY,
     const int button, const int mods)
 {
@@ -42,11 +44,6 @@ void GameManager::MouseBtnPress(const int mouseX, const int mouseY,
             gameState = Playing;
         }
     }
-}
-
-m1::GameEngine* GameManager::GetSceneReference()
-{
-    return scene;
 }
 
 void GameManager::ResetGame()
@@ -61,8 +58,8 @@ void GameManager::ResetGame()
     score = 0;
 
     // Reset all subscribed objects
-    for (IResetable* resetable : resetables) {
-        resetable->Reset();
+    for (IResetable* resettable : resetables) {
+        resettable->Reset();
     }
 }
 

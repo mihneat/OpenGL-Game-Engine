@@ -9,4 +9,7 @@ using namespace loaders;
 using namespace component;
 using namespace transform;
 
-DirectionalLight::DirectionalLight(transform::Transform* transform) : Light(transform, LightManager::Directional) { }
+DirectionalLight::DirectionalLight(Transform* transform) : Light(transform)
+{
+    Light::ChangeType(LightManager::Directional);
+}

@@ -6,7 +6,7 @@
 
 using namespace std;
 using namespace utils;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 

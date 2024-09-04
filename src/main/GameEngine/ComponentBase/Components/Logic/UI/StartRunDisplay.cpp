@@ -4,8 +4,10 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 
@@ -16,5 +18,5 @@ void StartRunDisplay::Start()
 
 void StartRunDisplay::Update(const float deltaTime)
 {
-	textRenderer->SetActive(GameManager::GetInstance()->GetGameState() == GameManager::Start);
+	textRenderer->SetActive(managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Start);
 }

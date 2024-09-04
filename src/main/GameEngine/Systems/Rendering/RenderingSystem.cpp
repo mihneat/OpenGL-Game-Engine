@@ -11,76 +11,170 @@
 using namespace rendering;
 using namespace loaders;
 
-void RenderingSystem::Render(transform::Transform* hierarchy, component::Camera* cam,
-        const WindowObject* window)
+void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam,
+                             const glm::ivec2 resolution, bool renderText)
 {
-    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, window](component::Component* component) {
-        const component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
+    // Clear rendering state
+    meshesByShader.clear();
+    LightManager::ClearValues();
+    
+    // Render the meshes and the lights
+    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam](component::Component* component) {
+        component::Light* light = dynamic_cast<component::Light*>(component);
+        if (light != nullptr) {
+            light->UpdateLightValues();
+        }
+        
+        component::MeshRenderer* meshRenderer = dynamic_cast<component::MeshRenderer*>(component);
         if (meshRenderer != nullptr) {
+            // Check if the object has a mesh
+            if (meshRenderer->meshType == component::MeshRenderer::None) return;
+            
             // Check the layer
             if (!cam->IsLayerRendered(meshRenderer->layer)) return;
 
             // Check if it's rendered during debug mode
             if (meshRenderer->debugOnly && !EditorRuntimeSettings::debugMode) return;
             
+            // Initialize the mesh
+            meshRenderer->MeshFactory();
+
             // Check if the renderer has a material
             const Material* material = meshRenderer->GetMaterial();
             if (material == nullptr) return;
             
-            // Use the shader
-            material->shader->Use();
-
-            // Set the uniforms
-            SetGlobalUniforms(
-                material->shader,
-                // TODO: Deprecate scaleMatrix once the engine works again..
-                meshRenderer->transform->GetModelMatrix() * meshRenderer->scaleMatrix,
-                meshRenderer->renderUI,
-                meshRenderer->texture,
-                // TODO: Turn the texScale into a glm::vec2
-                meshRenderer->texScale,
-                cam,
-                window->GetResolution()
-            );
-            SetUniforms(material, meshRenderer->GetMaterialOverrides());
-            
-            // Render the mesh
-            const Mesh *mesh = MeshResourceManager::meshes[meshRenderer->meshName];
-            mesh->Render();
+            this->meshesByShader[material->shader].push_back(meshRenderer);
         }
     });
+
+    // Iterate through all the meshes, by their shader
+    for (auto& shaderMeshes : meshesByShader)
+    {
+        Shader* shader = shaderMeshes.first;
+        shader->Use();
+
+        SetGlobalUniforms(shader, cam);
+
+        for (auto meshRenderer : shaderMeshes.second)
+        {
+            const Material* material = meshRenderer->GetMaterial();
+
+            // Set the uniforms
+            SetLocalUniforms(material->shader, meshRenderer, cam, resolution);
+            
+            SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
+            
+            // Render the mesh
+            const Mesh *mesh = MeshResourceManager::meshes[std::to_string(meshRenderer->meshType)];
+            mesh->Render();
+        }
+    }
+
+    // Render the text
+    // TODO: Temporary variable until making a full canvas system
+    if (renderText)
+        m1::GameEngine::ApplyToComponents(hierarchy, [this, textRenderer](component::Component* component) {
+            component::TextRenderer* text = dynamic_cast<component::TextRenderer*>(component);
+            if (text != nullptr) {
+                textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
+            }
+        });
 }
 
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
-    const glm::mat4& modelMatrix,
-    const bool renderUI,
-    const std::string texture,
-    const glm::vec2 texScale,
+    component::Camera* cam
+)
+{
+    const GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
+    glUniform3fv(eye_position, 1, glm::value_ptr(cam->transform->GetWorldPosition()));
+
+    // Send light information
+    static std::vector<std::string> lightIsUsedStrings;
+    static std::vector<std::string> lightTypeStrings;
+    static std::vector<std::string> lightIntensityStrings;
+    static std::vector<std::string> lightIsPositionStrings;
+    static std::vector<std::string> lightIsColorStrings;
+    static std::vector<std::string> lightIsDirectionStrings;
+    if (lightIsUsedStrings.empty())
+    {
+        for (int i = 0; i < LightManager::maxLights; ++i)
+        {
+            lightIsUsedStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].isUsed"));
+            lightTypeStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].type"));
+            lightIntensityStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].intensity"));
+            lightIsPositionStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].position"));
+            lightIsColorStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].color"));
+            lightIsDirectionStrings.push_back(std::string("lights[").append(std::to_string(i)).append("].direction"));
+        } 
+    }
+    
+    int cnt = 0;
+    for (int i = 0; i < LightManager::maxLights; ++i)
+    {
+        if (LightManager::lights[i].isUsed == true) {
+            ++cnt;
+        }
+        
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightIsUsedStrings[i].c_str());
+            glUniform1i(location, LightManager::lights[i].isUsed);
+        }
+
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightTypeStrings[i].c_str());
+            glUniform1i(location, LightManager::lights[i].type);
+        }
+
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightIntensityStrings[i].c_str());
+            glUniform1f(location, LightManager::lights[i].intensity);
+        }
+
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightIsPositionStrings[i].c_str());
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].position));
+        }
+
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightIsColorStrings[i].c_str());
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].color));
+        }
+
+        {
+            const GLint location = glGetUniformLocation(shader->program, lightIsDirectionStrings[i].c_str());
+            glUniform3fv(location, 1, glm::value_ptr(LightManager::lights[i].direction));
+        }
+    }
+
+}
+
+void RenderingSystem::SetLocalUniforms(
+    ShaderBase* shader,
+    component::MeshRenderer* meshRenderer,
     component::Camera* cam,
     glm::ivec2 resolution
 )
 {
     glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE,
-        renderUI
+        meshRenderer->renderInWorldSpace
             ? glm::value_ptr(cam->GetViewMatrix())
             : glm::value_ptr(glm::mat4(1.0f)));
     glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, 
-        renderUI
+        meshRenderer->renderInWorldSpace
             ? glm::value_ptr(cam->GetProjectionMatrix())
             : glm::value_ptr(glm::ortho(0.0f, static_cast<float>(resolution.x),
                     0.0f, static_cast<float>(resolution.y), 0.01f, 500.0f)));
+
+    glm::mat4 modelMatrix = meshRenderer->transform->GetModelMatrix() * transform::Transform::GetScalingMatrix(meshRenderer->meshScale);
     glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
-    
-    const GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
-    glUniform3fv(eye_position, 1, glm::value_ptr(cam->transform->GetWorldPosition()));
 
     // TODO: Find a better way to send multiple textures
     // Send texture data
-    if (!texture.empty())
+    if (meshRenderer->texture != nullptr)
     {
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, TextureLoader::GetTextureIdByName(texture));
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture->GetTextureID());
         glUniform1i(glGetUniformLocation(shader->program, "texture_color"), 1);
         glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 1);
     }
@@ -91,56 +185,13 @@ void RenderingSystem::SetGlobalUniforms(
     }
 
     // Send texture scale
-    glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(texScale));
+    glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(meshRenderer->texScale));
 
-    // Send light information
-    int cnt = 0;
-    for (int i = 0; i < LightManager::maxLights; ++i)
-    {
-        if (LightManager::lights[i].isUsed == true) {
-            ++cnt;
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].isUsed");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1i(location, loaders::LightManager::lights[i].isUsed);
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].type");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1i(location, loaders::LightManager::lights[i].type);
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].intensity");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform1f(location, loaders::LightManager::lights[i].intensity);
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].position");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].position));
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].color");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].color));
-        }
-
-        {
-            std::string name = std::string("lights[") + std::to_string(i) + std::string("].direction");
-            const GLint location = glGetUniformLocation(shader->program, name.c_str());
-            glUniform3fv(location, 1, glm::value_ptr(loaders::LightManager::lights[i].direction));
-        }
-    }
-
+    // Send mesh color
+    glUniform4fv(glGetUniformLocation(shader->program, "mesh_color"), 1, glm::value_ptr(meshRenderer->color));
 }
 
-void RenderingSystem::SetUniforms(const Material* material, const MaterialOverrides* materialOverrides)
+void RenderingSystem::SetShaderSpecificUniforms(const Material* material, const MaterialOverrides* materialOverrides)
 {
     // Add all params
     SetIntUniforms(material, materialOverrides);

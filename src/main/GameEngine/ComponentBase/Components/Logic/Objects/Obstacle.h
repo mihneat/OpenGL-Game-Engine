@@ -9,28 +9,33 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class Obstacle : public Component, public IResetable
     {
+        MARK_SERIALIZABLE(Obstacle)
+        
     public:
-        Obstacle(transform::Transform* transform, float collisionRadius, bool isHazard = true) : Component(transform), player(NULL), t(0.0f), despawnDistance(220.0f),
-            previousPlayerPosition(glm::vec3()), playerRadius(4.0f), collisionRadius(collisionRadius), isHazard(isHazard) { }
+        Obstacle(transform::Transform* transform, float collisionRadius = 3.0f, bool isHazard = true) : Component(transform),
+            collisionRadius(collisionRadius), isHazard(isHazard) { }
         ~Obstacle() { }
 
+        void Awake();
         void Start();
         void Update(const float deltaTime);
 
         void Reset();
 
     protected:
-        managers::GameManager* gameManager;
+        component::GameManager* gameManager;
 
-        const float playerRadius;
-        float collisionRadius;
-        bool isHazard;
+        float playerRadius = 4.0f;
 
-        transform::Transform* player;
-        glm::vec3 previousPlayerPosition;
+        SERIALIZE_FIELD float collisionRadius = 3.0f;
+        SERIALIZE_FIELD bool isHazard = true;
 
-        float t, despawnDistance;
+        transform::Transform* player = nullptr;
+        glm::vec3 previousPlayerPosition = glm::vec3();
+
+        float t = 0.0f, despawnDistance = 220.0f;
     };
 }

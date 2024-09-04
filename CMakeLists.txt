@@ -16,7 +16,11 @@ project(${target_name} C CXX)
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_CXX_STANDARD 11)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Moved to C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -177,8 +181,13 @@ endif()
 
 
 # Link third-party libraries
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(src/external/json-develop)
+
 target_link_libraries(${target_name} PRIVATE
     ${OPENGL_LIBRARIES}
+    nlohmann_json::nlohmann_json
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")

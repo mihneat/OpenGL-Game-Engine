@@ -26,8 +26,8 @@ uniform vec3 eye_position;
 uniform light_source lights[100]; // Max lights also need to be changed in LightManager.h
                                   // Also modify maximum 'for' value below
 
-//uniform vec4  fog_color;
-//uniform bool  render_fog;
+uniform vec4  fog_color;
+uniform bool  render_fog;
 
 uniform int is_scrolling;
 uniform vec2 scroll_amount;
@@ -36,6 +36,8 @@ uniform int use_texture;
 uniform vec2 tex_scale;
 uniform sampler2D texture_color;
 //uniform sampler2D texture_normal;
+
+uniform vec4 mesh_color;
 
 float sun_light_contribution(light_source light)
 {
@@ -108,7 +110,7 @@ float spot_light_contribution(light_source light)
         light_att_factor = pow(linear_att, 2);
     }
 
-    float attenuation_factor = 1 / (200 + 0.4 * (distance(light.position, world_position)) * (distance(light.position, world_position)));
+    float attenuation_factor = 1 / (1 + (distance(light.position, world_position)) * (distance(light.position, world_position)));
     float lightValue = light.intensity * attenuation_factor * light_att_factor * ( diffuse_light + specular_light );
 
 	return lightValue;
@@ -182,7 +184,7 @@ void main()
     // Apply light to color
     vec4 lit_vertex;
     if (use_texture == 0) {
-        lit_vertex = vec4(light.x * frag_color.x, light.y * frag_color.y, light.z * frag_color.z, 1);
+        lit_vertex = vec4(light.x * frag_color.x * mesh_color.x, light.y * frag_color.y * mesh_color.y, light.z * frag_color.z * mesh_color.z, 1);
     } else {
         vec2 tex_offset = vec2(0);
         if (is_scrolling == 1) {
@@ -192,17 +194,18 @@ void main()
         // Ground size
         vec2 ground_size = vec2(1.0 / 200.0, 1.0 / (200 * sqrt(3) / 2.0));
 
-        vec4 tex = texture2D(texture_color, tex_scale * vec2(tex_coord.x - tex_offset.x * ground_size.x, tex_coord.y - tex_offset.y * ground_size.y));
+        vec4 tex = texture2D(texture_color, tex_scale * vec2(tex_coord.x + 0.5f * tex_offset.x * ground_size.x, tex_coord.y + 0.5f * tex_offset.y * ground_size.y));
         if (tex.a < 0.5) {
             discard;
         }
 
-        lit_vertex = vec4(light.x * tex.x, light.y * tex.y, light.z * tex.z, 1);
+        // Light * texture * color
+        lit_vertex = vec4(light.x * tex.x * mesh_color.x, light.y * tex.y * mesh_color.y, light.z * tex.z * mesh_color.z, 1);
     }
     // lit_vertex = light * texture2D(texture_color, tex_coord);
 
     // Apply fog calculations and output them
-    // float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
-    out_color = lit_vertex;  // mix(lit_vertex, fog_color, alpha);
+    float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
+    out_color = mix(lit_vertex, fog_color, alpha);
 }
 

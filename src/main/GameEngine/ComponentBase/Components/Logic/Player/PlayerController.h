@@ -4,12 +4,17 @@
 #include "utils/math_utils.h"
 #include "main/GameEngine/MathUtils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Managers/Interfaces/IResetable.h"
+#include "main/GameEngine/Systems/Rendering/Texture.h"
 
 namespace component
 {
+    SERIALIZE_CLASS
     class PlayerController : public Component, public IResetable
     {
+        MARK_SERIALIZABLE(PlayerController)
+        
     public:
         PlayerController(transform::Transform* transform) : Component(transform), speed(0.0f), maxSpeed(100.0f), acceleration(20.0f),
             tilt(0.0f), tiltFactor(0.4f), playerBody(NULL), initialPosition(glm::vec3()), maxLives(3), lives(0), skinIndex(0)
@@ -34,7 +39,7 @@ namespace component
 
         void GetHit();
 
-        int GetLives() { return lives; };
+        int GetLives() { return lives; }
         void SetMaxSpeed(float newMaxSpeed) { maxSpeed = newMaxSpeed; }
 
         void ChangeSkin();
@@ -43,23 +48,27 @@ namespace component
         void MouseMove(const int mouseX, const int mouseY, const int deltaX, const int deltaY);
 
     protected:
-        float acceleration;
-        float speed, maxSpeed;
+        SERIALIZE_FIELD float acceleration;
+        SERIALIZE_FIELD float speed;
+        SERIALIZE_FIELD float maxSpeed;
 
         glm::vec3 defaultForward, defaultUp;
         glm::vec3 forward;
 
-        transform::Transform* playerBody;
+        SERIALIZE_FIELD transform::Transform* playerBody = nullptr;
 
-        float tilt;
-        float tiltFactor;
+        SERIALIZE_FIELD float tilt;
+        SERIALIZE_FIELD float tiltFactor;
 
-        int lives;
-        const int maxLives;
+        SERIALIZE_FIELD int lives;
+        SERIALIZE_FIELD int maxLives;
 
-        glm::vec3 initialPosition;
+        SERIALIZE_FIELD glm::vec3 initialPosition;
 
         int skinIndex;
-        std::vector<int> skins;
+        
+        std::vector<rendering::Texture*> skins;
+
+        GameManager* gameManager = nullptr;
     };
 }

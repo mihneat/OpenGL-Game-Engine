@@ -5,6 +5,7 @@
 #include "core/engine.h"
 #include "core/window/window_callbacks.h"
 #include "core/window/input_controller.h"
+#include "main/GameEngine/GUI/GUIManager.h"
 
 #include "utils/gl_utils.h"
 #include "utils/memory_utils.h"
@@ -21,7 +22,7 @@ struct WindowDataImpl
 
 WindowProperties::WindowProperties()
 {
-    name = "WindowName";
+    name = "OpenGL Game Engine";
     resolution = glm::ivec2(1280, 720);
     scaleFactor = 1.f;
     aspectRatio = 1280.0f / 720.0f;
@@ -30,6 +31,7 @@ WindowProperties::WindowProperties()
     resizable = true;
     centered = true;
     fullScreen = false;
+    maximized = false;
     visible = true;
     hideOnClose = false;
     vSync = true;
@@ -81,6 +83,10 @@ WindowObject::~WindowObject()
     delete window;
 }
 
+GLFWwindow* WindowObject::GetHandle()
+{
+    return this->window->handle;
+}
 
 void WindowObject::Show()
 {
@@ -231,6 +237,10 @@ void WindowObject::WindowMode()
     }
 
     SetSize(props.resolution.x, props.resolution.y);
+
+    if (props.maximized)
+        glfwMaximizeWindow(window->handle);
+    
     resizeEvent = false;
 }
 
@@ -320,6 +330,8 @@ void WindowObject::MouseMove(int posX, int posY)
 
 void WindowObject::MouseScroll(double offsetX, double offsetY)
 {
+    scrollEvent = true;
+    
     mouseScrollDeltaX = (int)offsetX;
     mouseScrollDeltaY = (int)offsetY;
 }
@@ -335,6 +347,15 @@ void WindowObject::UpdateObservers()
         resizeEvent = false;
         for (auto obs : observers) {
             obs->OnWindowResize(props.resolution.x, props.resolution.y);
+        }
+    }
+
+    // Signal game view resize
+    if (GUIManager::GetInstance()->IsGameWindowResized())
+    {
+        const glm::ivec2 resolution = GUIManager::GetInstance()->GetGameWindowResolution();
+        for (auto obs : observers) {
+            obs->OnGameWindowResize(resolution.x, resolution.y);
         }
     }
 

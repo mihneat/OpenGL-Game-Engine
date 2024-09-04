@@ -13,8 +13,19 @@
 
 #include <stack>
 
+namespace component
+{
+    class SceneCamera;
+    class SceneManager;
+}
+
 namespace prefabManager {
     class PrefabManager;
+}
+
+namespace transform
+{
+    class Transform;
 }
 
 namespace m1
@@ -25,27 +36,13 @@ namespace m1
         GameEngine();
         ~GameEngine();
 
-        // friend class loaders::ShaderLoader;
-        // friend class rendering::RenderingSystem;
-
         void Init() override;
 
-        // void LoadTexture(std::string texId, std::string texPath);
-        // ShaderBase* LoadShader(std::string shaderName, std::string vertexShaderPath, std::string fragmentShaderPath);
-
-        void SetUniforms();
-
-        glm::vec2 GetResolution();
-        void DestroyObject(transform::Transform* object);
-
-        gfxc::TextRenderer* GetTextRenderer() { return textRenderer; }
-        WindowObject* GetWindow() { return window; }
-        component::Camera* GetCurrentCamera() { return currCam; }
+        void HandleSceneLoaded(transform::Transform* root);
 
     private:
-        std::stack<transform::Transform*> markedForDestruction;
-
         void FrameStart() override;
+        void PreUpdate() override;
         void Update(float deltaTimeSeconds) override;
         void FrameEnd() override;
 
@@ -57,9 +54,18 @@ namespace m1
         void OnMouseBtnRelease(int mouseX, int mouseY, int button, int mods) override;
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
+        void OnGameWindowResize(int width, int height) override;
 
+        void CreateSceneCamera();
+        void SaveSceneToFile();
         void CreateHierarchy();
         void DestroyMarkedObjects();
+
+        void UpdateGameLogic(float deltaTimeSeconds);
+        void RenderGameView();
+        void RenderSceneView();
+        
+        void ReloadScene();
 
     public:
 
@@ -72,33 +78,25 @@ namespace m1
 
     protected:
 
+        void AwakeComponents(transform::Transform *currentTransform);
         void StartComponents(transform::Transform *currentTransform);
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
 
-        transform::Transform *hierarchy;
+        void FindCameras();
 
         glm::vec4 clearColor;
         gfxc::TextRenderer* textRenderer;
 
-        component::Camera* mainCam;
-        component::Camera* currCam;
+        component::Camera* mainCam = nullptr;
         std::vector<component::Camera*> secondaryCams;
 
-        bool useSceneCamera;
-
-        glm::mat4 projectionMatrix;
-
-        std::unordered_map<std::string, Texture2D*> mapTextures;
-
-        std::unordered_set<transform::Transform*> loadedHierarchies;
+        std::string startScene;
 
     private:
         rendering::RenderingSystem* renderingSystem;
-
-    public:
-        float timeOfDay;
+        component::SceneCamera* sceneCamera;
 
     };
 }   // namespace m1

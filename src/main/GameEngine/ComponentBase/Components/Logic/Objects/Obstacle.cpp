@@ -2,20 +2,25 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 using namespace prefabManager;
+
+void Obstacle::Awake()
+{
+    // Get the game manager
+    gameManager = managers::GameInstance::Get()->GetComponent<GameManager>();
+}
 
 void Obstacle::Start()
 {
     // Get the player
     player = transform->GetTransformByTag("Player");
     previousPlayerPosition = player->GetWorldPosition();
-
-    // Get the game manager
-    gameManager = GameManager::GetInstance();
 
     // Set random rotation
     const float randomAngle = (((rand() * rand())) % 1001) / 1000.0f * 2.0f * glm::pi<float>();
@@ -24,7 +29,7 @@ void Obstacle::Start()
 
 void Obstacle::Update(const float deltaTime)
 {
-    if (GameManager::GetInstance()->GetGameState() != GameManager::Playing) {
+    if (gameManager->GetGameState() != GameManager::Playing) {
         return;
     }
 
@@ -40,20 +45,19 @@ void Obstacle::Update(const float deltaTime)
         }
 
         // Destroy the object
-        gameManager->GetSceneReference()->DestroyObject(transform);
+        Transform::Destroy(transform);
     }
 
     // Distance dependant
     t += (player->GetWorldPosition() - previousPlayerPosition).z;
     previousPlayerPosition = player->GetWorldPosition();
 
-    if (t > despawnDistance) {
-        GameManager::GetInstance()->GetSceneReference()->DestroyObject(transform);
-    }
+    if (t > despawnDistance)
+        Transform::Destroy(transform);
 }
 
 void Obstacle::Reset()
 {
     // Delete the object
-    GameManager::GetInstance()->GetSceneReference()->DestroyObject(transform);
+    Transform::Destroy(transform);
 }

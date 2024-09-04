@@ -7,13 +7,21 @@ using namespace transform;
 Component::Component(Transform *transform)
 {
 	this->transform = transform;
-	hasStartActivated = false;
-	enabled = true;
 }
 
 
 Component::~Component()
 {
+}
+
+bool Component::GetHasAwakeActivated()
+{
+	return hasAwakeActivated;
+}
+
+void Component::SetHasAwakeActivated()
+{
+	hasAwakeActivated = true;
 }
 
 bool Component::GetHasStartActivated()
@@ -26,7 +34,7 @@ void Component::SetHasStartActivated()
 	hasStartActivated = true;
 }
 
-bool Component::IsActive()
+bool Component::IsActive() const
 {
 	return enabled;
 }

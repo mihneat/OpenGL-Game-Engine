@@ -10,8 +10,11 @@ namespace component
 {
     class TextRenderer;
 
+    SERIALIZE_CLASS
     class LifeDisplay : public Component
     {
+        MARK_SERIALIZABLE(LifeDisplay)
+        
     public:
         LifeDisplay(transform::Transform* transform) : Component(transform) { }
         ~LifeDisplay() { }
@@ -20,6 +23,6 @@ namespace component
         void Update(const float deltaTime);
 
     protected:
-        transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player = nullptr;
     };
 }

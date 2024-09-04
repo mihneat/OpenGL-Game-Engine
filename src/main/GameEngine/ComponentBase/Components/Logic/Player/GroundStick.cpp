@@ -4,8 +4,11 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+#include "main/GameEngine/Managers/InputManager.h"
+
 using namespace std;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 
@@ -23,7 +26,7 @@ void GroundStick::Start()
 
 void GroundStick::Update(const float deltaTime)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (managers::GameInstance::Get()->GetComponent<GameManager>()->GetGameState() == GameManager::Ended) {
 		return;
 	}
 

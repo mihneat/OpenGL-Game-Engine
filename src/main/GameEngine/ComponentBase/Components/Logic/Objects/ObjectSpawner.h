@@ -8,8 +8,11 @@
 
 namespace component
 {
+    SERIALIZE_CLASS
     class ObjectSpawner : public Component, public IResetable
     {
+        MARK_SERIALIZABLE(ObjectSpawner)
+        
     public:
         ObjectSpawner(transform::Transform* transform) : Component(transform), t(0.0f), spawnTime(1.0f), spawnTimeInterval(glm::vec2(0.1f, 0.2f)),
             spawnDistance(175.0f), spawnSpread(250.0f), defaultForward(glm::vec3()), defaultRight(glm::vec3()), startingPlayerPosition(glm::vec3()),
@@ -25,13 +28,14 @@ namespace component
         void Reset();
 
     protected:
-        transform::Transform* player;
+        SERIALIZE_FIELD transform::Transform* player = nullptr;
         glm::vec3 previousPlayerPosition, startingPlayerPosition;
 
         float t, spawnTime;
-        glm::vec2 spawnTimeInterval;
+        SERIALIZE_FIELD glm::vec2 spawnTimeInterval;
 
-        float spawnDistance, spawnSpread;
+        SERIALIZE_FIELD float spawnDistance;
+        SERIALIZE_FIELD float spawnSpread;
         glm::vec3 defaultForward, defaultRight;
     };
 }

@@ -4,38 +4,46 @@
 
 #include <iostream>
 
+#include "main/GameEngine/Managers/GameInstance.h"
+#include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
+
 using namespace std;
 using namespace loaders;
-using namespace managers;
+using namespace component;
 using namespace component;
 using namespace transform;
 
 void PlayerController::Start()
 {
+	// Get the game manager
+	gameManager = managers::GameInstance::Get()->GetComponent<GameManager>();
+	
 	// Get the player body
 	playerBody = transform->GetChild(0)->GetChild(0);
-
-	// Add it to the GameManager obervables
-	GameManager::GetInstance()->AddResetable(this);
 
 	// Get the initial position of the player
 	initialPosition = transform->GetWorldPosition();
 
+	// Set the initial rotation equal to the slope incline
+	constexpr float slopeIncline = glm::pi<float>() / 6.0f;
+	transform->SetLocalRotation(glm::vec3(-slopeIncline, 0.0f, 0.0f));
+
 	// Set player lives
 	lives = maxLives;
 
+	// TODO: Database access until serialization of vectors
 	// Add the player skins
-	skins.push_back(TextureLoader::Player2);
-	skins.push_back(TextureLoader::Player);
-	skins.push_back(TextureLoader::Player3);
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player2));
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player));
+	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player3));
 	ChangeSkin();
 }
 
 void PlayerController::Update(const float deltaTime)
 {
 	// If the game hasn't started, don't move the player but check for difficulty updates
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Start) {
-		switch (GameManager::GetInstance()->GetGameSpeed()) {
+	if (gameManager->GetGameState() == GameManager::Start) {
+		switch (gameManager->GetGameSpeed()) {
 		case GameManager::Snail:
 			maxSpeed = 50.0f;
 			break;
@@ -72,7 +80,7 @@ void PlayerController::Update(const float deltaTime)
 	speed = glm::clamp(0.0f, maxSpeed, speed);
 
 	// Otherwise, move the player constantly forward
-	transform->Translate(forward * (speed + speed * tilt * tiltFactor) * deltaTime);
+	transform->Translate(transform->GetChild(0)->forward * (speed + speed * tilt * tiltFactor) * deltaTime);
 }
 
 void PlayerController::GetHit()
@@ -84,7 +92,7 @@ void PlayerController::GetHit()
 	}
 	else {
 		// End the game
-		GameManager::GetInstance()->EndGame();
+		gameManager->EndGame();
 	}
 }
 
@@ -102,12 +110,12 @@ void PlayerController::Reset()
 
 void PlayerController::ChangeSkin()
 {
-	transform->GetChild(0)->GetChild(0)->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureNameFromEnum((TextureLoader::TextureName)skins[skinIndex]));
+	transform->GetChild(0)->GetChild(0)->GetComponent<MeshRenderer>()->SetTexture(skins[skinIndex]);
 }
 
 void PlayerController::KeyPress(const int key, const int mods)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Start) {
+	if (gameManager->GetGameState() == GameManager::Start) {
 		if (key == GLFW_KEY_RIGHT) {
 			skinIndex = (skinIndex + 1) % (int)skins.size();
 			ChangeSkin();
@@ -122,12 +130,12 @@ void PlayerController::KeyPress(const int key, const int mods)
 
 void PlayerController::MouseMove(const int mouseX, const int mouseY, const int deltaX, const int deltaY)
 {
-	if (GameManager::GetInstance()->GetGameState() == GameManager::Ended) {
+	if (gameManager->GetGameState() == GameManager::Ended) {
 		return;
 	}
 
 	// Get the resolution
-	glm::vec2 res = GameManager::GetInstance()->GetSceneReference()->GetResolution();
+	glm::vec2 res = EditorRuntimeSettings::resolution;
 
 	// Get the normalized vertical tilt
 	const float yRes = res.y;
@@ -156,17 +164,7 @@ void PlayerController::MouseMove(const int mouseX, const int mouseY, const int d
 	// Convert degrees to radians
 	const float radians = glm::radians(finalDegrees);
 
-	// Rotate the player around the 'up' axis
-	glm::mat4 slopeRotation = glm::rotate(glm::mat4(1.0f), radians, defaultUp);
-
-	// Rotate the player onto the ski track
-	glm::mat4 slopeAlignment = glm::rotate(glm::mat4(1.0f), glm::pi<float>() / 6.0f, glm::vec3_right);
-
-	// Multiply them and set the rotation
-	transform->SetManualRotationMatrix(slopeRotation * slopeAlignment);
-
-	// Set the new forward vector
-	forward = glm::normalize(glm::vec3(
-		glm::rotate(glm::mat4(1.0f), radians, defaultUp) * glm::vec4(defaultForward, 1)
-	));
+	// Set the player mesh's parent's rotation to the one computed above
+	// This rotates the object around its up axis, also recomputing its forward vector
+	transform->GetChild(0)->SetLocalRotation(glm::vec3(0.0f, radians, 0.0f));
 }

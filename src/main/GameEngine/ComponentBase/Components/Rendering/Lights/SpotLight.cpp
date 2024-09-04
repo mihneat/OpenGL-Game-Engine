@@ -9,4 +9,7 @@ using namespace loaders;
 using namespace component;
 using namespace transform;
 
-SpotLight::SpotLight(transform::Transform* transform) : Light(transform, LightManager::Spot) { }
+SpotLight::SpotLight(transform::Transform* transform) : Light(transform)
+{
+    Light::ChangeType(LightManager::Spot);
+}

@@ -1,9 +1,18 @@
 ﻿#include "SceneManager.h"
 
-using namespace std;
-using namespace managers;
+#include <fstream>
+#include <iostream>
 
-std::unordered_map<std::string, transform::Transform *> SceneManager::loadedScenes;
+#include "main/GameEngine/GameEngine.h"
+#include "main/GameEngine/Serialization/ObjectSerializer.h"
+
+using namespace std;
+using namespace transform;
+using namespace component;
+using ordered_json = nlohmann::ordered_json;
+
+std::unordered_map<std::string, Transform *> SceneManager::loadedScenes;
+m1::GameEngine* SceneManager::engineRef = nullptr;
 
 void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
 {
@@ -23,8 +32,13 @@ void SceneManager::LoadScene(std::string scenePath, SceneLoadMode mode)
         }
     }
     
-    // TODO: Read scene at given path
-    // 
+    // Read scene at given path
+    std::ifstream f(scenePath);
+    Transform* root = ObjectSerializer::DeserializeRootObject(ordered_json::parse(f));
+
+    // TODO: Actually notify the observers
+    // Notify observers
+    engineRef->HandleSceneLoaded(root);
 }
 
 void SceneManager::UnloadScene(std::string scenePath)
