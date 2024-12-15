@@ -11,6 +11,7 @@ struct light_source {
 };
 
 // Input
+in vec3 frag_position;
 in vec3 frag_color;
 
 in vec3 world_position;
@@ -44,6 +45,8 @@ uniform sampler2D texture_4;
 uniform vec4 mesh_color;
 
 uniform float selection_value;
+
+uniform int distance_from_leaf;
 
 float sun_light_contribution(light_source light)
 {
@@ -189,12 +192,36 @@ vec3 get_light_contribution()
     return light;
 }
 
+vec4 compute_texture()
+{    
+    // Compute UV value
+    vec2 uv = vec2(
+        (1.0f / (2.0f * 3.14159f)) * atan(frag_position.z, frag_position.x),
+        frag_position.y / 2.0f + 0.5f
+    );
+    
+    vec4 bark_tex = texture2D(texture_1, tex_scale * uv);
+    
+    // Only the bark
+    if (distance_from_leaf > 1)
+        return bark_tex;
+
+    vec4 corona_tex = texture2D(texture_3, tex_scale * uv);
+    
+    // Mix with corona
+    if (distance_from_leaf == 1)
+        return mix(bark_tex, corona_tex, uv.y);
+    
+    // Only the corona
+    return corona_tex;
+}
+
 void main()
 {
     vec3 light = get_light_contribution();
-
+    
     // Apply light to color
-    vec4 tex = texture2D(texture_1, tex_scale * tex_coord);
+    vec4 tex = compute_texture();
     if (tex.a * mesh_color.a < 0.5)
         discard;
 
@@ -205,5 +232,6 @@ void main()
     float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
     out_color = mix(lit_vertex, fog_color, alpha);
 
-    out_selection = vec4(selection_value / 100.0f);
+    // out_color = vec4(selection_value - 1.0f);
+    out_selection = vec4(0, 0, 0, selection_value);
 }

@@ -22,6 +22,49 @@
       "children": []
     },
     {
+      "name": "Minimap Camera",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 1000.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": -1.56800377368927,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [
+        {
+          "className": "Camera",
+          "enabled": true,
+          "attributes": [
+            {
+              "name": "distanceToTarget",
+              "type": "FieldTypeFloat",
+              "value": 0.0
+            },
+            {
+              "name": "autoResize",
+              "type": "FieldTypeBool",
+              "value": false
+            }
+          ]
+        },
+        {
+          "className": "MinimapCamera",
+          "enabled": true,
+          "attributes": []
+        }
+      ],
+      "children": []
+    },
+    {
       "name": "Main Camera",
       "tag": "Default",
       "position": {
@@ -172,7 +215,118 @@
           ]
         }
       ],
-      "children": []
+      "children": [
+        {
+          "name": "Minimap Render",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200020"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200013"
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200012"
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200015"
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100009"
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
     },
     {
       "name": "SunLight",
@@ -307,6 +461,11 @@
               "name": "turnSpeed",
               "type": "FieldTypeFloat",
               "value": 5.0
+            },
+            {
+              "name": "tiltAngle",
+              "type": "FieldTypeFloat",
+              "value": -12.0
             }
           ]
         }
@@ -358,7 +517,7 @@
                     {
                       "name": "meshType",
                       "type": "FieldTypeEnum",
-                      "value": 3
+                      "value": 4
                     },
                     {
                       "name": "color",
@@ -468,7 +627,7 @@
                     {
                       "name": "meshType",
                       "type": "FieldTypeEnum",
-                      "value": 3
+                      "value": 4
                     },
                     {
                       "name": "color",
@@ -619,7 +778,7 @@
                         {
                           "name": "meshType",
                           "type": "FieldTypeEnum",
-                          "value": 3
+                          "value": 4
                         },
                         {
                           "name": "color",
@@ -729,7 +888,7 @@
                         {
                           "name": "meshType",
                           "type": "FieldTypeEnum",
-                          "value": 3
+                          "value": 4
                         },
                         {
                           "name": "color",
@@ -839,7 +998,7 @@
                         {
                           "name": "meshType",
                           "type": "FieldTypeEnum",
-                          "value": 3
+                          "value": 4
                         },
                         {
                           "name": "color",
@@ -992,7 +1151,7 @@
                         {
                           "name": "meshType",
                           "type": "FieldTypeEnum",
-                          "value": 3
+                          "value": 4
                         },
                         {
                           "name": "color",
@@ -1102,7 +1261,7 @@
                         {
                           "name": "meshType",
                           "type": "FieldTypeEnum",
-                          "value": 3
+                          "value": 4
                         },
                         {
                           "name": "color",
@@ -1189,6 +1348,116 @@
               ]
             }
           ]
+        },
+        {
+          "name": "Minimap Marker",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 1.5707963705062866,
+            "y": 0.0,
+            "z": 1.5707963705062866
+          },
+          "scale": {
+            "x": 20.0,
+            "y": 50.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.3333333134651184,
+                    "g": 0.9019608497619629,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200016"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100008"
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
         }
       ]
     },
@@ -1386,7 +1655,7 @@
                 {
                   "name": "meshType",
                   "type": "FieldTypeEnum",
-                  "value": 3
+                  "value": 4
                 },
                 {
                   "name": "color",
@@ -1469,6 +1738,137 @@
             }
           ],
           "children": []
+        },
+        {
+          "name": "Minimap Marker 1",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 2.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 1.5707963705062866,
+            "y": 0.0,
+            "z": 0.7853981852531433
+          },
+          "scale": {
+            "x": 60.0,
+            "y": 10.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": false,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.9843137264251709,
+                    "g": 0.45490196347236633,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200016"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100008"
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "Minimap Marker 2",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [],
+          "children": []
         }
       ]
     },
@@ -1493,11 +1893,128 @@
       "components": [
         {
           "className": "FractalTreeRoot",
-          "enabled": true,
-          "attributes": []
+          "enabled": false,
+          "attributes": [
+            {
+              "name": "selectionValue",
+              "type": "FieldTypeFloat",
+              "value": 1.100000023841858
+            }
+          ]
         }
       ],
-      "children": []
+      "children": [
+        {
+          "name": "Minimap Marker",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": 5.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 1.5707963705062866,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 30.0,
+            "y": 30.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": false,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.27667245268821716,
+                    "g": 0.9901960492134094,
+                    "b": 0.3606162965297699,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 2
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200016"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100008"
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
     },
     {
       "name": "SkyBox",
@@ -1525,7 +2042,7 @@
             {
               "name": "meshType",
               "type": "FieldTypeEnum",
-              "value": 3
+              "value": 4
             },
             {
               "name": "color",
@@ -1610,7 +2127,7 @@
       "children": []
     },
     {
-      "name": "Fractal Tree Segment Template",
+      "name": "Root 2",
       "tag": "Default",
       "position": {
         "x": 91.12000274658203,
@@ -1629,129 +2146,51 @@
       },
       "components": [
         {
-          "className": "FractalTreeSegment",
-          "enabled": true,
+          "className": "FractalTreeRoot",
+          "enabled": false,
           "attributes": [
             {
-              "name": "remainingLevels",
-              "type": "FieldTypeInt",
-              "value": 6
+              "name": "selectionValue",
+              "type": "FieldTypeFloat",
+              "value": 1.2000000476837158
             }
           ]
         }
       ],
-      "children": [
+      "children": []
+    },
+    {
+      "name": "Fractal Tree Spawner",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [
         {
-          "name": "Mesh",
-          "tag": "Default",
-          "position": {
-            "x": 0.0,
-            "y": 10.0,
-            "z": 0.0
-          },
-          "rotation": {
-            "x": 0.0,
-            "y": 0.0,
-            "z": 0.0
-          },
-          "scale": {
-            "x": 4.0,
-            "y": 10.0,
-            "z": 4.0
-          },
-          "components": [
+          "className": "TreeSpawner",
+          "enabled": true,
+          "attributes": [
             {
-              "className": "MeshRenderer",
-              "enabled": true,
-              "attributes": [
-                {
-                  "name": "meshType",
-                  "type": "FieldTypeEnum",
-                  "value": 3
-                },
-                {
-                  "name": "color",
-                  "type": "FieldTypeColour",
-                  "value": {
-                    "r": 1.0,
-                    "g": 1.0,
-                    "b": 1.0,
-                    "a": 1.0
-                  }
-                },
-                {
-                  "name": "meshScale",
-                  "type": "FieldTypeVec3",
-                  "value": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                  }
-                },
-                {
-                  "name": "debugOnly",
-                  "type": "FieldTypeBool",
-                  "value": false
-                },
-                {
-                  "name": "renderInWorldSpace",
-                  "type": "FieldTypeBool",
-                  "value": true
-                },
-                {
-                  "name": "layer",
-                  "type": "FieldTypeEnum",
-                  "value": 0
-                },
-                {
-                  "name": "texture1",
-                  "type": "FieldTypeGUID",
-                  "value": {
-                    "guid": "200004"
-                  }
-                },
-                {
-                  "name": "texture2",
-                  "type": "FieldTypeGUID",
-                  "value": {
-                    "guid": "200013"
-                  }
-                },
-                {
-                  "name": "texture3",
-                  "type": "FieldTypeGUID",
-                  "value": {
-                    "guid": ""
-                  }
-                },
-                {
-                  "name": "texture4",
-                  "type": "FieldTypeGUID",
-                  "value": {
-                    "guid": ""
-                  }
-                },
-                {
-                  "name": "texScale",
-                  "type": "FieldTypeVec2",
-                  "value": {
-                    "x": 1.0,
-                    "y": 1.0
-                  }
-                },
-                {
-                  "name": "material",
-                  "type": "FieldTypeGUID",
-                  "value": {
-                    "guid": "100007"
-                  }
-                }
-              ]
+              "name": "maxTrees",
+              "type": "FieldTypeInt",
+              "value": 5
             }
-          ],
-          "children": []
+          ]
         }
-      ]
+      ],
+      "children": []
     }
   ]
 }

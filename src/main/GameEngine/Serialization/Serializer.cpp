@@ -24,6 +24,7 @@
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\Light.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\Marker.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\MeshRenderer.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\MinimapCamera.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\ObjectSpawner.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\Obstacle.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\OrthoCameraFollow.h"
@@ -39,6 +40,7 @@
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Time\Sun.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\TextRenderer.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\TransformVisualizer.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\TreeSpawner.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\UiPanel.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\UpdateLightPosition.h"
 
@@ -63,17 +65,18 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"CameraStick", std::vector<SerializedField>{}},
         {"DirectionalLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"DistanceDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
-        {"FractalTreeRoot", std::vector<SerializedField>{}},
-        {"FractalTreeSegment", std::vector<SerializedField>{{"remainingLevels", FieldTypeInt},}},
+        {"FractalTreeRoot", std::vector<SerializedField>{{"selectionValue", FieldTypeFloat},}},
+        {"FractalTreeSegment", std::vector<SerializedField>{{"remainingLevels", FieldTypeInt},{"selectionValue", FieldTypeFloat},}},
         {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"gameState", FieldTypeEnum, "GameState"},{"gameSpeed", FieldTypeEnum, "GameSpeed"},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
         {"GameOverDisplay", std::vector<SerializedField>{}},
         {"GroundStick", std::vector<SerializedField>{{"player", FieldTypeTransform},{"offset", FieldTypeVec3},}},
-        {"HelicopterMovement", std::vector<SerializedField>{{"defaultLitMaterial", FieldTypeGUID, "Material"},{"heightMapMaterial", FieldTypeGUID, "Material"},{"helicopterMaterial", FieldTypeGUID, "Material"},{"skyboxMaterial", FieldTypeGUID, "Material"},{"treeMaterial", FieldTypeGUID, "Material"},{"speed", FieldTypeFloat},{"turnSpeed", FieldTypeFloat},}},
+        {"HelicopterMovement", std::vector<SerializedField>{{"defaultLitMaterial", FieldTypeGUID, "Material"},{"heightMapMaterial", FieldTypeGUID, "Material"},{"helicopterMaterial", FieldTypeGUID, "Material"},{"skyboxMaterial", FieldTypeGUID, "Material"},{"treeMaterial", FieldTypeGUID, "Material"},{"speed", FieldTypeFloat},{"turnSpeed", FieldTypeFloat},{"tiltAngle", FieldTypeFloat},}},
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"Marker", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationSpeed", FieldTypeFloat},}},
         {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
+        {"MinimapCamera", std::vector<SerializedField>{}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
@@ -89,6 +92,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"Sun", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"nightSpeed", FieldTypeFloat},}},
         {"TextRenderer", std::vector<SerializedField>{{"scale", FieldTypeFloat},{"color", FieldTypeColour},{"text", FieldTypeString},{"position", FieldTypeVec2},}},
         {"TransformVisualizer", std::vector<SerializedField>{{"direction", FieldTypeEnum, "TransformDirection"},{"distance", FieldTypeFloat},}},
+        {"TreeSpawner", std::vector<SerializedField>{{"maxTrees", FieldTypeInt},}},
         {"UiPanel", std::vector<SerializedField>{{"anchorTop", FieldTypeBool},{"anchorRight", FieldTypeBool},{"offsetTop", FieldTypeFloat},{"offsetRight", FieldTypeFloat},}},
         {"UpdateLightPosition", std::vector<SerializedField>{}},
 
@@ -191,6 +195,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     {
         FractalTreeRoot* obj = dynamic_cast<FractalTreeRoot*>(instance);
 
+        if (attributeName == "selectionValue")
+            return &obj->selectionValue;
+
         return nullptr;
     }
 
@@ -200,6 +207,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "remainingLevels")
             return &obj->remainingLevels;
+
+        if (attributeName == "selectionValue")
+            return &obj->selectionValue;
 
         return nullptr;
     }
@@ -279,6 +289,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "turnSpeed")
             return &obj->turnSpeed;
+
+        if (attributeName == "tiltAngle")
+            return &obj->tiltAngle;
 
         return nullptr;
     }
@@ -374,6 +387,13 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "material")
             return &obj->material;
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "MinimapCamera")
+    {
+        MinimapCamera* obj = dynamic_cast<MinimapCamera*>(instance);
 
         return nullptr;
     }
@@ -612,6 +632,16 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
+    if (instance->GetName() == "TreeSpawner")
+    {
+        TreeSpawner* obj = dynamic_cast<TreeSpawner*>(instance);
+
+        if (attributeName == "maxTrees")
+            return &obj->maxTrees;
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "UiPanel")
     {
         UiPanel* obj = dynamic_cast<UiPanel*>(instance);
@@ -677,6 +707,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     if (className == "Light") return new Light(parent);
     if (className == "Marker") return new Marker(parent);
     if (className == "MeshRenderer") return new MeshRenderer(parent);
+    if (className == "MinimapCamera") return new MinimapCamera(parent);
     if (className == "ObjectSpawner") return new ObjectSpawner(parent);
     if (className == "Obstacle") return new Obstacle(parent);
     if (className == "OrthoCameraFollow") return new OrthoCameraFollow(parent);
@@ -692,6 +723,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     if (className == "Sun") return new Sun(parent);
     if (className == "TextRenderer") return new TextRenderer(parent);
     if (className == "TransformVisualizer") return new TransformVisualizer(parent);
+    if (className == "TreeSpawner") return new TreeSpawner(parent);
     if (className == "UiPanel") return new UiPanel(parent);
     if (className == "UpdateLightPosition") return new UpdateLightPosition(parent);
 
@@ -707,7 +739,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 
 const std::vector<std::string>& Serializer::GetSerializedClasses()
 {
-    static const std::vector<std::string> classNames = {"Camera","CameraFollow","CameraStick","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","UiPanel","UpdateLightPosition",};
+    static const std::vector<std::string> classNames = {"Camera","CameraFollow","CameraStick","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","MinimapCamera","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","TreeSpawner","UiPanel","UpdateLightPosition",};
     /**
      * Template(CLASS_NAME):
      *
@@ -725,8 +757,8 @@ const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum
         {"GameState", {{"Start", 0},{"Playing", 1},{"Ended", 2},}},
         {"GameSpeed", {{"Snail", 0},{"Slow", 1},{"Medium", 2},{"Fast", 3},{"Cheetah", 4},{"LightningMcQueen", 5},}},
         {"TransformDirection", {{"TransformDirectionForward", 0},{"TransformDirectionRight", 1},{"TransformDirectionUp", 2},{"TransformDirectionCenter", 3},}},
-        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cube", 3},{"CubeMesh", 4},{"Sphere", 5},{"Heart", 6},{"Cone", 7},{"None", 8},}},
-        {"LayerEnum", {{"Default", 0},{"UI", 1},}},
+        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cylinder", 3},{"Cube", 4},{"CubeMesh", 5},{"Sphere", 6},{"Heart", 7},{"Cone", 8},{"None", 9},}},
+        {"LayerEnum", {{"Default", 0},{"UI", 1},{"Minimap", 2},}},
 
         /**
          * Template(ENUM_NAME, ENUM_VALUES[])

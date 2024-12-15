@@ -98,18 +98,6 @@ void GameEngine::SaveSceneToFile()
 
 void GameEngine::ReloadScene()
 {
-    // if (hierarchy != nullptr)
-    // {
-    //     mainCam = nullptr;
-    //     secondaryCams.clear();
-    //     
-    //     DeleteComponents(hierarchy);
-    //
-    //     hierarchy = nullptr;
-    // }
-    //
-    // hierarchy = PrefabManager::CreateSteepScene();
-    
     SceneManager::LoadScene(startScene);
     FindCameras();
 }
@@ -163,6 +151,10 @@ void GameEngine::FrameStart()
     {
         ReloadScene();
         GUIManager::GetInstance()->UnmarkReset();
+        
+        // Force a window resize operation
+        const glm::ivec2 resolution = GUIManager::GetInstance()->GetGameWindowResolution();
+        OnGameWindowResize(resolution.x, resolution.y);
     }
 
     if (GUIManager::GetInstance()->ShouldSave() && !GUIManager::GetInstance()->IsGamePlaying())
@@ -259,6 +251,7 @@ void GameEngine::RenderGameView()
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
         glClear(GL_DEPTH_BUFFER_BIT);
+
         glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
             (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 

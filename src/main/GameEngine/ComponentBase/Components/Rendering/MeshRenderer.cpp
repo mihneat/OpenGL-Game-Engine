@@ -42,6 +42,11 @@ MeshRenderer::~MeshRenderer()
 {
 }
 
+void MeshRenderer::SetMesh(MeshEnum newMeshType)
+{
+    meshType = newMeshType;
+}
+
 void MeshRenderer::SetColor(glm::vec4 newColor)
 {
     color = newColor;
@@ -100,6 +105,10 @@ void MeshRenderer::MeshFactory()
 
     case Circle:
         meshDescription = CreateCircle(100, false, false);
+        break;
+
+    case Cylinder:
+        meshDescription = CreateCylinder(8);
         break;
 
     case Cube:
@@ -251,6 +260,111 @@ mesh_desc MeshRenderer::CreateCircle(const int circleVertexCount, const bool mak
     indices.push_back(1);
 
     return { vertices, indices, makeHollow ? GL_LINE_LOOP : GL_TRIANGLE_FAN };
+}
+
+mesh_desc MeshRenderer::CreateCylinder(const int segmentCount)
+{
+    // Define the vertices array, initially only with the center
+    vector<VertexFormat> vertices = {
+        VertexFormat(glm::vec3(0.0f, 1.0f, 0.0f),  glm::vec3(1.0f), glm::vec3_up),
+        VertexFormat(glm::vec3(0.0f, -1.0f, 0.0f),  glm::vec3(1.0f), glm::vec3_down)
+    };
+
+    // Create the indices vector
+    vector<unsigned int> indices;
+
+    // Define the angular step (the angle of each triangle, from the center)
+    constexpr float radius = 1.0f;
+    const float increment = 2 * glm::pi<float>() / segmentCount;
+
+    // Create the upper circle
+    int startVertex = 2;
+    for (int i = 0; i < segmentCount; ++i) {
+        // Create a new vertex using sine and cosine
+        vertices.push_back(VertexFormat(
+            // The position on the circle
+            glm::vec3(radius * glm::cos(increment * i), 1.0f, radius * glm::sin(increment * i)),
+            // The color of the vertex
+            glm::vec3(1.0f),
+            glm::vec3_up));
+
+        // Create the new triangle
+        if (i > 0)
+        {
+            indices.push_back(startVertex + i - 1);
+            indices.push_back(startVertex + i);
+            indices.push_back(0);
+        }
+    }
+    
+    indices.push_back(startVertex + segmentCount - 1);
+    indices.push_back(startVertex);
+    indices.push_back(0);
+
+    // Create the lower circle
+    int startVertex2 = startVertex + segmentCount;
+    for (int i = 0; i < segmentCount; ++i) {
+        // Create a new vertex using sine and cosine
+        vertices.push_back(VertexFormat(
+            // The position on the circle
+            glm::vec3(radius * glm::cos(increment * i), -1.0f, radius * glm::sin(increment * i)),
+            // The color of the vertex
+            glm::vec3(1.0f),
+            glm::vec3_down));
+
+        // Create the new triangle for the circle
+        if (i > 0)
+        {
+            indices.push_back(startVertex2 + i);
+            indices.push_back(startVertex2 + i - 1);
+            indices.push_back(1);
+        }
+    }
+    
+    indices.push_back(startVertex2);
+    indices.push_back(startVertex2 + segmentCount - 1);
+    indices.push_back(1);
+    
+    // Create the tube
+    int startVertex3 = startVertex + 2 * segmentCount;
+    for (int i = 0; i < segmentCount; ++i) {
+        const glm::vec3 horizontalPos = glm::vec3(glm::cos(increment * i), 0, glm::sin(increment * i)) * radius;
+        vertices.push_back(VertexFormat(
+            // The position on the circle
+            glm::vec3(horizontalPos.x, 1.0f, horizontalPos.z),
+            // The color of the vertex
+            glm::vec3(1.0f),
+            horizontalPos));
+        
+        vertices.push_back(VertexFormat(
+            // The position on the circle
+            glm::vec3(horizontalPos.x, -1.0f, horizontalPos.z),
+            // The color of the vertex
+            glm::vec3(1.0f),
+            horizontalPos));
+
+        if (i > 0)
+        {
+            // Link the vertices to form the body of the cylinder
+            indices.push_back(startVertex3 + 2 * i);
+            indices.push_back(startVertex3 + 2 * (i - 1));
+            indices.push_back(startVertex3 + 2 * (i - 1) + 1);
+            
+            indices.push_back(startVertex3 + 2 * (i - 1) + 1);
+            indices.push_back(startVertex3 + 2 * i + 1);
+            indices.push_back(startVertex3 + 2 * i);
+        }
+        
+        indices.push_back(startVertex3);
+        indices.push_back(startVertex3 + 2 * (segmentCount - 1));
+        indices.push_back(startVertex3 + 2 * (segmentCount - 1) + 1);
+            
+        indices.push_back(startVertex3 + 2 * (segmentCount - 1) + 1);
+        indices.push_back(startVertex3 + 1);
+        indices.push_back(startVertex3);
+    }
+
+    return { vertices, indices, GL_TRIANGLES };
 }
 
 mesh_desc MeshRenderer::CreateCube()

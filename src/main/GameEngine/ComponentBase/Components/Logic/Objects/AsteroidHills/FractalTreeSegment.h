@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/MeshRenderer.h"
 
 namespace component
 {
@@ -16,9 +17,13 @@ namespace component
 
         void Start() override;
 
-        void Init(int maxLevels);
+        void Init(int newRemainingLevels, float newSelectionValue);
+        
+        MeshRenderer* meshRenderer = nullptr;
 
     private:
         SERIALIZE_FIELD int remainingLevels = 0;
+        SERIALIZE_FIELD float selectionValue = 1.1f;
+
     };
 }

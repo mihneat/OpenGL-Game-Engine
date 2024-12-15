@@ -9,6 +9,7 @@ using namespace component;
 void HelicopterMovement::Start()
 {
     instancesParent = transform->GetTransformByTag("InstancesParent");
+    modelTransform = transform->GetChild(0);
 }
 
 void HelicopterMovement::Update(float deltaTime)
@@ -46,8 +47,15 @@ void HelicopterMovement::Update(float deltaTime)
                 transform::Transform::Destroy(spawnedMarker);
                 spawnedMarker = nullptr;
             }
+            
+            targetTiltAngle = 0.0f;
         }
     }
+
+    const float currTiltAngle = modelTransform->GetLocalRotation().z;
+    const float targetAngleRads = glm::radians(targetTiltAngle);
+    if (abs(currTiltAngle - targetAngleRads) > 0.001f)
+        modelTransform->SetLocalRotation(glm::vec3(0, 0, glm::mix(currTiltAngle, targetAngleRads, glm::min(10.0f * deltaTime, 1.0f))));
 }
 
 void HelicopterMovement::MouseBtnPress(int mouseX, int mouseY, int button, int mods)
@@ -108,4 +116,6 @@ void HelicopterMovement::MouseBtnPress(int mouseX, int mouseY, int button, int m
         transform->Rotate(glm::vec3(0, -glm::pi<float>() * 2.0f, 0));
         targetAngle = targetAngle1;
     }
+
+    targetTiltAngle = tiltAngle;
 }

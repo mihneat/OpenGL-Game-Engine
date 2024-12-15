@@ -16,6 +16,7 @@ namespace rendering
         Tree,
         HeightMap,
         Skybox,
+        Minimap,
         Simple,
         Color,
         VertexNormal,

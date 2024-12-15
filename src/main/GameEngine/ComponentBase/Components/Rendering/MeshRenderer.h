@@ -39,6 +39,7 @@ namespace component
             Square,
             FragmentedSquare,
             Circle,
+            Cylinder,
             Cube,
             CubeMesh,
             Sphere,
@@ -50,7 +51,8 @@ namespace component
         SERIALIZE_ENUM
         enum LayerEnum {
             Default,
-            UI
+            UI,
+            Minimap
         };
 
         MeshRenderer(
@@ -68,6 +70,7 @@ namespace component
 
         friend class rendering::RenderingSystem;
 
+        void SetMesh(MeshEnum newMeshType);
         void SetColor(glm::vec4 newColor);
         void SetTexture(rendering::Texture* newTexture);
         void SetTexture2(rendering::Texture* newTexture);
@@ -94,6 +97,7 @@ namespace component
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
         mesh_desc CreateCircle(const int circleVertexCount, const bool makeRainbow, const bool makeHollow);
+        mesh_desc CreateCylinder(int segmentCount);
         mesh_desc CreateCube();
         mesh_desc CreateRoad();
 

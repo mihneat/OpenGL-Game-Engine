@@ -15,11 +15,11 @@ namespace component
         {
         }
 
-        void Start() override;      
-
-        void Init();
+        void Init(float newSelectionValue);
+        
+        void Start() override;
 
     private:
-        bool isInitialized = false;
+        SERIALIZE_FIELD float selectionValue = 1.1f;
     };
 }

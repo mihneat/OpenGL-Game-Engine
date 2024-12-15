@@ -27,6 +27,7 @@ uniform int is_in_play_mode;
 uniform int ignore_water;
 
 // Output
+out vec3 frag_position;
 out vec3 frag_normal;
 out vec3 frag_color;
 out vec2 tex_coord;
@@ -73,6 +74,7 @@ void main()
         new_local_pos.y -= dist * dist * bend_factor;
     }
 
+    frag_position = v_position;
     frag_normal = v_normal;
     frag_color = v_color;
     tex_coord = v_texture_coord;

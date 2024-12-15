@@ -8,6 +8,7 @@ const std::string ShaderResourceManager::SHADER_STANDARD = "GameEngine";
 const std::string ShaderResourceManager::SHADER_HEIGHT_MAP = "HeightMap";
 const std::string ShaderResourceManager::SHADER_SKYBOX = "Skybox";
 const std::string ShaderResourceManager::SHADER_TREE = "Tree";
+const std::string ShaderResourceManager::SHADER_MINIMAP = "Minimap";
 const std::string ShaderResourceManager::SHADER_SIMPLE = "Simple";
 const std::string ShaderResourceManager::SHADER_COLOR = "Color";
 

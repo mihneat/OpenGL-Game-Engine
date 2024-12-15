@@ -394,6 +394,22 @@ Transform* PrefabManager::CreateMarker(Transform* parent)
     markerPointer->AddComponent(new MeshRenderer(markerPointer, MeshRenderer::Cube, "markerPointer", MaterialManager::GetMaterial(MaterialManager::MAT_DEFAULT_LIT),
         MeshRenderer::Default, glm::vec3(1, 1, 1), glm::vec4(251, 116, 255, 255) / 255.0f));
     markerPointer->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("White"));
+
+    Transform* minimapMarker1 = new Transform(marker, "Minimap Marker 1");
+    minimapMarker1->Translate(glm::vec3(0, 2, 0));
+    minimapMarker1->Rotate(glm::vec3(glm::radians(90.0f), 0, glm::radians(45.0f)));
+    minimapMarker1->SetScale(glm::vec3(60, 10, 1));
+    minimapMarker1->AddComponent(new MeshRenderer(minimapMarker1, MeshRenderer::Square, "minimapMarker1", MaterialManager::GetMaterial(MaterialManager::MAT_MINIMAP),
+        MeshRenderer::Minimap, glm::vec3(1, 1, 1), glm::vec4(251, 116, 255, 255) / 255.0f));
+    minimapMarker1->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("White"));
+
+    Transform* minimapMarker2 = new Transform(marker, "Minimap Marker 2");
+    minimapMarker2->Translate(glm::vec3(0, 2, 0));
+    minimapMarker2->Rotate(glm::vec3(glm::radians(90.0f), 0, glm::radians(-45.0f)));
+    minimapMarker2->SetScale(glm::vec3(60, 10, 1));
+    minimapMarker2->AddComponent(new MeshRenderer(minimapMarker2, MeshRenderer::Square, "minimapMarker2", MaterialManager::GetMaterial(MaterialManager::MAT_MINIMAP),
+        MeshRenderer::Minimap, glm::vec3(1, 1, 1), glm::vec4(251, 116, 255, 255) / 255.0f));
+    minimapMarker2->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("White"));
     
     return marker;
 }
@@ -402,6 +418,14 @@ Transform* PrefabManager::CreateFractalTreeRoot(Transform* parent)
 {
     Transform* fractalTreeRoot = new Transform(parent, "Fractal Tree Segment");
     fractalTreeRoot->AddComponent(new FractalTreeRoot(fractalTreeRoot));
+    
+    Transform* minimapMarker = new Transform(fractalTreeRoot, "MinimapMarker");
+    minimapMarker->Translate(glm::vec3(0, 5, 0));
+    minimapMarker->Rotate(glm::vec3(glm::radians(90.0f), 0, 0));
+    minimapMarker->SetScale(glm::vec3(30, 30, 1));
+    minimapMarker->AddComponent(new MeshRenderer(minimapMarker, MeshRenderer::Circle, "minimapMarker", MaterialManager::GetMaterial(MaterialManager::MAT_MINIMAP),
+        MeshRenderer::Minimap, glm::vec3(1), glm::vec4(71, 253, 92, 255) / 255.0f));
+    minimapMarker->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("White"));
     
     return fractalTreeRoot;
 }
@@ -414,8 +438,8 @@ Transform* PrefabManager::CreateFractalTreeSegment(Transform* parent)
     Transform* mesh = new Transform(fractalTreeSegment, "Mesh");
     mesh->Translate(glm::vec3(0, 10, 0));
     mesh->SetScale(glm::vec3(4, 10, 4));
-    mesh->AddComponent(new MeshRenderer(mesh, MeshRenderer::Cube, "mesh", MaterialManager::GetMaterial(MaterialManager::MAT_TREE)));
-    mesh->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("TreeBark"));
+    mesh->AddComponent(new MeshRenderer(mesh, MeshRenderer::Cylinder, "mesh", MaterialManager::GetMaterial(MaterialManager::MAT_TREE)));
+    mesh->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("TreeBark2"));
     mesh->GetComponent<MeshRenderer>()->SetTexture2(TextureLoader::GetTextureByName("HeightMap"));
     mesh->GetComponent<MeshRenderer>()->SetTexture3(TextureLoader::GetTextureByName("TreeCorona"));
     

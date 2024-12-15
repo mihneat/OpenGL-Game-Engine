@@ -14,6 +14,7 @@ void ShaderLoader::InitShaders()
     LoadShaderFromType(Tree);
     LoadShaderFromType(HeightMap);
     LoadShaderFromType(Skybox);
+    LoadShaderFromType(Minimap);
     LoadShaderFromType(Simple);
     LoadShaderFromType(Color);
     LoadShaderFromType(VertexNormal);
@@ -62,6 +63,10 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
         
     case Skybox:
         newShader = LoadSkyboxShader();
+        break;
+        
+    case Minimap:
+        newShader = LoadMinimapShader();
         break;
 
     case Simple:
@@ -163,9 +168,29 @@ Shader* ShaderLoader::LoadTreeShader()
     newShader->shaderParams.ints["use_texture"] = 1;
     newShader->shaderParams.ints["is_helicopter"] = 0;
     newShader->shaderParams.ints["ignore_water"] = 0;
+    newShader->shaderParams.ints["distance_from_leaf"] = 2;
     newShader->shaderParams.floats["time_of_day"] = 1.0f;
     newShader->shaderParams.floats["bend_factor"] = 0.003f;
+    newShader->shaderParams.floats["selection_value"] = -1.0f;
     newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadMinimapShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_MINIMAP) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_MINIMAP,
+            "Shaders/Minimap/Minimap.VS.glsl",
+            "Shaders/Minimap/Minimap.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_MINIMAP, newShader);
+    newShader->shaderParams.ints["draw_heightmap"] = 0;
+    newShader->shaderParams.floats["time_of_day"] = 1.0f;
 
     return newShader;
 }

@@ -67,6 +67,8 @@ namespace component
 
         void WindowResize(int width, int height);
 
+        void SetRenderLayers(std::unordered_set<int> renderLayers);
+
         // C++ headers are too fkin stupid and hard
         // TODO: Replace int with MeshRenderer::LayerEnum
         bool IsLayerRendered(int layer);

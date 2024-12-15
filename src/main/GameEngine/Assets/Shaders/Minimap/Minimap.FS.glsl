@@ -11,13 +11,14 @@ struct light_source {
 };
 
 // Input
-in vec3 frag_position;
 in vec3 frag_color;
 
 in vec3 world_position;
 in vec3 world_normal;
 
 in vec2 tex_coord;
+
+in vec3 selection_color;
 
 // Output
 layout(location = 0) out vec4 out_color;
@@ -26,7 +27,7 @@ layout(location = 1) out vec4 out_selection;
 // Uniform 
 uniform vec3 eye_position;
 uniform light_source lights[100]; // Max lights also need to be changed in LightManager.h
-// Also modify maximum 'for' value below
+                                  // Also modify maximum 'for' value below
 
 uniform vec4  fog_color;
 uniform bool  render_fog;
@@ -44,12 +45,14 @@ uniform sampler2D texture_4;
 
 uniform vec4 mesh_color;
 
-uniform float selection_value;
+uniform float time;
+
+uniform int draw_heightmap;
 
 float sun_light_contribution(light_source light)
 {
     float material_kd = 0.4;
-
+    
     // vec3 n_world_normal = normalize( mix( world_normal, vec3(texture2D(texture_normal, tex_coord)) / 256, 0.5) );
     vec3 n_world_normal = world_normal;
 
@@ -59,7 +62,7 @@ float sun_light_contribution(light_source light)
 
     float global_ambiental_color = 0.3;
     float ambient_light = material_kd * global_ambiental_color;
-
+    
     float diffuse_light = material_kd * max(dot(n_world_normal, L), 0);
 
     float specular_light = 0.0;
@@ -76,7 +79,7 @@ float sun_light_contribution(light_source light)
     // Actually, attenuate based on time of day
     float lightValue = light.intensity * (diffuse_light + specular_light);  // float light = intensity * ( diffuse_light + specular_light );
 
-    return lightValue;
+	return lightValue;
 }
 
 float spot_light_contribution(light_source light)
@@ -91,7 +94,7 @@ float spot_light_contribution(light_source light)
 
     float global_ambiental_color = 0.3;
     float ambient_light = material_kd * global_ambiental_color;
-
+    
     float diffuse_light = material_kd * max (dot(n_world_normal, L), 0);
 
     float specular_light = 0.0;
@@ -120,7 +123,7 @@ float spot_light_contribution(light_source light)
     float attenuation_factor = 1 / (1 + (distance(light.position, world_position)) * (distance(light.position, world_position)));
     float lightValue = light.intensity * attenuation_factor * light_att_factor * ( diffuse_light + specular_light );
 
-    return lightValue;
+	return lightValue;
 }
 
 float point_light_contribution(light_source light)
@@ -135,7 +138,7 @@ float point_light_contribution(light_source light)
 
     float global_ambiental_color = 0.3;
     float ambient_light = material_kd * global_ambiental_color;
-
+    
     float diffuse_light = material_kd * max (dot(n_world_normal, L), 0);
 
     float specular_light = 0.0;
@@ -147,11 +150,11 @@ float point_light_contribution(light_source light)
     {
         specular_light = material_ks * pow(max(dot(n_world_normal, H), 0), material_shininess);
     }
-
+    
     float attenuation_factor = 1 / (1 + (distance(light.position, world_position)) * (distance(light.position, world_position)));
     float lightValue = light.intensity * attenuation_factor * ( diffuse_light + specular_light );
 
-    return lightValue;
+	return lightValue;
 }
 
 float get_fog_factor(float dist)
@@ -186,16 +189,55 @@ vec3 get_light_contribution()
     float global_ambiental_color = 0.9;
     float ambient_light = material_kd * global_ambiental_color;
     light += 0.4 * ambient_light;  // light += max(time_of_day, 0.4) * ambient_light;
-
+    
     return light;
+}
+
+vec4 get_texture()
+{
+    if (draw_heightmap == 0) {
+        return texture2D(texture_1, tex_scale * tex_coord);
+    }
+    
+    // Do the calculations for the height map
+    const float water_level = 0.1f;
+    const float water_transition_level = 0.115f;
+    const float water_ground_level = 0.18f;
+    const float ground_snow_level = 0.4f;
+    const float snow_level = 0.7f;
+    
+    vec4 ground_tex = texture2D(texture_1, tex_scale * tex_coord);
+    float height = texture2D(texture_2, tex_scale * tex_coord).r;
+    vec4 snow_tex = texture2D(texture_3, tex_scale * tex_coord);
+    vec4 water_tex = texture2D(texture_4, tex_scale * tex_coord + vec2(time * 0.005f, time * 0.01f));
+    vec4 height_tex = vec4(vec3(height), 1);
+    
+    vec4 ground_height_mix = mix(height_tex, ground_tex, height / water_ground_level);
+    
+    if (height < water_level)
+        return water_tex;
+    
+    if (height < water_transition_level)
+        return mix(water_tex, ground_height_mix, (height - water_level) / (water_transition_level - water_level));
+    
+    if (height < water_ground_level)
+        return ground_height_mix;
+    
+    if (height < ground_snow_level)
+        return ground_tex;
+    
+    if (height < snow_level)
+        return mix(ground_tex, snow_tex, (height - ground_snow_level) / (snow_level - ground_snow_level));
+    
+    return snow_tex;
 }
 
 void main()
 {
     vec3 light = get_light_contribution();
 
-    // Apply light to color
-    vec4 tex = texture2D(texture_1, tex_scale * tex_coord);
+    // Get the texture
+    vec4 tex = get_texture();
     if (tex.a * mesh_color.a < 0.5)
         discard;
 
@@ -206,5 +248,6 @@ void main()
     float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
     out_color = mix(lit_vertex, fog_color, alpha);
 
-    out_selection = vec4(selection_value / 100.0f);
+    out_selection = vec4(world_position.x, 0, world_position.z, 0);
 }
+

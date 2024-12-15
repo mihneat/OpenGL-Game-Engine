@@ -4,6 +4,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <iostream>
+#include <utility>
 
 using namespace std;
 using namespace component;
@@ -146,4 +147,9 @@ void Camera::WindowResize(int width, int height)
             SetOrthographic(width, height);
         }
     }
+}
+
+void Camera::SetRenderLayers(std::unordered_set<int> renderLayers)
+{
+    this->layers = std::move(renderLayers);
 }

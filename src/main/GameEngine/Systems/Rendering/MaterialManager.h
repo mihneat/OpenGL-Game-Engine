@@ -18,6 +18,8 @@ namespace rendering
         static const std::string MAT_SCROLLABLE_TERRAIN;
         static const std::string MAT_SIMPLE;
         static const std::string MAT_COLOR;
+        static const std::string MAT_MINIMAP;
+        static const std::string MAT_MINIMAP_HEIGHTMAP;
         static const std::string MAT_SKYBOX;
         static const std::string MAT_TREE;
         

@@ -30,12 +30,16 @@ namespace component
 
         SERIALIZE_FIELD float speed = 3.0f;
         SERIALIZE_FIELD float turnSpeed = 0.5f;
+        SERIALIZE_FIELD float tiltAngle = -20.0f;
 
         transform::Transform* instancesParent = nullptr;
         
         bool hasReachedDestination = true;
         transform::Transform* spawnedMarker = nullptr;
+        
+        transform::Transform* modelTransform = nullptr;
 
         float targetAngle = 0.0f;
+        float targetTiltAngle = 0.0f;
     };
 }

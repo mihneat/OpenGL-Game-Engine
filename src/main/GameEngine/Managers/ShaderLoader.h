@@ -34,5 +34,6 @@ namespace loaders
         static rendering::Shader* LoadHeightMapShader();
         static rendering::Shader* LoadSkyboxShader();
         static rendering::Shader* LoadTreeShader();
+        static rendering::Shader* LoadMinimapShader();
     };
 }   // namespace loaders

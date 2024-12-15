@@ -12,6 +12,8 @@ const std::string MaterialManager::MAT_HEIGHT_MAP = "HeightMap";
 const std::string MaterialManager::MAT_SIMPLE = "Simple";
 const std::string MaterialManager::MAT_COLOR = "Color";
 const std::string MaterialManager::MAT_SKYBOX = "Skybox";
+const std::string MaterialManager::MAT_MINIMAP = "Minimap";
+const std::string MaterialManager::MAT_MINIMAP_HEIGHTMAP = "MinimapHeightMap";
 const std::string MaterialManager::MAT_TREE = "Tree";
 
 std::unordered_map<std::string, Material*> MaterialManager::materials;
@@ -62,6 +64,14 @@ void MaterialManager::InitMaterials()
     }
     
     {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SKYBOX));
+
+        materials[MAT_SKYBOX] = material;
+
+        Database::AddEntry({"100006", "Skybox", "Material", material});
+    }
+    
+    {
         Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_TREE));
         material->params.ints["ignore_water"] = 1;
         
@@ -71,11 +81,20 @@ void MaterialManager::InitMaterials()
     }
     
     {
-        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SKYBOX));
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_MINIMAP));
 
-        materials[MAT_SKYBOX] = material;
+        materials[MAT_MINIMAP] = material;
 
-        Database::AddEntry({"100006", "Skybox", "Material", material});
+        Database::AddEntry({"100008", "Minimap", "Material", material});
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_MINIMAP));
+        material->params.ints["draw_heightmap"] = 1;
+
+        materials[MAT_MINIMAP_HEIGHTMAP] = material;
+
+        Database::AddEntry({"100009", "Minimap Height Map", "Material", material});
     }
 }
 

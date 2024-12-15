@@ -36,6 +36,9 @@ void TextureLoader::InitTextures()
     LoadTexture("Space2", "Textures/space2.png", true);
     LoadTexture("Space3", "Textures/space3.jpg", true);
     LoadTexture("Ground2", "Textures/ground2.jpg", true);
+    LoadTexture("TreeBark2", "Textures/treeBark2.jpg", true);
+    LoadTexture("TreeCorona2", "Textures/corona2.png", true);
+    LoadTexture("TreeCorona3", "Textures/corona3.jpg", true);
 
 }
 
