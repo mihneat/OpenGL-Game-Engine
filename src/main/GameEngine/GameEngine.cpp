@@ -40,7 +40,7 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "SteepScene.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
 
     this->renderingSystem = new RenderingSystem();
     
@@ -254,7 +254,7 @@ void GameEngine::RenderGameView()
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderingSystem->Render(hierarchy, textRenderer, mainCam, fboContainer->GetResolution());
+    renderingSystem->Render(hierarchy, textRenderer, mainCam, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
@@ -262,7 +262,7 @@ void GameEngine::RenderGameView()
         glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
             (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        renderingSystem->Render(hierarchy, textRenderer, cam, fboContainer->GetResolution());
+        renderingSystem->Render(hierarchy, textRenderer, cam, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
     }
 
     // Upload FBO data to the texture
@@ -294,7 +294,7 @@ void GameEngine::RenderSceneView()
     
     sceneCamera->UpdateValues(fboContainer->GetResolution());
 
-    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), false);
+    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), false, false);
 
     // Upload FBO data to the texture
     // fboContainer->UploadDataToTexture();
@@ -307,6 +307,21 @@ void GameEngine::FrameEnd()
     // Bind back the default FBO
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, window->GetResolution().x, window->GetResolution().y);
+}
+
+// TODO: This should be in a separate Input class I think 
+glm::vec4 GameEngine::ExtractSelectionData(int mouseX, int mouseY)
+{
+    glm::vec4 selectionData(0.0f);
+    
+    GUIManager::GetInstance()->GetGameFBOContainer()->Bind();
+    glReadBuffer(GL_COLOR_ATTACHMENT1);
+ 
+    glReadPixels(mouseX, mouseY, 1, 1, GL_RGBA, GL_FLOAT, &selectionData[0]);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return selectionData;
 }
 
 void GameEngine::DestroyMarkedObjects()

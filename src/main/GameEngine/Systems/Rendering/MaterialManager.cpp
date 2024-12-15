@@ -6,9 +6,13 @@
 using namespace rendering;
 
 const std::string MaterialManager::MAT_DEFAULT_LIT = "DefaultLit";
+const std::string MaterialManager::MAT_HELICOPTER = "Helicopter";
 const std::string MaterialManager::MAT_SCROLLABLE_TERRAIN = "ScrollableTerrain";
+const std::string MaterialManager::MAT_HEIGHT_MAP = "HeightMap";
 const std::string MaterialManager::MAT_SIMPLE = "Simple";
 const std::string MaterialManager::MAT_COLOR = "Color";
+const std::string MaterialManager::MAT_SKYBOX = "Skybox";
+const std::string MaterialManager::MAT_TREE = "Tree";
 
 std::unordered_map<std::string, Material*> MaterialManager::materials;
 
@@ -24,12 +28,11 @@ void MaterialManager::InitMaterials()
     }
 
     {
-        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_STANDARD));
-        material->params.ints["is_scrolling"] = 1;
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_HEIGHT_MAP));
         
-        materials[MAT_SCROLLABLE_TERRAIN] = material;
+        materials[MAT_HEIGHT_MAP] = material;
 
-        Database::AddEntry({"100002", "Scrollable Terrain", "Material", material});
+        Database::AddEntry({"100002", "Height Map", "Material", material});
     }
     
     {
@@ -46,6 +49,33 @@ void MaterialManager::InitMaterials()
         materials[MAT_COLOR] = material;
 
         Database::AddEntry({"100004", "Color", "Material", material});
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_STANDARD));
+        material->params.ints["is_helicopter"] = 1;
+        material->params.floats["bend_factor"] = 0.0f;
+        
+        materials[MAT_HELICOPTER] = material;
+
+        Database::AddEntry({"100005", "Helicopter", "Material", material});
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_TREE));
+        material->params.ints["ignore_water"] = 1;
+        
+        materials[MAT_TREE] = material;
+
+        Database::AddEntry({"100007", "Tree", "Material", material});
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SKYBOX));
+
+        materials[MAT_SKYBOX] = material;
+
+        Database::AddEntry({"100006", "Skybox", "Material", material});
     }
 }
 

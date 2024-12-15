@@ -18,6 +18,9 @@ namespace rendering
 
     public:
         static const std::string SHADER_STANDARD;
+        static const std::string SHADER_HEIGHT_MAP;
+        static const std::string SHADER_SKYBOX;
+        static const std::string SHADER_TREE;
         static const std::string SHADER_SIMPLE;
         static const std::string SHADER_COLOR;
     

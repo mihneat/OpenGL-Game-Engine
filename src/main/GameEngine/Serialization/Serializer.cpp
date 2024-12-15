@@ -10,20 +10,26 @@
 #include "CppHeaderParser.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Camera.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\CameraFollow.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\CameraStick.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\DirectionalLight.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\DistanceDisplay.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\FractalTreeRoot.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\FractalTreeSegment.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Managers\GameManager.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\GameOverDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Player\GroundStick.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Helicopter\HelicopterMovement.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\HighScoreDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\LifeDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\Light.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\Marker.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\MeshRenderer.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\ObjectSpawner.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\Obstacle.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\OrthoCameraFollow.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Player\PlayerController.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\PointLight.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Helicopter\PropellerRotation.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\RunsDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\ScoreDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\SpeedSelectionDisplay.h"
@@ -54,20 +60,26 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"", std::vector<SerializedField>{}},
         {"Camera", std::vector<SerializedField>{{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},}},
         {"CameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"distanceToTarget", FieldTypeFloat},{"forwardFollowDistance", FieldTypeFloat},{"angleScale", FieldTypeFloat},{"retroAngleScale", FieldTypeFloat},{"isRetroCam", FieldTypeBool},}},
+        {"CameraStick", std::vector<SerializedField>{}},
         {"DirectionalLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"DistanceDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
+        {"FractalTreeRoot", std::vector<SerializedField>{}},
+        {"FractalTreeSegment", std::vector<SerializedField>{{"remainingLevels", FieldTypeInt},}},
         {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"gameState", FieldTypeEnum, "GameState"},{"gameSpeed", FieldTypeEnum, "GameSpeed"},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
         {"GameOverDisplay", std::vector<SerializedField>{}},
         {"GroundStick", std::vector<SerializedField>{{"player", FieldTypeTransform},{"offset", FieldTypeVec3},}},
+        {"HelicopterMovement", std::vector<SerializedField>{{"defaultLitMaterial", FieldTypeGUID, "Material"},{"heightMapMaterial", FieldTypeGUID, "Material"},{"helicopterMaterial", FieldTypeGUID, "Material"},{"skyboxMaterial", FieldTypeGUID, "Material"},{"treeMaterial", FieldTypeGUID, "Material"},{"speed", FieldTypeFloat},{"turnSpeed", FieldTypeFloat},}},
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
+        {"Marker", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationSpeed", FieldTypeFloat},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
         {"PlayerController", std::vector<SerializedField>{{"acceleration", FieldTypeFloat},{"speed", FieldTypeFloat},{"maxSpeed", FieldTypeFloat},{"playerBody", FieldTypeTransform},{"tilt", FieldTypeFloat},{"tiltFactor", FieldTypeFloat},{"lives", FieldTypeInt},{"maxLives", FieldTypeInt},{"initialPosition", FieldTypeVec3},}},
         {"PointLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
+        {"PropellerRotation", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationAxis", FieldTypeVec3},}},
         {"RunsDisplay", std::vector<SerializedField>{}},
         {"ScoreDisplay", std::vector<SerializedField>{}},
         {"SpeedSelectionDisplay", std::vector<SerializedField>{}},
@@ -136,6 +148,13 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
+    if (instance->GetName() == "CameraStick")
+    {
+        CameraStick* obj = dynamic_cast<CameraStick*>(instance);
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "DirectionalLight")
     {
         DirectionalLight* obj = dynamic_cast<DirectionalLight*>(instance);
@@ -164,6 +183,23 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "player")
             return &obj->player;
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "FractalTreeRoot")
+    {
+        FractalTreeRoot* obj = dynamic_cast<FractalTreeRoot*>(instance);
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "FractalTreeSegment")
+    {
+        FractalTreeSegment* obj = dynamic_cast<FractalTreeSegment*>(instance);
+
+        if (attributeName == "remainingLevels")
+            return &obj->remainingLevels;
 
         return nullptr;
     }
@@ -219,6 +255,34 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
+    if (instance->GetName() == "HelicopterMovement")
+    {
+        HelicopterMovement* obj = dynamic_cast<HelicopterMovement*>(instance);
+
+        if (attributeName == "defaultLitMaterial")
+            return &obj->defaultLitMaterial;
+
+        if (attributeName == "heightMapMaterial")
+            return &obj->heightMapMaterial;
+
+        if (attributeName == "helicopterMaterial")
+            return &obj->helicopterMaterial;
+
+        if (attributeName == "skyboxMaterial")
+            return &obj->skyboxMaterial;
+
+        if (attributeName == "treeMaterial")
+            return &obj->treeMaterial;
+
+        if (attributeName == "speed")
+            return &obj->speed;
+
+        if (attributeName == "turnSpeed")
+            return &obj->turnSpeed;
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "HighScoreDisplay")
     {
         HighScoreDisplay* obj = dynamic_cast<HighScoreDisplay*>(instance);
@@ -258,6 +322,19 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
+    if (instance->GetName() == "Marker")
+    {
+        Marker* obj = dynamic_cast<Marker*>(instance);
+
+        if (attributeName == "speed")
+            return &obj->speed;
+
+        if (attributeName == "rotationSpeed")
+            return &obj->rotationSpeed;
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "MeshRenderer")
     {
         MeshRenderer* obj = dynamic_cast<MeshRenderer*>(instance);
@@ -280,8 +357,17 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         if (attributeName == "layer")
             return &obj->layer;
 
-        if (attributeName == "texture")
-            return &obj->texture;
+        if (attributeName == "texture1")
+            return &obj->texture1;
+
+        if (attributeName == "texture2")
+            return &obj->texture2;
+
+        if (attributeName == "texture3")
+            return &obj->texture3;
+
+        if (attributeName == "texture4")
+            return &obj->texture4;
 
         if (attributeName == "texScale")
             return &obj->texScale;
@@ -404,6 +490,19 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "direction")
             return &obj->direction;
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "PropellerRotation")
+    {
+        PropellerRotation* obj = dynamic_cast<PropellerRotation*>(instance);
+
+        if (attributeName == "speed")
+            return &obj->speed;
+
+        if (attributeName == "rotationAxis")
+            return &obj->rotationAxis;
 
         return nullptr;
     }
@@ -564,20 +663,26 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 {
     if (className == "Camera") return new Camera(parent);
     if (className == "CameraFollow") return new CameraFollow(parent);
+    if (className == "CameraStick") return new CameraStick(parent);
     if (className == "DirectionalLight") return new DirectionalLight(parent);
     if (className == "DistanceDisplay") return new DistanceDisplay(parent);
+    if (className == "FractalTreeRoot") return new FractalTreeRoot(parent);
+    if (className == "FractalTreeSegment") return new FractalTreeSegment(parent);
     if (className == "GameManager") return new GameManager(parent);
     if (className == "GameOverDisplay") return new GameOverDisplay(parent);
     if (className == "GroundStick") return new GroundStick(parent);
+    if (className == "HelicopterMovement") return new HelicopterMovement(parent);
     if (className == "HighScoreDisplay") return new HighScoreDisplay(parent);
     if (className == "LifeDisplay") return new LifeDisplay(parent);
     if (className == "Light") return new Light(parent);
+    if (className == "Marker") return new Marker(parent);
     if (className == "MeshRenderer") return new MeshRenderer(parent);
     if (className == "ObjectSpawner") return new ObjectSpawner(parent);
     if (className == "Obstacle") return new Obstacle(parent);
     if (className == "OrthoCameraFollow") return new OrthoCameraFollow(parent);
     if (className == "PlayerController") return new PlayerController(parent);
     if (className == "PointLight") return new PointLight(parent);
+    if (className == "PropellerRotation") return new PropellerRotation(parent);
     if (className == "RunsDisplay") return new RunsDisplay(parent);
     if (className == "ScoreDisplay") return new ScoreDisplay(parent);
     if (className == "SpeedSelectionDisplay") return new SpeedSelectionDisplay(parent);
@@ -602,7 +707,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 
 const std::vector<std::string>& Serializer::GetSerializedClasses()
 {
-    static const std::vector<std::string> classNames = {"Camera","CameraFollow","DirectionalLight","DistanceDisplay","GameManager","GameOverDisplay","GroundStick","HighScoreDisplay","LifeDisplay","Light","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","UiPanel","UpdateLightPosition",};
+    static const std::vector<std::string> classNames = {"Camera","CameraFollow","CameraStick","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","UiPanel","UpdateLightPosition",};
     /**
      * Template(CLASS_NAME):
      *

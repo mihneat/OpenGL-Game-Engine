@@ -12,7 +12,7 @@ using namespace rendering;
 using namespace loaders;
 
 void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam,
-                             const glm::ivec2 resolution, bool renderText)
+                             const glm::ivec2 resolution, bool isInPlayMode, bool isInGameView, bool renderText)
 {
     // Clear rendering state
     meshesByShader.clear();
@@ -53,7 +53,7 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
         Shader* shader = shaderMeshes.first;
         shader->Use();
 
-        SetGlobalUniforms(shader, cam);
+        SetGlobalUniforms(shader, cam, isInGameView, isInPlayMode);
 
         for (auto meshRenderer : shaderMeshes.second)
         {
@@ -83,11 +83,22 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
 
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
-    component::Camera* cam
+    component::Camera* cam,
+    bool isInGameView,
+    bool isInPlayMode
 )
 {
     const GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
     glUniform3fv(eye_position, 1, glm::value_ptr(cam->transform->GetWorldPosition()));
+    
+    const GLint is_in_game_view = glGetUniformLocation(shader->program, "is_in_game_view");
+    glUniform1i(is_in_game_view, isInGameView);
+    
+    const GLint is_in_play_mode = glGetUniformLocation(shader->program, "is_in_play_mode");
+    glUniform1i(is_in_play_mode, isInPlayMode);
+    
+    const GLint time = glGetUniformLocation(shader->program, "time");
+    glUniform1f(time, Engine::GetElapsedTime());
 
     // Send light information
     static std::vector<std::string> lightIsUsedStrings;
@@ -171,17 +182,32 @@ void RenderingSystem::SetLocalUniforms(
 
     // TODO: Find a better way to send multiple textures
     // Send texture data
-    if (meshRenderer->texture != nullptr)
+    if (meshRenderer->texture1 != nullptr)
     {
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture->GetTextureID());
-        glUniform1i(glGetUniformLocation(shader->program, "texture_color"), 1);
-        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 1);
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture1->GetTextureID());
+        glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 1);
     }
-    else {
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glUniform1i(glGetUniformLocation(shader->program, "use_texture"), 0);
+    
+    if (meshRenderer->texture2 != nullptr)
+    {
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture2->GetTextureID());
+        glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 2);
+    }
+    
+    if (meshRenderer->texture3 != nullptr)
+    {
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture3->GetTextureID());
+        glUniform1i(glGetUniformLocation(shader->program, "texture_3"), 3);
+    }
+    
+    if (meshRenderer->texture4 != nullptr)
+    {
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, meshRenderer->texture4->GetTextureID());
+        glUniform1i(glGetUniformLocation(shader->program, "texture_4"), 4);
     }
 
     // Send texture scale

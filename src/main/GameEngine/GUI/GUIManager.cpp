@@ -392,7 +392,7 @@ void GUIManager::ShowGameWindow()
         glm::ivec2(3840, 2160), // 16:9
     };
     static const char* items[] = { "Free", "Fixed" };
-    static int viewType = 1;
+    static int viewType = 0;
     static int fixedResolutionIndex = 2;
 
     // Create a menu bar that displays the resolution
@@ -984,8 +984,14 @@ void GUIManager::DisplaySerializedTransform(transform::Transform* transform)
 {
     DisplaySerializedField({"name", FieldTypeString}, &transform->name);
     DisplaySerializedField({"tag", FieldTypeString}, &transform->tag);
+    
     const bool positionChanged = DisplaySerializedField({"position", FieldTypeVec3}, &transform->localPosition);
-    const bool rotationChanged = DisplaySerializedField({"rotation", FieldTypeVec3}, &transform->localRotation);
+
+    // Use degrees instead of radians :) GUI only
+    glm::vec3 rotationInRads = glm::degrees(transform->localRotation);
+    const bool rotationChanged = DisplaySerializedField({"rotation", FieldTypeVec3}, &rotationInRads);
+    transform->localRotation = glm::radians(rotationInRads);
+
     const bool scaleChanged = DisplaySerializedField({"scale", FieldTypeVec3}, &transform->localScale);
 
     if (rotationChanged) transform->UpdateChildren(true);

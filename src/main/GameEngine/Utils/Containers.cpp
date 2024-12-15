@@ -59,6 +59,11 @@ unsigned int FBOContainer::GetColorTextureID() const
     return colorTexture;
 }
 
+unsigned int FBOContainer::GetSelectionTextureID() const
+{
+    return selectionTexture;
+}
+
 void FBOContainer::CreateFrameBuffer(glm::ivec2 resolution)
 {
     // Generate and bind the framebuffer
@@ -86,9 +91,21 @@ void FBOContainer::CreateFrameBuffer(glm::ivec2 resolution)
     // Bind the depth texture to the framebuffer as a depth attachment
     glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
+    // Generate, bind and initialize the selection texture
+    glGenTextures(1, &selectionTexture);
+    glBindTexture(GL_TEXTURE_2D, selectionTexture);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, resolution.x, resolution.y, 0, GL_RGBA, GL_FLOAT, NULL);
+
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    // Bind the color texture to the framebuffer as a color attachment at position 1
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, selectionTexture, 0);
+
     // Set the color texture as the draw texture
     std::vector<GLenum> draw_textures;
     draw_textures.push_back(GL_COLOR_ATTACHMENT0);
+    draw_textures.push_back(GL_COLOR_ATTACHMENT1);
     glDrawBuffers(draw_textures.size(), &draw_textures[0]);
 
     // Check the status of the framebuffer

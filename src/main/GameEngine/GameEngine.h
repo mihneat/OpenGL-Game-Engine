@@ -68,7 +68,8 @@ namespace m1
         void ReloadScene();
 
     public:
-
+        static glm::vec4 ExtractSelectionData(int mouseX, int mouseY);
+        
         static void ApplyToComponents(
             transform::Transform* currentTransform,
             std::function<void(component::Component*)> componentApplication,

@@ -11,6 +11,9 @@ using namespace rendering;
 void ShaderLoader::InitShaders()
 {
     LoadShaderFromType(Standard);
+    LoadShaderFromType(Tree);
+    LoadShaderFromType(HeightMap);
+    LoadShaderFromType(Skybox);
     LoadShaderFromType(Simple);
     LoadShaderFromType(Color);
     LoadShaderFromType(VertexNormal);
@@ -48,6 +51,18 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
     case Standard:
         newShader = LoadStandardShader();
         break;
+        
+    case Tree:
+        newShader = LoadTreeShader();
+        break;
+        
+    case HeightMap:
+        newShader = LoadHeightMapShader();
+        break;
+        
+    case Skybox:
+        newShader = LoadSkyboxShader();
+        break;
 
     case Simple:
         newShader = LoadShader("Simple", "MVP.Texture.VS.glsl", "Default.FS.glsl");
@@ -81,13 +96,76 @@ Shader* ShaderLoader::LoadStandardShader()
         return nullptr;
     
     Shader *newShader = LoadShader("GameEngine",
-            "my_shaders/main_shader/GameEngine.VS.glsl",
-            "my_shaders/main_shader/GameEngine.FS.glsl");
+            "Shaders/GameEngine.VS.glsl",
+            "Shaders/GameEngine.FS.glsl",
+            true);
     
     ShaderResourceManager::AddShader("GameEngine", newShader);
-    newShader->shaderParams.ints["is_scrolling"] = 0;
-    newShader->shaderParams.vec2s["scroll_amount"] = glm::vec2(0.0f, 0.0f);
+    newShader->shaderParams.ints["use_texture"] = 1;
+    newShader->shaderParams.ints["is_helicopter"] = 0;
+    newShader->shaderParams.ints["ignore_water"] = 0;
     newShader->shaderParams.floats["time_of_day"] = 1.0f;
+    newShader->shaderParams.floats["bend_factor"] = 0.003f;
+    newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadHeightMapShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_HEIGHT_MAP) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_HEIGHT_MAP,
+            "Shaders/HeightMap/HeightMap.VS.glsl",
+            "Shaders/HeightMap/HeightMap.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_HEIGHT_MAP, newShader);
+    newShader->shaderParams.ints["use_texture"] = 1;
+    newShader->shaderParams.floats["time_of_day"] = 1.0f;
+    newShader->shaderParams.floats["bend_factor"] = 0.003f;
+    newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadSkyboxShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SKYBOX) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_SKYBOX,
+            "Shaders/Skybox/Skybox.VS.glsl",
+            "Shaders/Skybox/Skybox.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_SKYBOX, newShader);
+    newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadTreeShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_TREE) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_TREE,
+            "Shaders/GameEngine.VS.glsl",
+            "Shaders/Tree/Tree.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_TREE, newShader);
+    newShader->shaderParams.ints["use_texture"] = 1;
+    newShader->shaderParams.ints["is_helicopter"] = 0;
+    newShader->shaderParams.ints["ignore_water"] = 0;
+    newShader->shaderParams.floats["time_of_day"] = 1.0f;
+    newShader->shaderParams.floats["bend_factor"] = 0.003f;
+    newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
 
     return newShader;
 }
@@ -95,19 +173,22 @@ Shader* ShaderLoader::LoadStandardShader()
 Shader* ShaderLoader::LoadShader(
     const std::string& shaderName,
     const std::string& vertexShaderPath,
-    const std::string& fragmentShaderPath)
+    const std::string& fragmentShaderPath,
+    bool useAssetsFolder)
 {
     // Check if the name exists
     if (ShaderResourceManager::GetShader(shaderName) != nullptr)
         return nullptr;
     
     // Set the source directory
-    const string sourceTextureDir = PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::SHADERS);
+    const string sourceTextureDir = useAssetsFolder ?
+        PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS) :
+        PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::SHADERS);
 
     // Create a shader program for drawing face polygon with the color of the normal
     Shader* newShader = new Shader(shaderName);
-    newShader->AddShader(PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::SHADERS, vertexShaderPath), GL_VERTEX_SHADER);
-    newShader->AddShader(PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::SHADERS, fragmentShaderPath), GL_FRAGMENT_SHADER);
+    newShader->AddShader(PATH_JOIN(sourceTextureDir, vertexShaderPath), GL_VERTEX_SHADER);
+    newShader->AddShader(PATH_JOIN(sourceTextureDir, fragmentShaderPath), GL_FRAGMENT_SHADER);
     newShader->CreateAndLink();
     
     ShaderResourceManager::AddShader(shaderName, newShader);

@@ -141,6 +141,8 @@ Transform* Transform::Instantiate(Transform* transform)
         curr->Awake();
     }
 
+    transform->UpdateChildren();
+
     return transform;
 }
 

@@ -30,7 +30,10 @@ MeshRenderer::MeshRenderer(
     this->debugOnly = debugOnly;
     this->renderInWorldSpace = renderInWorldSpace;
     this->layer = layer;
-    this->texture = nullptr;
+    this->texture1 = nullptr;
+    this->texture2 = nullptr;
+    this->texture3 = nullptr;
+    this->texture4 = nullptr;
     this->material = material;
     this->materialOverrides = nullptr;
 }
@@ -46,7 +49,22 @@ void MeshRenderer::SetColor(glm::vec4 newColor)
 
 void MeshRenderer::SetTexture(rendering::Texture* newTexture)
 {
-    this->texture = newTexture;
+    this->texture1 = newTexture;
+}
+
+void MeshRenderer::SetTexture2(rendering::Texture* newTexture)
+{
+    this->texture2 = newTexture;
+}
+
+void MeshRenderer::SetTexture3(rendering::Texture* newTexture)
+{
+    this->texture3 = newTexture;
+}
+
+void MeshRenderer::SetTexture4(rendering::Texture* newTexture)
+{
+    this->texture4 = newTexture;
 }
 
 void MeshRenderer::SetTextureScale(glm::vec2 newTexScale)

@@ -70,6 +70,9 @@ namespace component
 
         void SetColor(glm::vec4 newColor);
         void SetTexture(rendering::Texture* newTexture);
+        void SetTexture2(rendering::Texture* newTexture);
+        void SetTexture3(rendering::Texture* newTexture);
+        void SetTexture4(rendering::Texture* newTexture);
         void SetTextureScale(glm::vec2 newTexScale);
         void SetMaterialOverrides(rendering::MaterialOverrides* materialOverrides);
 
@@ -99,7 +102,10 @@ namespace component
         bool generateMesh = true;
         SERIALIZE_FIELD bool renderInWorldSpace = true;
         SERIALIZE_FIELD LayerEnum layer = Default;
-        SERIALIZE_FIELD rendering::Texture* texture = nullptr;
+        SERIALIZE_FIELD rendering::Texture* texture1 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* texture2 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* texture3 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* texture4 = nullptr;
         SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
         SERIALIZE_FIELD rendering::Material* material = nullptr;

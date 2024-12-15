@@ -57,6 +57,9 @@ namespace prefabManager
         static transform::Transform* CreatePresent(transform::Transform* parent);
         static transform::Transform* CreateUI(transform::Transform* parent);
         static transform::Transform* CreateShaderParams(transform::Transform* parent);
+        static transform::Transform* CreateMarker(transform::Transform* parent = nullptr);
+        static transform::Transform* CreateFractalTreeRoot(transform::Transform* parent);
+        static transform::Transform* CreateFractalTreeSegment(transform::Transform* parent);
 
     private:
         PrefabManager() {}

@@ -16,12 +16,14 @@ namespace rendering
     class RenderingSystem
     {
     public:
-        void Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam, glm::ivec2 resolution, bool renderText = true);
+        void Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam, glm::ivec2 resolution, bool isInPlayMode, bool isInGameView, bool renderText = true);
         
     private:
         void SetGlobalUniforms(
             ShaderBase* shader,
-            component::Camera* cam
+            component::Camera* cam,
+            bool isInGameView,
+            bool isInPlayMode
         );
         void SetLocalUniforms(ShaderBase* shader,
             component::MeshRenderer* meshRenderer,

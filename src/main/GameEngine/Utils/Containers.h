@@ -16,6 +16,7 @@ namespace utils
         void SetResolution(glm::ivec2 resolution);
 
         unsigned int GetColorTextureID() const;
+        unsigned int GetSelectionTextureID() const;
 
     private:
         void CreateFrameBuffer(glm::ivec2 resolution);
@@ -26,6 +27,7 @@ namespace utils
         unsigned int fbo = 0;
         unsigned int colorTexture = 0;
         unsigned int depthTexture = 0;
+        unsigned int selectionTexture = 0;
 
         glm::ivec2 currentResolution = {0, 0};
     };

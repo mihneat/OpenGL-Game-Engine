@@ -13,6 +13,9 @@ namespace rendering
     enum ShaderType
     {
         Standard,
+        Tree,
+        HeightMap,
+        Skybox,
         Simple,
         Color,
         VertexNormal,
@@ -23,7 +26,6 @@ namespace rendering
     {
     public:
         Shader(const std::string& name) : ShaderBase(name) { }
-        // Shader(const std::string& name) { ShaderBase(name); }
 
         ShaderParams shaderParams;
 
@@ -39,7 +41,12 @@ namespace rendering
         // int GetInt(const std::string& name) { return ints[name]; }
         // float GetFloat(const std::string& name) { return floats[name]; }
         // glm::vec3 GetVec3(const std::string& name) { return vec3s[name]; }
+        
+        bool UpdateInt(const std::string& param, int value);
+        bool UpdateFloat(const std::string& param, float value);
+        bool UpdateVec2(const std::string& param, glm::vec2 value);
+        bool UpdateVec3(const std::string& param, glm::vec3 value);
 
-       friend class RenderingSystem;
+        friend class RenderingSystem;
     };
 }

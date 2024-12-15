@@ -25,11 +25,14 @@ namespace loaders
         static rendering::Shader* LoadShader(
             const std::string& shaderName,
             const std::string& vertexShaderPath,
-            const std::string& fragmentShaderPath
+            const std::string& fragmentShaderPath,
+            bool useAssetsFolder = false
         );
 
     private:
         static rendering::Shader* LoadStandardShader();
-        
+        static rendering::Shader* LoadHeightMapShader();
+        static rendering::Shader* LoadSkyboxShader();
+        static rendering::Shader* LoadTreeShader();
     };
 }   // namespace loaders

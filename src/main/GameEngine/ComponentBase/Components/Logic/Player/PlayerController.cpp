@@ -33,9 +33,9 @@ void PlayerController::Start()
 
 	// TODO: Database access until serialization of vectors
 	// Add the player skins
-	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player2));
-	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player));
-	skins.push_back(TextureLoader::GetTextureByEnum(TextureLoader::Player3));
+	skins.push_back(TextureLoader::GetTextureByName("Player2"));
+	skins.push_back(TextureLoader::GetTextureByName("Player"));
+	skins.push_back(TextureLoader::GetTextureByName("Player3"));
 	ChangeSkin();
 }
 
