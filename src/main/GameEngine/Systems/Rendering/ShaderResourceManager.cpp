@@ -9,6 +9,8 @@ const std::string ShaderResourceManager::SHADER_HEIGHT_MAP = "HeightMap";
 const std::string ShaderResourceManager::SHADER_SKYBOX = "Skybox";
 const std::string ShaderResourceManager::SHADER_TREE = "Tree";
 const std::string ShaderResourceManager::SHADER_MINIMAP = "Minimap";
+const std::string ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE = "ViewColorTexture";
+const std::string ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE = "ViewDepthTexture";
 const std::string ShaderResourceManager::SHADER_SIMPLE = "Simple";
 const std::string ShaderResourceManager::SHADER_COLOR = "Color";
 

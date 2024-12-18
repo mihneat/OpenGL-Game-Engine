@@ -10,6 +10,7 @@ namespace rendering
     class ShaderResourceManager
     {
     public:
+        static const std::string SHADER_VIEW_COLOR_TEXTURE;
         static Shader* GetShader(const std::string& shaderName);
         static void ReloadShaders();
     
@@ -22,6 +23,7 @@ namespace rendering
         static const std::string SHADER_SKYBOX;
         static const std::string SHADER_TREE;
         static const std::string SHADER_MINIMAP;
+        static const std::string SHADER_VIEW_DEPTH_TEXTURE;
         static const std::string SHADER_SIMPLE;
         static const std::string SHADER_COLOR;
     

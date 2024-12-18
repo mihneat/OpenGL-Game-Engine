@@ -9,7 +9,7 @@ using namespace component;
 void SceneCamera::UpdateValues(glm::vec2 resolution)
 {
     // Override WindowResize perspective update of parent
-    SetProjection(60.0f, resolution.x / resolution.y);
+    SetPerspective(60.0f, resolution.x / resolution.y);
 }
 
 void SceneCamera::InputUpdate(float deltaTime, int mods)

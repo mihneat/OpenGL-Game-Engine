@@ -6,13 +6,19 @@
 #include "MeshResourceManager.h"
 #include "ShaderResourceManager.h"
 #include "main/GameEngine/GameEngine.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 #include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
 
 using namespace rendering;
 using namespace loaders;
 
 void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam,
-                             const glm::ivec2 resolution, bool isInPlayMode, bool isInGameView, bool renderText)
+                             component::Camera* shadowCam, int shadowDepthTextureId, bool isShadowPass, const glm::ivec2 resolution, bool isInPlayMode, bool isInGameView, bool renderText)
 {
     // Clear rendering state
     meshesByShader.clear();
@@ -53,14 +59,14 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
         Shader* shader = shaderMeshes.first;
         shader->Use();
 
-        SetGlobalUniforms(shader, cam, isInGameView, isInPlayMode);
+        SetGlobalUniforms(shader, cam, shadowCam, isInGameView, isInPlayMode, isShadowPass);
 
         for (auto meshRenderer : shaderMeshes.second)
         {
             const Material* material = meshRenderer->GetMaterial();
 
             // Set the uniforms
-            SetLocalUniforms(material->shader, meshRenderer, cam, resolution);
+            SetLocalUniforms(material->shader, meshRenderer, cam, shadowDepthTextureId, resolution);
             
             SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
             
@@ -84,8 +90,10 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
     component::Camera* cam,
+    component::Camera* shadowCam,
     bool isInGameView,
-    bool isInPlayMode
+    bool isInPlayMode,
+    bool isShadowPass
 )
 {
     const GLint eye_position = glGetUniformLocation(shader->program, "eye_position");
@@ -97,8 +105,17 @@ void RenderingSystem::SetGlobalUniforms(
     const GLint is_in_play_mode = glGetUniformLocation(shader->program, "is_in_play_mode");
     glUniform1i(is_in_play_mode, isInPlayMode);
     
+    const GLint is_shadow_pass = glGetUniformLocation(shader->program, "is_shadow_pass");
+    glUniform1i(is_shadow_pass, isShadowPass);
+    
     const GLint time = glGetUniformLocation(shader->program, "time");
     glUniform1f(time, Engine::GetElapsedTime());
+
+    const GLint light_space_view = glGetUniformLocation(shader->program, "light_space_view");
+    glUniformMatrix4fv(light_space_view, 1, GL_FALSE, glm::value_ptr(shadowCam->GetViewMatrix()));
+
+    const GLint light_space_projection = glGetUniformLocation(shader->program, "light_space_projection");
+    glUniformMatrix4fv(light_space_projection, 1, GL_FALSE, glm::value_ptr(shadowCam->GetProjectionMatrix()));
 
     // Send light information
     static std::vector<std::string> lightIsUsedStrings;
@@ -164,6 +181,7 @@ void RenderingSystem::SetLocalUniforms(
     ShaderBase* shader,
     component::MeshRenderer* meshRenderer,
     component::Camera* cam,
+    int shadowDepthTextureId,
     glm::ivec2 resolution
 )
 {
@@ -209,6 +227,10 @@ void RenderingSystem::SetLocalUniforms(
         glBindTexture(GL_TEXTURE_2D, meshRenderer->texture4->GetTextureID());
         glUniform1i(glGetUniformLocation(shader->program, "texture_4"), 4);
     }
+    
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_2D, shadowDepthTextureId);
+        glUniform1i(glGetUniformLocation(shader->program, "depth_texture"), 7);
 
     // Send texture scale
     glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(meshRenderer->texScale));

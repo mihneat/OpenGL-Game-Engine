@@ -15,6 +15,8 @@ void ShaderLoader::InitShaders()
     LoadShaderFromType(HeightMap);
     LoadShaderFromType(Skybox);
     LoadShaderFromType(Minimap);
+    LoadShaderFromType(ViewColorTexture);
+    LoadShaderFromType(ViewDepthTexture);
     LoadShaderFromType(Simple);
     LoadShaderFromType(Color);
     LoadShaderFromType(VertexNormal);
@@ -67,6 +69,14 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
         
     case Minimap:
         newShader = LoadMinimapShader();
+        break;
+        
+    case ViewColorTexture:
+        newShader = LoadViewColorTextureShader();
+        break;
+        
+    case ViewDepthTexture:
+        newShader = LoadViewDepthTextureShader();
         break;
 
     case Simple:
@@ -191,6 +201,38 @@ Shader* ShaderLoader::LoadMinimapShader()
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_MINIMAP, newShader);
     newShader->shaderParams.ints["draw_heightmap"] = 0;
     newShader->shaderParams.floats["time_of_day"] = 1.0f;
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadViewDepthTextureShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE,
+            "Shaders/Shadows/ViewDepthTexture.VS.glsl",
+            "Shaders/Shadows/ViewDepthTexture.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE, newShader);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadViewColorTextureShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE,
+            "Shaders/Shadows/ViewColorTexture.VS.glsl",
+            "Shaders/Shadows/ViewColorTexture.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE, newShader);
 
     return newShader;
 }

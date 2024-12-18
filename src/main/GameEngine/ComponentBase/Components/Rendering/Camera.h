@@ -33,7 +33,7 @@ namespace component
             // TODO: Probably move to Awake()
             // Set(transform->GetLocalPosition(), center + glm::vec3(0.1, 0.0, 0.0), up);
             distanceToTarget = glm::distance(center, transform->GetLocalPosition());
-            SetProjection(60, 16.0f / 9.0f);
+            SetPerspective(60, 16.0f / 9.0f);
 
             for (int i = 0; i < (int)layers.size(); ++i) {
                 this->layers.insert(layers[i]);
@@ -48,8 +48,8 @@ namespace component
 
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
-        void SetProjection(const float fov, const float aspectRatio);
-        void SetOrthographic(const float width, const float height);
+        void SetPerspective(const float fov, const float aspectRatio);
+        void SetOrthographic(const float width, const float height, const float zNear = 0.01f, const float zFar = 5000.0f);
 
         void MoveForward(float distance);
 
@@ -94,6 +94,6 @@ namespace component
 
         std::unordered_set<int> layers;
 
-        bool isProjection = false;
+        bool isPerspective = false;
     };
 }

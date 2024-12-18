@@ -16,6 +16,7 @@ namespace utils
         void SetResolution(glm::ivec2 resolution);
 
         unsigned int GetColorTextureID() const;
+        unsigned int GetDepthTextureID() const;
         unsigned int GetSelectionTextureID() const;
 
     private:

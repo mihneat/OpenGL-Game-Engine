@@ -59,6 +59,11 @@ unsigned int FBOContainer::GetColorTextureID() const
     return colorTexture;
 }
 
+unsigned FBOContainer::GetDepthTextureID() const
+{
+    return depthTexture;
+}
+
 unsigned int FBOContainer::GetSelectionTextureID() const
 {
     return selectionTexture;

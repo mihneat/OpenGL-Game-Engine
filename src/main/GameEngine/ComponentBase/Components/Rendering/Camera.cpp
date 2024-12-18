@@ -106,16 +106,16 @@ void Camera::RotateThirdPerson_OZ(float angle)
 
 }
 
-void Camera::SetProjection(const float fov, const float aspectRatio)
+void Camera::SetPerspective(const float fov, const float aspectRatio)
 {
-    isProjection = true;
+    isPerspective = true;
     projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 5000.0f);
 }
 
-void Camera::SetOrthographic(const float width, const float height)
+void Camera::SetOrthographic(const float width, const float height, const float zNear, const float zFar)
 {
-    isProjection = false;
-    projectionMatrix = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, 0.01f, 5000.0f);
+    isPerspective = false;
+    projectionMatrix = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, zNear, zFar);
 }
 
 glm::mat4 Camera::GetViewMatrix()
@@ -139,9 +139,9 @@ void Camera::WindowResize(int width, int height)
     if (autoResize) {
         viewportWidthHeight = glm::vec2(width, height);
 
-        if (isProjection)
+        if (isPerspective)
         {
-            SetProjection(60.0f, 1.0f * width / (1.0f * height));
+            SetPerspective(60.0f, 1.0f * width / (1.0f * height));
         } else
         {
             SetOrthographic(width, height);

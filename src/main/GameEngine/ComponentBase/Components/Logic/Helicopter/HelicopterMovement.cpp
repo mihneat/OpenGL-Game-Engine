@@ -65,7 +65,7 @@ void HelicopterMovement::MouseBtnPress(int mouseX, int mouseY, int button, int m
     
     // Do a bit of hacking to get this working :)
     glm::vec4 selectionData = m1::GameEngine::ExtractSelectionData(mouseX, mouseY);
-    std::cout << "New selection data: " << selectionData << "\n";
+    // std::cout << "New selection data: " << selectionData << "\n";
 
     // Ignore background clicks
     if (glm::length(glm::vec3(selectionData)) < 0.001f)

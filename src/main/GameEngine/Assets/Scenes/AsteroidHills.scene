@@ -359,14 +359,14 @@
             {
               "name": "intensity",
               "type": "FieldTypeFloat",
-              "value": 1.1799999475479126
+              "value": 1.5
             },
             {
               "name": "position",
               "type": "FieldTypeVec3",
               "value": {
                 "x": 0.0,
-                "y": 106.9800033569336,
+                "y": 0.0,
                 "z": 0.0
               }
             },
@@ -384,9 +384,9 @@
               "name": "direction",
               "type": "FieldTypeVec3",
               "value": {
-                "x": -0.9399999976158142,
-                "y": -1.0,
-                "z": 1.4800000190734863
+                "x": -0.5,
+                "y": -0.5,
+                "z": 0.5
               }
             }
           ]
@@ -2191,6 +2191,84 @@
         }
       ],
       "children": []
+    },
+    {
+      "name": "UI",
+      "tag": "Default",
+      "position": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "components": [],
+      "children": [
+        {
+          "name": "Trees Text",
+          "tag": "TreesText",
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          },
+          "components": [
+            {
+              "className": "TextRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "scale",
+                  "type": "FieldTypeFloat",
+                  "value": 1.440000057220459
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.30882352590560913,
+                    "g": 0.9390137791633606,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "text",
+                  "type": "FieldTypeString",
+                  "value": "Trees collected: 0"
+                },
+                {
+                  "name": "position",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 18.31999969482422,
+                    "y": 18.239999771118164
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        }
+      ]
     }
   ]
 }

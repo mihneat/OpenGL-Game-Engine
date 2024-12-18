@@ -65,7 +65,7 @@ Transform* PrefabManager::CreateCamera(Transform* parent, Transform* player, con
     camera->AddComponent(camComponent);
     camera->AddComponent(new CameraFollow(camera, player, 100.0f, 65.0f)); // Initial: 100.0f, 55.0f
 
-    camComponent->SetProjection(60, aspectRatio);
+    camComponent->SetPerspective(60, aspectRatio);
 
     return camera;
 }

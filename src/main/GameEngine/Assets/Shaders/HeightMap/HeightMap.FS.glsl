@@ -41,11 +41,29 @@ uniform sampler2D texture_1;
 uniform sampler2D texture_2;
 uniform sampler2D texture_3;
 uniform sampler2D texture_4;
+uniform sampler2D depth_texture;
 //uniform sampler2D texture_normal;
 
 uniform vec4 mesh_color;
 
 uniform float time;
+
+uniform mat4 light_space_view;
+uniform mat4 light_space_projection;
+
+uniform int is_shadow_pass;
+
+uniform vec3 helicopter_position;
+
+const float G_SCATTERING = -0.3f;
+
+// Mie scattering approximated with Henyey-Greenstein phase function
+float compute_scattering(float cosAngle)
+{
+    float result = 1.0f - G_SCATTERING * G_SCATTERING;
+    result /= (4.0f * 3.14 * pow(1.0f + G_SCATTERING * G_SCATTERING - (2.0f * G_SCATTERING) * cosAngle, 1.5f));
+    return result;
+}
 
 float sun_light_contribution(light_source light)
 {
@@ -157,13 +175,67 @@ float point_light_contribution(light_source light)
 
 float get_fog_factor(float dist)
 {
-    const float fog_max = 500.0;
+    const float fog_max = 200.0;
     const float fog_min = 20.0;
 
     if (dist >= fog_max) return 1;
     if (dist <= fog_min) return 0;
 
     return 1 - (fog_max - dist) / (fog_max - fog_min);
+}
+
+bool is_illuminated(vec3 point_position, float bias)
+{
+    vec4 light_space_pos = light_space_projection * light_space_view * vec4 (point_position, 1.0f);
+
+    light_space_pos = light_space_pos / light_space_pos.w;
+
+    float light_space_depth = light_space_pos.z * 0.5f + 0.5f;
+
+    vec2 depth_map_pos = light_space_pos.xy * 0.5f + 0.5f;
+
+    bvec2 a = greaterThan(depth_map_pos, vec2(1.0, 1.0));
+    bvec2 b = lessThan(depth_map_pos, vec2(0.0, 0.0));
+
+    if (any(bvec2(any(a), any(b)))) {
+        return false;
+    }
+
+    float depth = texture(depth_texture, depth_map_pos).x;
+
+    return light_space_depth - bias < depth;
+}
+
+float shadow_factor()
+{
+    return is_illuminated(world_position, 0.01f) ? 1.0f : 0.0f;
+}
+
+float volumetric_illumination(vec3 light_direction)
+{
+    vec3 ray_direction = world_position - eye_position;
+
+    int illuminated_samples_count = 0;
+    int sample_count = 0;
+
+    vec3 point_position = eye_position;
+    // TODO(student): Sample several hundreds of points between the
+    // observer's coordinate and the world-space coordinate of the
+    // point rendered in the current fragment. Quantify the number of
+    // sampled points that are illuminated by the spot light source,
+    // IsIlluminated() and the number of sampled points in total.
+    for (int i = 0; i < 100; ++i) {
+        vec3 sample_position = mix(point_position, world_position, i * 1.0f / 99.9f); // eye_position + ray_direction * i;
+
+        if (is_illuminated(sample_position, 0.02f))
+        illuminated_samples_count++;
+
+        sample_count++;
+    }
+
+    float scattering = compute_scattering(dot(normalize(ray_direction), light_direction));
+
+    return scattering * illuminated_samples_count / sample_count * 5;
 }
 
 vec3 get_light_contribution()
@@ -182,6 +254,8 @@ vec3 get_light_contribution()
           light += point_light_contribution(lights[i]) * lights[i].color;
         }
     }
+    
+    light *= shadow_factor();
 
     float material_kd = 0.9;
     float global_ambiental_color = 0.9;
@@ -238,9 +312,14 @@ void main()
     vec4 lit_vertex = vec4(light * tex.xyz * mesh_color.xyz, 1);
 
     // Apply fog calculations and output them
-    float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
+    // float alpha = (render_fog == true) ? get_fog_factor(distance(eye_position, world_position)) : 0.0;
+    float alpha = get_fog_factor(distance(helicopter_position, world_position));
     out_color = mix(lit_vertex, fog_color, alpha);
     
     out_selection = vec4(selection_color, 0);
+
+    // This is for the ortho camera to generate a depth map
+    //    if (is_shadow_pass)
+    //        gl_FragDepth = world_position.z;
 }
 

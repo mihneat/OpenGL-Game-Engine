@@ -31,10 +31,18 @@ void component::FractalTreeSegment::Start()
     // Initialize more branches
     for (int i = 0; i < 3; ++i)
     {
+        const float shouldSkipChance = rand() % 1001 / 10.0f;
+        if (shouldSkipChance < 1.05f)
+            continue;
+        
+        const float maxLowerHeight = rand() % 100 / 100.0f * 6.0f;
+        const float maxExtraRotation = rand() % 100 / 100.0f * 40.0f - 20.0f;
+        const float maxExtraRotation2 = rand() % 100 / 100.0f * 30.0f - 15.0f;
+        
         const auto newBranch = transform::Transform::Instantiate(prefabManager::PrefabManager::CreateFractalTreeSegment(transform));
         newBranch->GetComponent<FractalTreeSegment>()->Init(remainingLevels - 1, selectionValue);
-        newBranch->Translate(glm::vec3(0, 18, 0));
-        newBranch->Rotate(glm::vec3(0, i * 1.0f * glm::radians(120.0f), glm::radians(30.0f)));
+        newBranch->Translate(glm::vec3(0.0f, 19.0f - maxLowerHeight, 0.0f));
+        newBranch->Rotate(glm::vec3(0, i * 1.0f * glm::radians(120.0f + maxExtraRotation), glm::radians(30.0f + maxExtraRotation2)));
         newBranch->SetScale(transform->GetLocalScale() * glm::vec3(0.85f, 0.95f, 0.85f));
     }
 

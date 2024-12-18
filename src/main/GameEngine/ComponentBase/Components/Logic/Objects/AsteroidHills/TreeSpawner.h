@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/ComponentBase/Components/Rendering/TextRenderer.h"
 
 namespace component
 {
@@ -23,6 +24,8 @@ namespace component
 
         float currSelectionValue = 1.1f;
         std::unordered_map<int, transform::Transform*> spawnedTrees;
-        
+
+        int collectedTrees = 0;
+        TextRenderer* treesTextRenderer = nullptr;
     };
 }

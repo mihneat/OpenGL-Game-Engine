@@ -17,6 +17,8 @@ namespace rendering
         HeightMap,
         Skybox,
         Minimap,
+        ViewColorTexture,
+        ViewDepthTexture,
         Simple,
         Color,
         VertexNormal,

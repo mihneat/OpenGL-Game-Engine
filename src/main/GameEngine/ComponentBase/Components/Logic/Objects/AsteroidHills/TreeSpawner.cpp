@@ -6,6 +6,8 @@
 
 void component::TreeSpawner::Start()
 {
+    treesTextRenderer = transform->GetTransformByTag("TreesText")->GetComponent<TextRenderer>();
+    
     for (int i = 0; i < maxTrees; ++i)
         GenerateTree();
 }
@@ -37,17 +39,21 @@ void component::TreeSpawner::MouseBtnPress(int mouseX, int mouseY, int button, i
         return;
     
     glm::vec4 selectionData = m1::GameEngine::ExtractSelectionData(mouseX, mouseY);
-    std::cout << "Selected entity with value: " << selectionData << "\n";
+    // std::cout << "Selected entity with value: " << selectionData << "\n";
 
     int selectionIndex = ComputeSelectionIndex(selectionData.a);
     if (spawnedTrees.find(selectionIndex) == spawnedTrees.end())
         return;
 
-    std::cout << "Found a tree!\n";
+    // std::cout << "Found a tree!\n";
 
     transform::Transform::Destroy(spawnedTrees[selectionIndex]);
     spawnedTrees.erase(spawnedTrees.find(selectionIndex));
 
     // Create a new tree
     GenerateTree();
+
+    // Update the score
+    collectedTrees++;
+    treesTextRenderer->SetText(std::string("Trees collected: ").append(std::to_string(collectedTrees)));
 }

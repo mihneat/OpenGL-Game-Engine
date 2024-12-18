@@ -23,6 +23,8 @@ uniform float bend_factor;
 uniform int is_in_game_view;
 uniform int is_in_play_mode;
 
+uniform int is_shadow_pass;
+
 // Output
 out vec3 frag_normal;
 out vec3 frag_color;
@@ -49,8 +51,24 @@ void main()
     
     selection_color = vec3(new_local_pos.x, 0, new_local_pos.z);
     
+    // Compute the normal
+    vec2 up_sample_pos = tex_scale * (v_texture_coord + vec2(0, 0.01f));
+    vec2 down_sample_pos = tex_scale * (v_texture_coord + vec2(0, -0.01f));
+    vec2 left_sample_pos = tex_scale * (v_texture_coord + vec2(-0.01f, 0));
+    vec2 right_sample_pos = tex_scale * (v_texture_coord + vec2(0.01f, 0));
+    
+    float up_sample = max(texture2D(texture_2, up_sample_pos).r, water_level);
+    float down_sample = max(texture2D(texture_2, down_sample_pos).r, water_level);
+    float left_sample = max(texture2D(texture_2, left_sample_pos).r, water_level);
+    float right_sample = max(texture2D(texture_2, right_sample_pos).r, water_level);
+
+    vec3 vertical_vector = normalize(vec3(down_sample_pos.x, down_sample, down_sample_pos.y) - vec3(up_sample_pos.x, up_sample, up_sample_pos.y));
+    vec3 horizontal_vector = normalize(vec3(left_sample_pos.x, left_sample, left_sample_pos.y) - vec3(right_sample_pos.x, right_sample, right_sample_pos.y));
+    
+    vec3 new_normal = cross(vertical_vector, horizontal_vector);
+    
     world_position = new_local_pos;
-    world_normal = normalize(mat3(Model) * v_normal);
+    world_normal = normalize(mat3(Model) * new_normal);
 
     if (is_in_play_mode == 1) {
         // Curve the terrain
@@ -60,9 +78,14 @@ void main()
 
     selection_color = vec3(new_local_pos.x, 0, new_local_pos.z);
     
-    frag_normal = v_normal;
+    frag_normal = new_normal;
     frag_color = v_color;
     tex_coord = v_texture_coord;
+
+    if (is_shadow_pass == 1) {
+        gl_Position = Projection * View * vec4(world_position, 1.0);
+        return;
+    }
 
     gl_Position = Projection * View * vec4(new_local_pos, 1.0);
 }

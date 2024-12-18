@@ -26,6 +26,8 @@ uniform int is_in_play_mode;
 
 uniform int ignore_water;
 
+uniform int is_shadow_pass;
+
 // Output
 out vec3 frag_position;
 out vec3 frag_normal;
@@ -78,6 +80,11 @@ void main()
     frag_normal = v_normal;
     frag_color = v_color;
     tex_coord = v_texture_coord;
+
+    if (is_shadow_pass == 1) {
+        gl_Position = Projection * View * vec4(world_position, 1.0);
+        return;
+    }
 
     gl_Position = Projection * View * vec4(new_local_pos, 1.0);
 }

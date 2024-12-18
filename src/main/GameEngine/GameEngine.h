@@ -13,6 +13,8 @@
 
 #include <stack>
 
+#include "Utils/Containers.h"
+
 namespace component
 {
     class SceneCamera;
@@ -37,6 +39,7 @@ namespace m1
         ~GameEngine();
 
         void Init() override;
+        void CreateShadowMappingCamera();
 
         void HandleSceneLoaded(transform::Transform* root);
 
@@ -64,7 +67,9 @@ namespace m1
         void UpdateGameLogic(float deltaTimeSeconds);
         void RenderGameView();
         void RenderSceneView();
-        
+        void DrawFramebufferTextures(utils::FBOContainer* container);
+        void RenderTextureScreen(rendering::Shader* shader, unsigned textureID);
+
         void ReloadScene();
 
     public:
@@ -98,6 +103,12 @@ namespace m1
     private:
         rendering::RenderingSystem* renderingSystem;
         component::SceneCamera* sceneCamera;
+
+        utils::FBOContainer shadowMapFBOContainer;
+        component::Camera* shadowMappingCamera;
+
+        bool drawDebugShadowMappingTextures = true;
+        component::MeshRenderer* drawPlane = nullptr;
 
     };
 }   // namespace m1

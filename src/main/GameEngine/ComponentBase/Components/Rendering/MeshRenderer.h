@@ -121,6 +121,7 @@ namespace component
         void LoadMesh(const std::string name, const std::string path);
 
         friend class rendering::RenderingSystem;
+        friend class m1::GameEngine;
         
     };
 }   // namespace component

@@ -21,6 +21,8 @@
 #include "Systems/Editor/EditorRuntimeSettings.h"
 #include "Systems/Editor/SceneCamera.h"
 #include "Systems/Rendering/MaterialManager.h"
+#include "Systems/Rendering/MeshResourceManager.h"
+#include "Systems/Rendering/ShaderResourceManager.h"
 
 using namespace std;
 using namespace m1;
@@ -63,6 +65,9 @@ void GameEngine::Init()
     textRenderer = new gfxc::TextRenderer(FileSystem::rootDirectory, resolution.x, resolution.y);
     textRenderer->Load(PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::FONTS, "Hack-Bold.TTF"), 30);
 
+    shadowMapFBOContainer.SetResolution(glm::ivec2(4096));
+    CreateShadowMappingCamera();
+
     // Create the GameInstance singleton by retrieving it
     managers::GameInstance::Get();
 
@@ -77,6 +82,20 @@ void GameEngine::Init()
     ReloadScene();
 }
 
+void GameEngine::CreateShadowMappingCamera()
+{
+    // Create the shadow mapping camera
+    Transform* shadowMappingTransform = new Transform();
+    shadowMappingTransform->Translate(glm::vec3(-250, 300, -250));
+    
+    shadowMappingCamera = new Camera(shadowMappingTransform);
+    shadowMappingTransform->AddComponent(shadowMappingCamera);
+    
+    shadowMappingCamera->SetOrthographic(1500, 1500, 0.01f, 2000.0f);
+    shadowMappingCamera->RotateFirstPerson_OX(glm::radians(45.0f));
+    shadowMappingCamera->RotateFirstPerson_OY(glm::radians(45.0f));
+}
+
 void GameEngine::CreateSceneCamera()
 {
     // Create the scene camera
@@ -85,7 +104,7 @@ void GameEngine::CreateSceneCamera()
     
     sceneCamera = new SceneCamera(sceneCamTransform);
     sceneCamTransform->AddComponent(sceneCamera);
-    sceneCamera->SetProjection(60, 16.0f / 9.0f);
+    sceneCamera->SetPerspective(60, 16.0f / 9.0f);
 }
 
 void GameEngine::SaveSceneToFile()
@@ -232,9 +251,19 @@ void GameEngine::RenderGameView()
     // Quit out early if no cameras are rendering
     if (mainCam == nullptr)
         return;
-    
+
+    // Use the Shadow framebuffer to render the shadows :)
+    shadowMapFBOContainer.Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glViewport(0, 0, 4096, 4096);
+
+    // Render the scene through the sun's eyes
+    renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+        true, glm::ivec2(4096), GUIManager::GetInstance()->IsGamePlaying(), true, false);
+
     // Get the game FBO container
-    const utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetGameFBOContainer();
+    utils::FBOContainer* fboContainer = GUIManager::GetInstance()->GetGameFBOContainer();
     fboContainer->Bind();
     
     // Update rendering components
@@ -246,7 +275,8 @@ void GameEngine::RenderGameView()
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderingSystem->Render(hierarchy, textRenderer, mainCam, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
+    renderingSystem->Render(hierarchy, textRenderer, mainCam, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+        false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
 
     // Render secondary cameras
     for (const auto cam : secondaryCams) {
@@ -255,8 +285,12 @@ void GameEngine::RenderGameView()
         glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
             (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        renderingSystem->Render(hierarchy, textRenderer, cam, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
+        renderingSystem->Render(hierarchy, textRenderer, cam, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+            false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true, false);
     }
+
+    if (drawDebugShadowMappingTextures)
+        DrawFramebufferTextures(&shadowMapFBOContainer);
 
     // Upload FBO data to the texture
     // fboContainer->UploadDataToTexture();
@@ -287,10 +321,53 @@ void GameEngine::RenderSceneView()
     
     sceneCamera->UpdateValues(fboContainer->GetResolution());
 
-    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), false, false);
+    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+        false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), false, false);
+}
 
-    // Upload FBO data to the texture
-    // fboContainer->UploadDataToTexture();
+void GameEngine::DrawFramebufferTextures(utils::FBOContainer* container)
+{
+    // Render the color texture on the screen
+    glViewport(20, 20, 200, 200);
+
+    RenderTextureScreen(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE), container->GetColorTextureID());
+
+    // Render the depth texture on the screen
+    glViewport(220, 20, 200, 200);
+
+    RenderTextureScreen(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE), container->GetDepthTextureID());
+}
+
+void GameEngine::RenderTextureScreen(Shader *shader, unsigned int textureID)
+{
+    if (!shader || !shader->GetProgramID())
+        return;
+
+    // Render an object using the specified shader and the specified position
+    glUseProgram(shader->program);
+
+    // Set uniforms for near and far plane of the
+    // projection transformation in the light space
+    GLint loc_light_space_near_plane = glGetUniformLocation(shader->program, "light_space_near_plane");
+    glUniform1f(loc_light_space_near_plane, 0.01);
+
+    GLint loc_light_space_far_plane = glGetUniformLocation(shader->program, "light_space_far_plane");
+    glUniform1f(loc_light_space_far_plane, 2000.0f);
+
+    // Set texture uniform
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 1);
+
+    // Draw the object
+    if (drawPlane == nullptr)
+    {
+        drawPlane = new MeshRenderer(nullptr, MeshRenderer::Square, "Square");
+        drawPlane->MeshFactory();
+    }
+    
+    const Mesh *mesh = MeshResourceManager::meshes[std::to_string(drawPlane->meshType)];
+    mesh->Render();
 }
 
 // This function does something apparently
@@ -373,6 +450,14 @@ void GameEngine::OnInputUpdate(float deltaTime, int mods)
 
 void GameEngine::OnKeyPress(int key, int mods)
 {
+    if (key == GLFW_KEY_F1) {
+        drawDebugShadowMappingTextures = !drawDebugShadowMappingTextures;
+    }
+
+    if (key == GLFW_KEY_F3) {
+        EditorRuntimeSettings::debugMode = !EditorRuntimeSettings::debugMode;
+    }
+    
     // Update the scene camera
     sceneCamera->KeyPress(key, mods);
     
@@ -382,10 +467,6 @@ void GameEngine::OnKeyPress(int key, int mods)
     
     if (!GUIManager::GetInstance()->ReceiveGameInput())
         return;
-
-    if (key == GLFW_KEY_F3) {
-        EditorRuntimeSettings::debugMode = !EditorRuntimeSettings::debugMode;
-    }
 
     ApplyToComponents(hierarchy, [key, mods](Component* component) {
         component->KeyPress(key, mods);
