@@ -133,11 +133,24 @@ file(GLOB IMGUI_HEADERS
 )
 
 
+# Gather the ImGui Node Editor source files
+file(GLOB IMGUI_NODE_EDITOR_SOURCES
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui-node-editor/*.cpp
+)
+
+
+# Gather the ImGui Node Editor header files
+file(GLOB IMGUI_NODE_EDITOR_HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui-node-editor/*.h
+)
+
+
 # Gather the include directories
 set(GFXF_INCLUDE_DIRS_PRIVATE
     ${GFXF_ROOT_DIR}/deps/api
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui
+    ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui-node-editor
 )
 
 
@@ -148,6 +161,8 @@ custom_add_executable(${target_name}
     ${GFXF_HEADERS_PRIVATE}
     ${IMGUI_SOURCES}
     ${IMGUI_HEADERS}
+    ${IMGUI_NODE_EDITOR_SOURCES}
+    ${IMGUI_NODE_EDITOR_HEADERS}
 )
 
 
@@ -253,6 +268,7 @@ endif()
 # Set source file properties
 set_source_files_properties(${GFXF_HEADERS_PRIVATE}  PROPERTIES HEADER_FILE_ONLY TRUE)
 set_source_files_properties(${IMGUI_HEADERS}  PROPERTIES HEADER_FILE_ONLY TRUE)
+set_source_files_properties(${IMGUI_NODE_EDITOR_HEADERS}  PROPERTIES HEADER_FILE_ONLY TRUE)
 
 
 # Group files under logical folders (mainly for IDEs)
@@ -262,6 +278,8 @@ source_group(TREE ${CMAKE_CURRENT_LIST_DIR} FILES
     ${GFXF_HEADERS_PRIVATE}
     ${IMGUI_SOURCES}
     ${IMGUI_HEADERS}
+    ${IMGUI_NODE_EDITOR_SOURCES}
+    ${IMGUI_NODE_EDITOR_HEADERS}
 )
 
 

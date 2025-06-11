@@ -18,6 +18,8 @@
 
 #define BUF_SIZE 64
 
+namespace ed = ax::NodeEditor;
+
 struct TransformData
 {
     transform::Transform* transform;
@@ -103,6 +105,7 @@ void GUIManager::ShowMainMenuBar()
             ImGui::MenuItem("Game", "CTRL+G", &this->showGameWindow);
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
+            ImGui::MenuItem("Shader Graph", nullptr, &this->showShaderGraph);
             // ImGui::MenuItem("Debug console", nullptr, &this->showDebugConsole);
             // ImGui::MenuItem("ImGui Demo <3", "CTRL+D", &this->showDemoWindow);
             ImGui::EndMenu();
@@ -142,6 +145,7 @@ void GUIManager::BeginRenderGUI(const World* world)
     ShowHierarchy(world->hierarchy);
     ShowInspector();
     ShowPreferences();
+    ShowShaderGraph();
     ShowDemoWindow();
 }
 
@@ -1128,6 +1132,47 @@ void GUIManager::ShowPreferences()
     
     ImGui::Text("Inspector header"); ImGui::SameLine();
     ImGui::ColorEdit4("##Inspector header color", reinterpret_cast<float*>(&colors[InspectorWindow_Header]));
+    
+    ImGui::End();
+}
+
+void GUIManager::ShowShaderGraph()
+{
+    // Initialize / deinitialize the Shader Graph editor context
+    if (!shaderGraphManager->isInitialized && this->showShaderGraph)
+        // TODO: Better choose the path of the shader graph
+        shaderGraphManager->Initialize();
+    else if (shaderGraphManager->isInitialized && !this->showShaderGraph)
+        shaderGraphManager->Deinitialize();
+    
+    if (!this->showShaderGraph)
+        return;
+    
+    ImGui::SetNextWindowSize(ImVec2(1200, 800), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("Shader Graph", &this->showShaderGraph))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return;
+    }
+
+    shaderGraphManager->Draw();
+
+    // TODO: This is the styling used in the application.cpp example.. should I use this style? probably not!
+    
+    // const auto windowBorderSize = ImGui::GetStyle().WindowBorderSize;
+    // const auto windowRounding   = ImGui::GetStyle().WindowRounding;
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    // ImGui::Begin("Content", nullptr, GetWindowFlags());
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, windowBorderSize);
+    // ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, windowRounding);
+    //
+    // OnFrame(io.DeltaTime);
+    //
+    // ImGui::PopStyleVar(2);
+    // ImGui::End();
+    // ImGui::PopStyleVar(2);
     
     ImGui::End();
 }

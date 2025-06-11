@@ -1,11 +1,12 @@
 ﻿#pragma once
 #include <unordered_map>
 
-#include "imgui.h"
+#include "imgui_node_editor.h"
 #include "core/world.h"
 #include "core/window/window_callbacks.h"
 #include "main/GameEngine/ComponentBase/Transform.h"
 #include "main/GameEngine/Utils/Containers.h"
+#include "ShaderGraph/ShaderGraphManager.h"
 
 class GUIManager
 {
@@ -72,17 +73,19 @@ private:
     void ShowHierarchy(transform::Transform* hierarchy);
     void ShowInspector();
     void ShowPreferences();
+    void ShowShaderGraph();
 
     void LoadPreferences();
 
     bool DisplaySerializedField(const SerializedField& attribute, void* data);
     void DisplaySerializedTransform(transform::Transform* transform);
-    
+
     bool showSceneWindow = true;
     bool showGameWindow = true;
     bool showHierarchy = true;
     bool showInspector = true;
     bool showPreferences = false;
+    bool showShaderGraph = true;
     bool showDebugConsole = false;
     bool showDemoWindow = false;
 
@@ -118,6 +121,8 @@ private:
     utils::FBOContainer gameFBOContainer;
 
     std::unordered_map<std::string, glm::vec4> colors;
+
+    shader_graph::ShaderGraphManager* shaderGraphManager = new shader_graph::ShaderGraphManager();
 
     friend class GUIInputListener;
 };
