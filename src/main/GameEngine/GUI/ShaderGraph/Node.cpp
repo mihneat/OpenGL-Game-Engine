@@ -161,6 +161,11 @@ void Node::DeserializePins(std::string line)
         line = pin.Deserialize(line);
 }
 
+std::string Node::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    return "/* TODO */";
+}
+
 void Node::AddPinToNode(PinKind pinKind, PinType pinType, const char* pinName, PinInteraction pinInteraction, void* value)
 {
     switch (pinKind)

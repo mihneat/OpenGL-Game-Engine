@@ -5,6 +5,7 @@
 using namespace rendering;
 
 const std::string ShaderResourceManager::SHADER_STANDARD = "GameEngine";
+const std::string ShaderResourceManager::SHADER_TEST_SHADER_GRAPH = "TestShaderGraph";
 const std::string ShaderResourceManager::SHADER_HEIGHT_MAP = "HeightMap";
 const std::string ShaderResourceManager::SHADER_SKYBOX = "Skybox";
 const std::string ShaderResourceManager::SHADER_TREE = "Tree";

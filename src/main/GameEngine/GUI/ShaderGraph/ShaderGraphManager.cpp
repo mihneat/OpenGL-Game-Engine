@@ -3,10 +3,13 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unordered_map>
 #include <glm/common.hpp>
 
 #include "imgui_internal.h"
+#include "core/managers/resource_path.h"
 #include "main/GameEngine/Serialization/CppHeaderParser.h"
+#include "main/GameEngine/Systems/FileSystem.h"
 #include "Nodes/ColorNode.h"
 #include "Nodes/DummyNode.h"
 #include "Nodes/FloatNode.h"
@@ -19,6 +22,7 @@
 #include "Nodes/Primitive/Vector2Node.h"
 #include "Nodes/Primitive/Vector3Node.h"
 #include "Nodes/Primitive/Vector4Node.h"
+#include "utils/text_utils.h"
 
 #define BUF_SIZE 64
 
@@ -200,11 +204,13 @@ void ShaderGraphManager::Initialize()
     
     nodeEditorContext = ed::CreateEditor(&config);
 
+    // Clear previous data
     uniqueNodeId = 0;
     uniquePinId = 0;
     uniqueLinkId = 0;
 
     graphNodes.clear();
+    graphLinks.clear();
     
     // Build the initial nodes
     Node* vertexShaderNode = BuildNode(VertexShaderNode::GetTypeName());
@@ -756,6 +762,49 @@ void ShaderGraphManager::Draw()
 
 void ShaderGraphManager::GenerateShaderFiles()
 {
-    std::cout << "Generating graph..\n";
-    std::cout << "WORK IN PROGRESS" << "\n";
+    std::cout << "Generating shaders..\n";
+
+    // Generate the vertex shader
+    auto vertexShaderNode = std::find_if(graphNodes.begin(), graphNodes.end(),
+        [](Node* node)
+        {
+            return dynamic_cast<VertexShaderNode*>(node) != nullptr;
+        });
+    if (vertexShaderNode != graphNodes.end())
+    {
+        // Create the code for the vertex shader
+        std::unordered_map<std::string, std::string> uniforms;
+        std::string vertexShaderCode = (*vertexShaderNode)->GenerateShaderCode(uniforms);
+
+        // Write the code to a file
+        std::string vertexShaderPath = PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS,
+            "Shaders\\ShaderGraphGen\\TestShaderGraph.VS.glsl");
+        
+        std::ofstream fout(vertexShaderPath);
+        fout << vertexShaderCode;
+
+        fout.close();
+    }
+
+    // Generate the fragment shader
+    auto fragmentShaderNode = std::find_if(graphNodes.begin(), graphNodes.end(),
+        [](Node* node)
+        {
+            return dynamic_cast<FragmentShaderNode*>(node) != nullptr;
+        });
+    if (fragmentShaderNode != graphNodes.end())
+    {
+        // Create the code for the fragment shader
+        std::unordered_map<std::string, std::string> uniforms;
+        std::string fragmentShaderCode = (*fragmentShaderNode)->GenerateShaderCode(uniforms);
+
+        // Write the code to a file
+        std::string fragmentShaderPath = PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS,
+            "Shaders\\ShaderGraphGen\\TestShaderGraph.FS.glsl");
+        
+        std::ofstream fout(fragmentShaderPath);
+        fout << fragmentShaderCode;
+        
+        fout.close();
+    }
 }

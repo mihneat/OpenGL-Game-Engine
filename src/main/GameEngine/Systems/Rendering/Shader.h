@@ -13,6 +13,7 @@ namespace rendering
     enum ShaderType
     {
         Standard,
+        TestShaderGraph,
         Tree,
         HeightMap,
         Skybox,
@@ -33,6 +34,7 @@ namespace rendering
         ShaderParams shaderParams;
 
         // TODO: Do I need these?
+        //
         // void SetInt(const std::string& name, const int value) { ints[name] = value; }
         // void SetFloat(const std::string& name, const float value) { floats[name] = value; }
         // void SetVec3(const std::string& name, const glm::vec3 value) { vec3s[name] = value; }

@@ -6,6 +6,7 @@
 using namespace rendering;
 
 const std::string MaterialManager::MAT_DEFAULT_LIT = "DefaultLit";
+const std::string MaterialManager::MAT_TEST_SHADER_GRAPH = "TestShaderGraph";
 const std::string MaterialManager::MAT_HELICOPTER = "Helicopter";
 const std::string MaterialManager::MAT_SCROLLABLE_TERRAIN = "ScrollableTerrain";
 const std::string MaterialManager::MAT_HEIGHT_MAP = "HeightMap";
@@ -95,6 +96,14 @@ void MaterialManager::InitMaterials()
         materials[MAT_MINIMAP_HEIGHTMAP] = material;
 
         Database::AddEntry({"100009", "Minimap Height Map", "Material", material});
+    }
+    
+    {
+        Material* material = new Material(ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_TEST_SHADER_GRAPH));
+
+        materials[MAT_TEST_SHADER_GRAPH] = material;
+
+        Database::AddEntry({"100010", "Test Shader Graph", "Material", material});
     }
 }
 

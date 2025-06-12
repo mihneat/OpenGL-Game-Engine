@@ -11,6 +11,7 @@ using namespace rendering;
 void ShaderLoader::InitShaders()
 {
     LoadShaderFromType(Standard);
+    LoadShaderFromType(TestShaderGraph);
     LoadShaderFromType(Tree);
     LoadShaderFromType(HeightMap);
     LoadShaderFromType(Skybox);
@@ -53,6 +54,10 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
     {
     case Standard:
         newShader = LoadStandardShader();
+        break;
+        
+    case TestShaderGraph:
+        newShader = LoadTestShaderGraphShader();
         break;
         
     case Tree:
@@ -116,6 +121,28 @@ Shader* ShaderLoader::LoadStandardShader()
             true);
     
     ShaderResourceManager::AddShader("GameEngine", newShader);
+    newShader->shaderParams.ints["use_texture"] = 1;
+    newShader->shaderParams.ints["is_helicopter"] = 0;
+    newShader->shaderParams.ints["ignore_water"] = 0;
+    newShader->shaderParams.floats["time_of_day"] = 1.0f;
+    newShader->shaderParams.floats["bend_factor"] = 0.003f;
+    newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadTestShaderGraphShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_TEST_SHADER_GRAPH) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_TEST_SHADER_GRAPH,
+            "Shaders/ShaderGraphGen/TestShaderGraph.VS.glsl",
+            "Shaders/ShaderGraphGen/TestShaderGraph.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_TEST_SHADER_GRAPH, newShader);
     newShader->shaderParams.ints["use_texture"] = 1;
     newShader->shaderParams.ints["is_helicopter"] = 0;
     newShader->shaderParams.ints["ignore_water"] = 0;

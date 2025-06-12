@@ -425,6 +425,13 @@
               }
             },
             {
+              "name": "testShaderGraphMaterial",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "100010"
+              }
+            },
+            {
               "name": "heightMapMaterial",
               "type": "FieldTypeGUID",
               "value": {
@@ -2269,6 +2276,116 @@
           "children": []
         }
       ]
+    },
+    {
+      "name": "Test Box",
+      "tag": "Default",
+      "position": {
+        "x": -21.239999771118164,
+        "y": 3.0,
+        "z": 3.4000000953674316
+      },
+      "rotation": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      },
+      "scale": {
+        "x": 5.0,
+        "y": 5.0,
+        "z": 5.0
+      },
+      "components": [
+        {
+          "className": "MeshRenderer",
+          "enabled": true,
+          "attributes": [
+            {
+              "name": "meshType",
+              "type": "FieldTypeEnum",
+              "value": 4
+            },
+            {
+              "name": "color",
+              "type": "FieldTypeColour",
+              "value": {
+                "r": 1.0,
+                "g": 1.0,
+                "b": 1.0,
+                "a": 1.0
+              }
+            },
+            {
+              "name": "meshScale",
+              "type": "FieldTypeVec3",
+              "value": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+              }
+            },
+            {
+              "name": "debugOnly",
+              "type": "FieldTypeBool",
+              "value": false
+            },
+            {
+              "name": "renderInWorldSpace",
+              "type": "FieldTypeBool",
+              "value": true
+            },
+            {
+              "name": "layer",
+              "type": "FieldTypeEnum",
+              "value": 0
+            },
+            {
+              "name": "texture1",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "200016"
+              }
+            },
+            {
+              "name": "texture2",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "200013"
+              }
+            },
+            {
+              "name": "texture3",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": ""
+              }
+            },
+            {
+              "name": "texture4",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": ""
+              }
+            },
+            {
+              "name": "texScale",
+              "type": "FieldTypeVec2",
+              "value": {
+                "x": 1.0,
+                "y": 1.0
+              }
+            },
+            {
+              "name": "material",
+              "type": "FieldTypeGUID",
+              "value": {
+                "guid": "100010"
+              }
+            }
+          ]
+        }
+      ],
+      "children": []
     }
   ]
 }

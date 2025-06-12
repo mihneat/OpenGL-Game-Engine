@@ -7,11 +7,12 @@
 
 namespace RESOURCE_PATH
 {
-    const std::string ROOT      = PATH_JOIN("assets");
-    const std::string MODELS    = PATH_JOIN(ROOT, "models");
-    const std::string TEXTURES  = PATH_JOIN(ROOT, "textures");
-    const std::string SHADERS   = PATH_JOIN(ROOT, "shaders");
-    const std::string FONTS     = PATH_JOIN(ROOT, "fonts");
+    const std::string ROOT          = PATH_JOIN("assets");
+    const std::string MODELS        = PATH_JOIN(ROOT, "models");
+    const std::string TEXTURES      = PATH_JOIN(ROOT, "textures");
+    const std::string SHADERS       = PATH_JOIN(ROOT, "shaders");
+    const std::string SHADER_GRAPH  = PATH_JOIN(ROOT, "shader_graph");
+    const std::string FONTS         = PATH_JOIN(ROOT, "fonts");
 }
 
 namespace SOURCE_PATH

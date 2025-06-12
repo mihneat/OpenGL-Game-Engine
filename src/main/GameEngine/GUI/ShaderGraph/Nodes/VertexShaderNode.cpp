@@ -15,3 +15,14 @@ const std::string& shader_graph::VertexShaderNode::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::VertexShaderNode::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    // TODO: Read the vertex shader template into memory
+
+    // TODO: Grab the other required values
+
+    // TODO: Form the final shader and return it
+    
+    return "hei vertxx shade";
+}

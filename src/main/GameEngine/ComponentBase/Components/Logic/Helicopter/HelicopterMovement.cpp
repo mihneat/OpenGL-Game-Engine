@@ -16,6 +16,7 @@ void HelicopterMovement::Update(float deltaTime)
 {
     // Update the helicopter position uniform value
     defaultLitMaterial->UpdateVec3("helicopter_position", transform->GetWorldPosition());
+    testShaderGraphMaterial->UpdateVec3("helicopter_position", transform->GetWorldPosition());
     heightMapMaterial->UpdateVec3("helicopter_position", transform->GetWorldPosition());
     helicopterMaterial->UpdateVec3("helicopter_position", transform->GetWorldPosition());
     skyboxMaterial->UpdateVec3("helicopter_position", transform->GetWorldPosition());

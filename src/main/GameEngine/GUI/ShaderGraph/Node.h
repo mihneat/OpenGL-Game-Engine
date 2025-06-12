@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "imgui_node_editor.h"
@@ -112,6 +113,9 @@ namespace shader_graph
         
         std::string SerializePins();
         void DeserializePins(std::string line);
+
+        // TODO: Make this a pure virtual method after implementing a few nodes
+        virtual std::string GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms);
 
     protected:
         void AddPinToNode(PinKind pinKind, PinType pinType, const char* name,

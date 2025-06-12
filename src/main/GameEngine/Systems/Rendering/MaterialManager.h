@@ -13,6 +13,7 @@ namespace rendering
         static Material* GetMaterial(const std::string& materialName);
 
         static const std::string MAT_DEFAULT_LIT;
+        static const std::string MAT_TEST_SHADER_GRAPH;
         static const std::string MAT_HELICOPTER;
         static const std::string MAT_HEIGHT_MAP;
         static const std::string MAT_SCROLLABLE_TERRAIN;

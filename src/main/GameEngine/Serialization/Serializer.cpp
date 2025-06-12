@@ -70,7 +70,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"GameManager", std::vector<SerializedField>{{"score", FieldTypeInt},{"highScore", FieldTypeInt},{"runs", FieldTypeInt},{"gameState", FieldTypeEnum, "GameState"},{"gameSpeed", FieldTypeEnum, "GameSpeed"},{"currentSkyColor", FieldTypeColour},{"defaultSkyColor", FieldTypeColour},{"endSkyColor", FieldTypeColour},}},
         {"GameOverDisplay", std::vector<SerializedField>{}},
         {"GroundStick", std::vector<SerializedField>{{"player", FieldTypeTransform},{"offset", FieldTypeVec3},}},
-        {"HelicopterMovement", std::vector<SerializedField>{{"defaultLitMaterial", FieldTypeGUID, "Material"},{"heightMapMaterial", FieldTypeGUID, "Material"},{"helicopterMaterial", FieldTypeGUID, "Material"},{"skyboxMaterial", FieldTypeGUID, "Material"},{"treeMaterial", FieldTypeGUID, "Material"},{"speed", FieldTypeFloat},{"turnSpeed", FieldTypeFloat},{"tiltAngle", FieldTypeFloat},}},
+        {"HelicopterMovement", std::vector<SerializedField>{{"defaultLitMaterial", FieldTypeGUID, "Material"},{"testShaderGraphMaterial", FieldTypeGUID, "Material"},{"heightMapMaterial", FieldTypeGUID, "Material"},{"helicopterMaterial", FieldTypeGUID, "Material"},{"skyboxMaterial", FieldTypeGUID, "Material"},{"treeMaterial", FieldTypeGUID, "Material"},{"speed", FieldTypeFloat},{"turnSpeed", FieldTypeFloat},{"tiltAngle", FieldTypeFloat},}},
         {"HighScoreDisplay", std::vector<SerializedField>{}},
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
@@ -271,6 +271,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "defaultLitMaterial")
             return &obj->defaultLitMaterial;
+
+        if (attributeName == "testShaderGraphMaterial")
+            return &obj->testShaderGraphMaterial;
 
         if (attributeName == "heightMapMaterial")
             return &obj->heightMapMaterial;

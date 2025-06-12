@@ -31,6 +31,7 @@ namespace loaders
 
     private:
         static rendering::Shader* LoadStandardShader();
+        static rendering::Shader* LoadTestShaderGraphShader();
         static rendering::Shader* LoadHeightMapShader();
         static rendering::Shader* LoadSkyboxShader();
         static rendering::Shader* LoadTreeShader();

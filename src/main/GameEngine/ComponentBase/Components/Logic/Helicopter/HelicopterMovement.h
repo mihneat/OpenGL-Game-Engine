@@ -23,6 +23,7 @@ namespace component
         glm::vec3 destination = glm::vec3(0.0f);
         
         SERIALIZE_FIELD rendering::Material* defaultLitMaterial = nullptr;
+        SERIALIZE_FIELD rendering::Material* testShaderGraphMaterial = nullptr;
         SERIALIZE_FIELD rendering::Material* heightMapMaterial = nullptr;
         SERIALIZE_FIELD rendering::Material* helicopterMaterial = nullptr;
         SERIALIZE_FIELD rendering::Material* skyboxMaterial = nullptr;
