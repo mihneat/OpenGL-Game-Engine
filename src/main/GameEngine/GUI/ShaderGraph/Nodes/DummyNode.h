@@ -3,10 +3,10 @@
 
 namespace shader_graph
 {
-    class VertexShaderNode : public Node
+    class DummyNode : public Node
     {
     public:
-        VertexShaderNode(int id);
+        DummyNode(int id);
 
         static const std::string& GetTypeName();
         const std::string& GetName() const override;

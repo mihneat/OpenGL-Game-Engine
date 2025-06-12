@@ -3,12 +3,14 @@
 
 namespace shader_graph
 {
-    class VertexShaderNode : public Node
+    class ColorNode : public Node
     {
     public:
-        VertexShaderNode(int id);
+        ColorNode(int id);
 
         static const std::string& GetTypeName();
         const std::string& GetName() const override;
+
+        float r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f;
     };
 }

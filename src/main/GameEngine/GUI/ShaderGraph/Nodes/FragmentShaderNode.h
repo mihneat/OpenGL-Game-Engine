@@ -3,12 +3,16 @@
 
 namespace shader_graph
 {
-    class VertexShaderNode : public Node
+    class FragmentShaderNode : public Node
     {
     public:
-        VertexShaderNode(int id);
+        FragmentShaderNode(int id);
 
         static const std::string& GetTypeName();
         const std::string& GetName() const override;
+
+        float diffuse = 1.0f;
+        float specular = 1.0f;
+        float emission = 1.0f;
     };
 }

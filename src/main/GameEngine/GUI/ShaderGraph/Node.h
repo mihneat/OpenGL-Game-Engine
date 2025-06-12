@@ -26,31 +26,52 @@ namespace shader_graph
         Output
     };
 
+    enum class PinInteraction
+    {
+        Linkable,
+        Fixed
+    };
+
     struct Pin
     {
-        ax::NodeEditor::PinId   ID;
-        class Node* Node;
-        std::string Name;
-        PinType     Type;
-        PinKind     Kind;
+        ax::NodeEditor::PinId id;
+        class Node* node;
+        std::string name;
+        PinType type;
+        PinKind kind;
+        PinInteraction interaction;
+
+        bool isLinked = false;
+
+        void* value;
 
         Pin(int id, const char* name, PinType type):
-            ID(id), Node(nullptr), Name(name), Type(type), Kind(PinKind::Input)
+            id(id), node(nullptr), name(name), type(type), kind(PinKind::Input),
+            interaction(PinInteraction::Linkable), value(nullptr)
         {
         }
+
+        Pin(int id, const char* name, PinType type, PinInteraction interaction, void* val):
+            id(id), node(nullptr), name(name), type(type), kind(PinKind::Input),
+            interaction(interaction), value(val)
+        {
+        }
+        
+        std::string Serialize() const;
+        std::string Deserialize(std::string line);
     };
 
     struct Link
     {
-        ax::NodeEditor::LinkId ID;
+        ax::NodeEditor::LinkId id;
 
-        ax::NodeEditor::PinId StartPinID;
-        ax::NodeEditor::PinId EndPinID;
+        ax::NodeEditor::PinId startPinID;
+        ax::NodeEditor::PinId endPinID;
 
-        ImColor Color;
+        ImColor color;
 
         Link(ax::NodeEditor::LinkId id, ax::NodeEditor::PinId startPinId, ax::NodeEditor::PinId endPinId):
-            ID(id), StartPinID(startPinId), EndPinID(endPinId), Color(255, 255, 255)
+            id(id), startPinID(startPinId), endPinID(endPinId), color(255, 255, 255)
         {
         }
     };
@@ -65,34 +86,36 @@ namespace shader_graph
     class Node
     {
     public:
-        ax::NodeEditor::NodeId ID;
-        std::string Name;
-        std::vector<Pin> Inputs;
-        std::vector<Pin> Outputs;
-        ImColor Color;
-        NodeType Type;
-        ImVec2 Size;
+        ax::NodeEditor::NodeId id;
+        std::string name;
+        std::vector<Pin> inputs;
+        std::vector<Pin> outputs;
+        ImColor color;
+        NodeType type;
+        ImVec2 size;
 
-        std::string State;
-        std::string SavedState;
+        std::string state;
+        std::string savedState;
 
-        Node(int id): ID(id), Color(ImVec4(0, 0, 0, 1)), Type(NodeType::Primitive), Size(0, 0)
+        Node(int id): id(id), color(ImVec4(0, 0, 0, 1)), type(NodeType::Primitive), size(0, 0)
         {
             startPinId = id * PIN_ID_OFFSET;
         }
 
         virtual ~Node() = default;
 
-        virtual std::string GetName() = 0;
+        virtual const std::string& GetName() const = 0;
 
         static Node* NodeFactory(const std::string& name, int id);
         static std::string SerializeNode(Node* node);
         static Node* DeserializeNode(std::string line);
+        
+        std::string SerializePins();
+        void DeserializePins(std::string line);
 
     protected:
-        void AddPinToNode(PinKind pinKind, PinType pinType, const char* name);
-
-    private:
+        void AddPinToNode(PinKind pinKind, PinType pinType, const char* name,
+            PinInteraction pinInteraction = PinInteraction::Linkable, void* value = nullptr);
         int startPinId;
     };
 }

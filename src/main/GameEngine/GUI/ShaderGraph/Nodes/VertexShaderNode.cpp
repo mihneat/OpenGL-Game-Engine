@@ -5,12 +5,13 @@ shader_graph::VertexShaderNode::VertexShaderNode(int id) : Node(id)
     AddPinToNode(PinKind::Input, PinType::Vector3, "Position");
 }
 
-std::string shader_graph::VertexShaderNode::GetTypeName()
+const std::string& shader_graph::VertexShaderNode::GetTypeName()
 {
-    return "Vertex Shader";
+    static const std::string name = "Vertex Shader";
+    return name;
 }
 
-std::string shader_graph::VertexShaderNode::GetName()
+const std::string& shader_graph::VertexShaderNode::GetName() const
 {
     return GetTypeName();
 }

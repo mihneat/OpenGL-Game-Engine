@@ -20,9 +20,12 @@ namespace shader_graph
         Node* FindNode(ax::NodeEditor::NodeId id);
         Pin* FindPin(ax::NodeEditor::PinId id);
         Node* BuildNode(const std::string& name);
+        void DrawFloatSlider(const Pin& pin);
+        void DrawInputPin(const Pin& pin);
+        void DrawOutputPin(const Pin& pin);
 
-        void DrawNodePins(const Node& node);
-        void DrawNode(const Node& node);
+        void DrawNodePins(const Node* node);
+        void DrawNode(const Node* node);
         void DrawNodes();
         void QueryLinks();
         void DrawPopups();
@@ -46,7 +49,7 @@ namespace shader_graph
 
         ImVec2 openPopupPosition = ImVec2(0, 0);
 
-        std::vector<Node> graphNodes;
+        std::vector<Node*> graphNodes;
         std::vector<Link> graphLinks;
 
         std::string nodeDataPath;
