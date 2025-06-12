@@ -30,9 +30,9 @@ void GUIInputListener::OnKeyPress(int key, int mods)
         GUIManager::GetInstance()->markStateSave = true;
 
     // --== Window ==--
-    // Show/Hide game window
-    if (key == GLFW_KEY_G && mods & GLFW_MOD_CONTROL)
-        GUIManager::GetInstance()->showGameWindow = !GUIManager::GetInstance()->showGameWindow;
+    // // Show/Hide game window
+    // if (key == GLFW_KEY_G && mods & GLFW_MOD_CONTROL)
+    //     GUIManager::GetInstance()->showGameWindow = !GUIManager::GetInstance()->showGameWindow;
     
     // Show/Hide hierarchy window
     if (key == GLFW_KEY_H && mods & GLFW_MOD_CONTROL)

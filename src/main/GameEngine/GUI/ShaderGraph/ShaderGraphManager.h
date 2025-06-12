@@ -11,6 +11,9 @@ namespace shader_graph
     class ShaderGraphManager
     {
     public:
+        void ShowMenuBar();
+        void RecountNodeUniqueIds();
+        void RecountLinkUniqueIds();
         void ReadShaderGraphData();
         void WriteShaderGraphData();
         
@@ -27,6 +30,9 @@ namespace shader_graph
         void DrawNodePins(const Node* node);
         void DrawNode(const Node* node);
         void DrawNodes();
+        void RemoveLink(int linkId);
+        void LinkPins(Pin& startPin, Pin& endPin);
+        void DrawLinks();
         void QueryLinks();
         void DrawPopups();
 

@@ -2,9 +2,11 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <glm/common.hpp>
 
 #include "imgui_internal.h"
+#include "main/GameEngine/Serialization/CppHeaderParser.h"
 #include "Nodes/ColorNode.h"
 #include "Nodes/DummyNode.h"
 #include "Nodes/FloatNode.h"
@@ -24,29 +26,115 @@ namespace ed = ax::NodeEditor;
 
 using namespace shader_graph;
 
+void ShaderGraphManager::ShowMenuBar()
+{
+    if (ImGui::BeginMenuBar())
+    {
+        ImGui::SetNextWindowSizeConstraints(ImVec2(0.0f, 0.0f), ImVec2(FLT_MAX, 350));
+        if (ImGui::BeginMenu("File", true))
+        {
+            if (ImGui::MenuItem("Generate", "CTRL+G", nullptr))
+                GenerateShaderFiles();
+                
+            ImGui::EndMenu();
+        }
+            
+        ImGui::EndMenuBar();
+    }
+}
+
+void ShaderGraphManager::RecountNodeUniqueIds()
+{
+    // Reset unique ID to the largest remaining one
+    auto maxIndex = std::max_element(graphNodes.begin(), graphNodes.end(),
+        [](const Node* node1, const Node* node2)
+        {
+            int id1 = static_cast<int>(node1->id.Get());
+            int id2 = static_cast<int>(node2->id.Get());
+
+            return id1 < id2;
+        });
+    if (maxIndex == graphNodes.end())
+        uniqueNodeId = 0;
+    else
+        uniqueNodeId = static_cast<int>((*maxIndex)->id.Get());
+}
+
+void ShaderGraphManager::RecountLinkUniqueIds()
+{
+    auto maxIndex = std::max_element(graphLinks.begin(), graphLinks.end(),
+        [](const Link& link1, const Link& link2)
+        {
+            int id1 = static_cast<int>(link1.id.Get());
+            int id2 = static_cast<int>(link2.id.Get());
+
+            return id1 < id2;
+        });
+    if (maxIndex == graphLinks.end())
+        uniqueLinkId = 0;
+    else
+        uniqueLinkId = static_cast<int>(maxIndex->id.Get());
+}
+
 void ShaderGraphManager::ReadShaderGraphData()
 {
     // Load all the other nodes from a separate file
     nodeDataPath = "assets/shader_graph/ShaderGraphData.sgd";
     std::ifstream fin(nodeDataPath);
-    char line[512] = { };
-    while (fin.getline(line, 512))
+    
+    char line[2048] = { };
+    while (fin.getline(line, 2048))
     {
-        Node* node = Node::DeserializeNode(line);
-        uniqueNodeId = std::max(uniqueNodeId, static_cast<int>(node->id.Get()));
+        // Check if the line holds the serialization of a node or a link
+        std::istringstream lineStream(line);
+        std::string token;
         
-        // Add the node to the vector (skip the vertex and fragment shaders)
-        if (node->id.Get() == 1 || node->id.Get() == 2)
+        std::getline(lineStream, token, '|');
+        char lineType = token[0];
+
+        // Read the rest of the line
+        std::getline(lineStream, token);
+
+        if (lineType == 'n')
         {
-            delete node;
-            continue;
-        }
+            Node* node = Node::DeserializeNode(token);
+            uniqueNodeId = std::max(uniqueNodeId, static_cast<int>(node->id.Get()));
         
-        // Add the node to the nodes vector
-        graphNodes.emplace_back(node);
+            // Add the node to the vector (skip the vertex and fragment shaders)
+            if (node->id.Get() == 1 || node->id.Get() == 2)
+            {
+                delete node;
+                continue;
+            }
+        
+            // Add the node to the nodes vector
+            graphNodes.emplace_back(node);
+        } else if (lineType == 'l')
+        {
+            lineStream = std::istringstream(token);
+            
+            std::getline(lineStream, token, '|');
+            int startPinId = std::stoi(token);
+            
+            std::getline(lineStream, token, '|');
+            int endPinId = std::stoi(token);
+
+            // This works because the nodes are always created before the links, thanks to the serialization order
+            Pin* startPin = FindPin(startPinId);
+            Pin* endPin = FindPin(endPinId);
+
+            if (startPin != nullptr && endPin != nullptr)
+                LinkPins(*startPin, *endPin);
+            else
+                std::cerr << "The start or the end pin does not exist, skipping\n";
+        }
     }
     
     fin.close();
+
+    // Update the unique IDs
+    RecountNodeUniqueIds();
+    RecountLinkUniqueIds();
 }
 
 void ShaderGraphManager::WriteShaderGraphData()
@@ -56,7 +144,10 @@ void ShaderGraphManager::WriteShaderGraphData()
     std::ofstream fout(nodeDataPath);
 
     for (Node* node : graphNodes)
-        fout << Node::SerializeNode(node).c_str() << "\n";
+        fout << "n|" << Node::SerializeNode(node).c_str() << "\n";
+
+    for (const Link& link : graphLinks)
+        fout << "l|" << link.startPinID.Get() << "|" << link.endPinID.Get() << "|\n";
     
     fout.close();
 }
@@ -208,9 +299,29 @@ void ShaderGraphManager::DrawFloatSlider(const Pin& pin)
 
 void ShaderGraphManager::DrawInputPin(const Pin& pin)
 {
+    if (pin.interaction == PinInteraction::Fixed)
+    {
+        switch (pin.type)
+        {
+        case PinType::Float:
+            DrawFloatSlider(pin);
+            ImGui::SameLine();
+                
+            ImGui::Text("%s", pin.name.c_str());
+            
+            break;
+
+        default:
+            ImGui::Text("%s", pin.name.c_str());
+            break;
+        }
+        
+        return;
+    }
+    
     ed::BeginPin(pin.id, ed::PinKind::Input);
     {
-        if (pin.isLinked)
+        if (pin.link != nullptr)
         {
             ImGui::Text("O %s", pin.name.c_str());
         } else
@@ -219,11 +330,11 @@ void ShaderGraphManager::DrawInputPin(const Pin& pin)
             {
             case PinType::Float:
                 ImGui::Text("O ");
-
                 ImGui::SameLine();
+                
                 DrawFloatSlider(pin);
-
                 ImGui::SameLine();
+                
                 ImGui::Text("%s", pin.name.c_str());
             
                 break;
@@ -252,14 +363,14 @@ void ShaderGraphManager::DrawNodePins(const Node* node)
         DrawInputPin(node->inputs[i]);
         ImGui::SameLine();
         DrawOutputPin(node->outputs[i]);
-
+    
         ++i;
     }
     
     while (i < static_cast<int>(node->inputs.size()))
     {
         DrawInputPin(node->inputs[i]);
-
+    
         ++i;
     }
     
@@ -267,7 +378,7 @@ void ShaderGraphManager::DrawNodePins(const Node* node)
     while (i < static_cast<int>(node->outputs.size()))
     {
         DrawOutputPin(node->outputs[i]);
-
+    
         ++i;
     }
 }
@@ -286,72 +397,127 @@ void ShaderGraphManager::DrawNodes()
         DrawNode(node);
 }
 
+void ShaderGraphManager::RemoveLink(int linkId)
+{
+    auto id = std::find_if(graphLinks.begin(), graphLinks.end(),
+        [linkId](const Link& link) { return static_cast<int>(link.id.Get()) == linkId; });
+    if (id == graphLinks.end())
+        return;
+
+    Pin* endPin = FindPin(id->endPinID);
+    if (endPin != nullptr)
+        endPin->link = nullptr;
+
+    graphLinks.erase(id);
+    
+    RecountLinkUniqueIds();
+
+    WriteShaderGraphData();
+}
+
+void ShaderGraphManager::LinkPins(Pin& startPin, Pin& endPin)
+{
+    if (endPin.link != nullptr)
+    {
+        // Delete the previous link
+        ed::DeleteLink(endPin.link->id);
+        RemoveLink(static_cast<int>(endPin.link->id.Get()));
+    }
+    
+    graphLinks.emplace_back(++uniqueLinkId, startPin.id, endPin.id);
+    graphLinks.back().color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // GetIconColor(startPin->Type);
+
+    endPin.link = &graphLinks.back();
+
+    WriteShaderGraphData();
+}
+
+void ShaderGraphManager::DrawLinks()
+{
+    for (auto& link : graphLinks)
+        ed::Link(link.id, link.startPinID, link.endPinID, link.color, 2.0f);
+}
+
 void ShaderGraphManager::QueryLinks()
 {
     if (createNewNode)
         return;
 
     auto currMousePos = ImGui::GetMousePos();
-    
-    if (ed::BeginCreate(ImVec4(0, 1, 1, 1), 3))
-    {
-        // TODO: This is used to link pins :)
 
-        // ed::PinId startPinId = 0, endPinId = 0;
-        // if (ed::QueryNewLink(&startPinId, &endPinId))
-        // {
-        //     auto startPin = FindPin(startPinId);
-        //     auto endPin   = FindPin(endPinId);
-        //
-        //     newLinkPin = startPin ? startPin : endPin;
-        //
-        //     if (startPin->Kind == PinKind::Input)
-        //     {
-        //         std::swap(startPin, endPin);
-        //         std::swap(startPinId, endPinId);
-        //     }
-        //
-        //     if (startPin && endPin)
-        //     {
-        //         if (endPin == startPin)
-        //         {
-        //             ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-        //         }
-        //         else if (endPin->Kind == startPin->Kind)
-        //         {
-        //             showLabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
-        //             ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
-        //         }
-        //         //else if (endPin->Node == startPin->Node)
-        //         //{
-        //         //    showLabel("x Cannot connect to self", ImColor(45, 32, 32, 180));
-        //         //    ed::RejectNewItem(ImColor(255, 0, 0), 1.0f);
-        //         //}
-        //         else if (endPin->Type != startPin->Type)
-        //         {
-        //             showLabel("x Incompatible Pin Type", ImColor(45, 32, 32, 180));
-        //             ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
-        //         }
-        //         else
-        //         {
-        //             showLabel("+ Create Link", ImColor(32, 45, 32, 180));
-        //             if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
-        //             {
-        //                 m_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
-        //                 m_Links.back().Color = GetIconColor(startPin->Type);
-        //             }
-        //         }
-        //     }
-        // }
+    if (ed::BeginCreate(ImVec4(1, 1, 1, 1), 2))
+    {
+        auto showLabel = [](const char* label, ImColor color)
+        {
+            ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+            auto size = ImGui::CalcTextSize(label);
+
+            auto padding = ImGui::GetStyle().FramePadding;
+            auto spacing = ImGui::GetStyle().ItemSpacing;
+
+            ImVec2 CursorPos = ImGui::GetCursorPos();
+            ImGui::SetCursorPos(ImVec2(CursorPos.x + spacing.x, CursorPos.y - spacing.y));
+
+            ImVec2 CursorScreenPos = ImGui::GetCursorScreenPos();
+            auto rectMin = ImVec2(CursorScreenPos.x - padding.x, CursorScreenPos.y - padding.y);
+            auto rectMax = ImVec2(CursorScreenPos.x + size.x + padding.x, CursorScreenPos.y + size.y + padding.y);
+
+            auto drawList = ImGui::GetWindowDrawList();
+            drawList->AddRectFilled(rectMin, rectMax, color, size.y * 0.15f);
+            ImGui::TextUnformatted(label);
+        };
+        
+        Pin* newLinkPin = nullptr;
+        
+        ed::PinId startPinId = 0, endPinId = 0;
+        if (ed::QueryNewLink(&startPinId, &endPinId))
+        {
+            Pin* startPin = FindPin(startPinId);
+            Pin* endPin = FindPin(endPinId);
+        
+            newLinkPin = startPin ? startPin : endPin;
+        
+            if (startPin->kind == PinKind::Input)
+            {
+                std::swap(startPin, endPin);
+                std::swap(startPinId, endPinId);
+            }
+        
+            if (startPin && endPin)
+            {
+                if (endPin == startPin)
+                {
+                    ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if (endPin->kind == startPin->kind)
+                {
+                    showLabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
+                    ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+                } else if (endPin->node == startPin->node)
+                {
+                    showLabel("x Cannot connect to self", ImColor(45, 32, 32, 180));
+                    ed::RejectNewItem(ImColor(255, 0, 0), 1.0f);
+                } else if (endPin->type != startPin->type)
+                {
+                    showLabel("x Incompatible Pin Type", ImColor(45, 32, 32, 180));
+                    ed::RejectNewItem(ImColor(255, 128, 128), 1.0f);
+                } else
+                {
+                    showLabel("+ Create Link", ImColor(32, 45, 32, 180));
+                    if (ed::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
+                    {
+                        LinkPins(*startPin, *endPin);
+                    }
+                }
+            }
+        }
         
         ed::PinId pinId = 0;
         if (ed::QueryNewNode(&pinId))
         {
-            auto newLinkPin = FindPin(pinId);
-            // if (newLinkPin)
-                // showLabel("+ Create Node", ImColor(32, 45, 32, 180));
+            newLinkPin = FindPin(pinId);
+            if (newLinkPin)
+                showLabel("+ Create Node", ImColor(32, 45, 32, 180));
             
-
             if (ed::AcceptNewItem())
             {
                 createNewNode = true;
@@ -385,32 +551,14 @@ void ShaderGraphManager::QueryLinks()
 
                 WriteShaderGraphData();
 
-                // Reset unique ID to the largest remaining one
-                auto maxIndex = std::max_element(graphNodes.begin(), graphNodes.end(),
-                    [](const Node* node1, const Node* node2)
-                    {
-                        int id1 = static_cast<int>(node1->id.Get());
-                        int id2 = static_cast<int>(node2->id.Get());
-
-                        return id1 < id2;
-                    });
-                if (maxIndex == graphNodes.end())
-                    uniqueNodeId = 1;
-                else
-                    uniqueNodeId = static_cast<int>((*maxIndex)->id.Get());
+                RecountNodeUniqueIds();
             }
         }
 
-        // ed::LinkId linkId = 0;
-        // while (ed::QueryDeletedLink(&linkId))
-        // {
-        //     if (ed::AcceptDeletedItem())
-        //     {
-        //         auto id = std::find_if(m_Links.begin(), m_Links.end(), [linkId](auto& link) { return link.ID == linkId; });
-        //         if (id != m_Links.end())
-        //             m_Links.erase(id);
-        //     }
-        // }
+        ed::LinkId linkId = 0;
+        while (ed::QueryDeletedLink(&linkId))
+            if (ed::AcceptDeletedItem())
+                RemoveLink(static_cast<int>(linkId.Get()));
     } ed::EndDelete();
 }
 
@@ -578,6 +726,7 @@ void ShaderGraphManager::DrawPopups()
 
 void ShaderGraphManager::HandleLinks()
 {
+    DrawLinks();
     QueryLinks();
     DrawPopups();
 }
@@ -586,6 +735,8 @@ void ShaderGraphManager::HandleLinks()
 void ShaderGraphManager::Draw()
 {
     auto& io = ImGui::GetIO();
+
+    ShowMenuBar();
 
     ImGui::Text("FPS: %.2f (%.2gms)", io.Framerate, io.Framerate ? 1000.0f / io.Framerate : 0.0f);
 
@@ -605,5 +756,6 @@ void ShaderGraphManager::Draw()
 
 void ShaderGraphManager::GenerateShaderFiles()
 {
+    std::cout << "Generating graph..\n";
     std::cout << "WORK IN PROGRESS" << "\n";
 }

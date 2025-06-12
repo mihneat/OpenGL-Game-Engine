@@ -167,10 +167,14 @@ void Node::AddPinToNode(PinKind pinKind, PinType pinType, const char* pinName, P
     {
     case PinKind::Input:
         inputs.emplace_back(++startPinId, pinName, pinType, pinInteraction, value);
+        inputs.back().node = this;
+        inputs.back().kind = pinKind;
         break;
 
     case PinKind::Output:
         outputs.emplace_back(++startPinId, pinName, pinType);
+        outputs.back().node = this;
+        outputs.back().kind = pinKind;
         break;
     }
 }

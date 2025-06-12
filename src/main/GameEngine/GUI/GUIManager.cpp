@@ -102,7 +102,7 @@ void GUIManager::ShowMainMenuBar()
             // ImGui::MenuItem("Load layout");
             // ImGui::Separator();
             ImGui::MenuItem("Scene", nullptr, &this->showSceneWindow);
-            ImGui::MenuItem("Game", "CTRL+G", &this->showGameWindow);
+            ImGui::MenuItem("Game", nullptr, &this->showGameWindow);
             ImGui::MenuItem("Hierarchy", "CTRL+H", &this->showHierarchy);
             ImGui::MenuItem("Inspector", "CTRL+I", &this->showInspector);
             ImGui::MenuItem("Shader Graph", nullptr, &this->showShaderGraph);
@@ -1149,7 +1149,7 @@ void GUIManager::ShowShaderGraph()
         return;
     
     ImGui::SetNextWindowSize(ImVec2(1200, 800), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Shader Graph", &this->showShaderGraph))
+    if (!ImGui::Begin("Shader Graph", &this->showShaderGraph, ImGuiWindowFlags_MenuBar))
     {
         // Early out if the window is collapsed, as an optimization.
         ImGui::End();

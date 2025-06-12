@@ -41,7 +41,7 @@ namespace shader_graph
         PinKind kind;
         PinInteraction interaction;
 
-        bool isLinked = false;
+        struct Link* link = nullptr;
 
         void* value;
 
