@@ -43,6 +43,10 @@ public:
     void UnmarkReset();
     bool ShouldSave() const;
     void UnmarkSave();
+
+    bool ShouldReloadShaders() const;
+    void MarkReloadShaders();
+    void UnmarkReloadShaders();
     
     transform::Transform* GetLastSelectedTransform();
 
@@ -108,6 +112,8 @@ private:
     bool markStatePause = false;
     
     bool markStateSave = false;
+    
+    bool markReloadShaders = false;
 
     transform::Transform* transformToCreateChild = nullptr;
     transform::Transform* transformToDelete = nullptr;

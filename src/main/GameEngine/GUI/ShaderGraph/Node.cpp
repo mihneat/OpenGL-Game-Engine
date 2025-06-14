@@ -62,6 +62,38 @@ std::string Pin::Deserialize(std::string line)
     }
 }
 
+std::string Pin::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms) const
+{
+    switch (type)
+    {
+    case PinType::Float:
+        if (link == nullptr || link->startPin == nullptr || link->startPin->node == nullptr)
+        {
+            if (value == nullptr)
+                return "1.0f";
+
+            return std::string(std::to_string(*static_cast<float*>(value)) + "f");
+        }
+            
+        return link->startPin->node->GenerateShaderCode(uniforms);
+        
+    case PinType::Vector2:
+        if (link == nullptr || link->startPin == nullptr || link->startPin->node == nullptr)
+            return "vec2(0, 0)";
+            
+        return link->startPin->node->GenerateShaderCode(uniforms);
+
+    case PinType::Color:
+        if (link == nullptr || link->startPin == nullptr || link->startPin->node == nullptr)
+            return "vec4(1, 1, 1, 1)";
+            
+        return link->startPin->node->GenerateShaderCode(uniforms);
+
+    default:
+        return "-= TODO =-";
+    }
+}
+
 Node* Node::NodeFactory(const std::string& name, int id)
 {
     // Base nodes
@@ -159,11 +191,6 @@ void Node::DeserializePins(std::string line)
     
     for (Pin& pin : outputs)
         line = pin.Deserialize(line);
-}
-
-std::string Node::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
-{
-    return "/* TODO */";
 }
 
 void Node::AddPinToNode(PinKind pinKind, PinType pinType, const char* pinName, PinInteraction pinInteraction, void* value)

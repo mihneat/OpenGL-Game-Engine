@@ -53,7 +53,7 @@ uniform float selection_value;
 uniform vec3 helicopter_position;
 
 // GENERATED Uniforms
-uniform float time;
+{uniforms}
 
 
 // Node functions
@@ -248,7 +248,7 @@ void main()
 
     // GENERATED Get the shader color
     vec4 shader_color = vec4(1, 1, 1, 1);
-    shader_color = vec4(remap(sin(time), vec2(-1.000000f, 1.000000f), vec2(0.000000f, 1.000000f)), 1.000000f, 0.700000f, 1.000000f);
+    {color}
 
     // Apply light to color
     vec4 tex = texture2D(texture_1, tex_scale * tex_coord);

@@ -1232,6 +1232,21 @@ void GUIManager::UnmarkSave()
     markStateSave = false;
 }
 
+bool GUIManager::ShouldReloadShaders() const
+{
+    return markReloadShaders;
+}
+
+void GUIManager::MarkReloadShaders()
+{
+    markReloadShaders = true;
+}
+
+void GUIManager::UnmarkReloadShaders()
+{
+    markReloadShaders = false;
+}
+
 transform::Transform* GUIManager::GetLastSelectedTransform()
 {
     return lastSelectedTransform;

@@ -16,3 +16,8 @@ const std::string& shader_graph::DummyNode::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::DummyNode::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    return "\"dummy\"";
+}

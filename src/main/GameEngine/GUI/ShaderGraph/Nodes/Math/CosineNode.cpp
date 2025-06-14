@@ -16,3 +16,11 @@ const std::string& shader_graph::CosineNode::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::CosineNode::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    const Pin& radsPin = inputs[0];
+    std::string radsCode = radsPin.GenerateShaderCode(uniforms);
+    
+    return std::string("cos(" + radsCode + ")");
+}

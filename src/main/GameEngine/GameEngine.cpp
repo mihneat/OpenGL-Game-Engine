@@ -154,6 +154,12 @@ void GameEngine::FindCameras()
 
 void GameEngine::FrameStart()
 {
+    if (GUIManager::GetInstance()->ShouldReloadShaders())
+    {
+        ReloadShaders();
+        GUIManager::GetInstance()->UnmarkReloadShaders();
+    }
+    
     if (GUIManager::GetInstance()->ShouldPlay())
     {
         // Save the scene if the game is playing

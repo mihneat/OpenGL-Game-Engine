@@ -19,3 +19,20 @@ const std::string& shader_graph::Vector4Node::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::Vector4Node::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    const Pin& xPin = inputs[0];
+    std::string xCode = xPin.GenerateShaderCode(uniforms);
+    
+    const Pin& yPin = inputs[1];
+    std::string yCode = yPin.GenerateShaderCode(uniforms);
+    
+    const Pin& zPin = inputs[2];
+    std::string zCode = zPin.GenerateShaderCode(uniforms);
+    
+    const Pin& wPin = inputs[3];
+    std::string wCode = wPin.GenerateShaderCode(uniforms);
+    
+    return std::string("vec4(" + xCode + ", " + yCode + ", " + zCode + ", " + wCode + ")");
+}

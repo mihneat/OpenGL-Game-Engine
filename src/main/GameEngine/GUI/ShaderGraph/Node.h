@@ -60,6 +60,8 @@ namespace shader_graph
         
         std::string Serialize() const;
         std::string Deserialize(std::string line);
+        
+        std::string GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms) const;
     };
 
     struct Link
@@ -68,6 +70,9 @@ namespace shader_graph
 
         ax::NodeEditor::PinId startPinID;
         ax::NodeEditor::PinId endPinID;
+
+        Pin* startPin = nullptr;
+        Pin* endPin = nullptr;
 
         ImColor color;
 
@@ -114,8 +119,7 @@ namespace shader_graph
         std::string SerializePins();
         void DeserializePins(std::string line);
 
-        // TODO: Make this a pure virtual method after implementing a few nodes
-        virtual std::string GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms);
+        virtual std::string GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms) = 0;
 
     protected:
         void AddPinToNode(PinKind pinKind, PinType pinType, const char* name,

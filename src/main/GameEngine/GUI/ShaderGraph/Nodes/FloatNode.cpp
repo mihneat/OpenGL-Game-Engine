@@ -19,3 +19,11 @@ const std::string& shader_graph::FloatNode::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::FloatNode::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    const Pin& floatPin = inputs[0];
+    std::string floatCode = floatPin.GenerateShaderCode(uniforms);
+
+    return floatCode;
+}

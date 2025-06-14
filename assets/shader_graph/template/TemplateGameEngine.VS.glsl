@@ -29,6 +29,7 @@ uniform int ignore_water;
 uniform int is_shadow_pass;
 
 // GENERATED Uniforms
+{uniforms}
 
 // Output
 out vec3 frag_position;

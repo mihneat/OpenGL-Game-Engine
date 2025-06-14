@@ -18,3 +18,17 @@ const std::string& shader_graph::RemapNode::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::RemapNode::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    const Pin& inPin = inputs[0];
+    std::string inCode = inPin.GenerateShaderCode(uniforms);
+    
+    const Pin& inIntervalPin = inputs[1];
+    std::string inIntervalCode = inIntervalPin.GenerateShaderCode(uniforms);
+    
+    const Pin& outIntervalPin = inputs[2];
+    std::string outIntervalCode = outIntervalPin.GenerateShaderCode(uniforms);
+    
+    return std::string("remap(" + inCode + ", " + inIntervalCode + ", " + outIntervalCode + ")");
+}

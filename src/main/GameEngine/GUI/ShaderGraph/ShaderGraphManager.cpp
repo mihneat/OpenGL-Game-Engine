@@ -8,6 +8,7 @@
 
 #include "imgui_internal.h"
 #include "core/managers/resource_path.h"
+#include "main/GameEngine/GUI/GUIManager.h"
 #include "main/GameEngine/Serialization/CppHeaderParser.h"
 #include "main/GameEngine/Systems/FileSystem.h"
 #include "Nodes/ColorNode.h"
@@ -67,17 +68,17 @@ void ShaderGraphManager::RecountNodeUniqueIds()
 void ShaderGraphManager::RecountLinkUniqueIds()
 {
     auto maxIndex = std::max_element(graphLinks.begin(), graphLinks.end(),
-        [](const Link& link1, const Link& link2)
+        [](const Link* link1, const Link* link2)
         {
-            int id1 = static_cast<int>(link1.id.Get());
-            int id2 = static_cast<int>(link2.id.Get());
+            int id1 = static_cast<int>(link1->id.Get());
+            int id2 = static_cast<int>(link2->id.Get());
 
             return id1 < id2;
         });
     if (maxIndex == graphLinks.end())
         uniqueLinkId = 0;
     else
-        uniqueLinkId = static_cast<int>(maxIndex->id.Get());
+        uniqueLinkId = static_cast<int>((*maxIndex)->id.Get());
 }
 
 void ShaderGraphManager::ReadShaderGraphData()
@@ -150,8 +151,8 @@ void ShaderGraphManager::WriteShaderGraphData()
     for (Node* node : graphNodes)
         fout << "n|" << Node::SerializeNode(node).c_str() << "\n";
 
-    for (const Link& link : graphLinks)
-        fout << "l|" << link.startPinID.Get() << "|" << link.endPinID.Get() << "|\n";
+    for (const Link* link : graphLinks)
+        fout << "l|" << link->startPinID.Get() << "|" << link->endPinID.Get() << "|\n";
     
     fout.close();
 }
@@ -171,11 +172,11 @@ void ShaderGraphManager::Initialize()
         auto node = self->FindNode(nodeId);
         if (!node)
         {
-            std::cout << "Couldn't load node\n";
+            // std::cout << "Couldn't load node\n";
             return 0;
         }
         
-        std::cout << "Loaded node\n";
+        // std::cout << "Loaded node\n";
 
         if (data != nullptr)
             memcpy(data, node->state.data(), node->state.size());
@@ -253,7 +254,7 @@ Pin* ShaderGraphManager::FindPin(ed::PinId id)
     if (!id)
         return nullptr;
 
-    for (auto& node : graphNodes)
+    for (Node* node : graphNodes)
     {
         for (auto& pin : node->inputs)
             if (pin.id == id)
@@ -406,11 +407,11 @@ void ShaderGraphManager::DrawNodes()
 void ShaderGraphManager::RemoveLink(int linkId)
 {
     auto id = std::find_if(graphLinks.begin(), graphLinks.end(),
-        [linkId](const Link& link) { return static_cast<int>(link.id.Get()) == linkId; });
+        [linkId](const Link* link) { return static_cast<int>(link->id.Get()) == linkId; });
     if (id == graphLinks.end())
         return;
 
-    Pin* endPin = FindPin(id->endPinID);
+    Pin* endPin = FindPin((*id)->endPinID);
     if (endPin != nullptr)
         endPin->link = nullptr;
 
@@ -429,19 +430,28 @@ void ShaderGraphManager::LinkPins(Pin& startPin, Pin& endPin)
         ed::DeleteLink(endPin.link->id);
         RemoveLink(static_cast<int>(endPin.link->id.Get()));
     }
-    
-    graphLinks.emplace_back(++uniqueLinkId, startPin.id, endPin.id);
-    graphLinks.back().color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // GetIconColor(startPin->Type);
 
-    endPin.link = &graphLinks.back();
+    Link* newLink = new Link(++uniqueLinkId, startPin.id, endPin.id);
+    newLink->startPin = FindPin(startPin.id);
+    newLink->endPin = FindPin(endPin.id);
+    newLink->color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // GetIconColor(startPin->Type);
+
+    graphLinks.push_back(newLink);
+    
+    // graphLinks.emplace_back(++uniqueLinkId, startPin.id, endPin.id);
+    // graphLinks.back().startPin = FindPin(startPin.id);
+    // graphLinks.back().endPin = FindPin(endPin.id);
+    // graphLinks.back().color = ImColor(1.0f, 1.0f, 1.0f, 1.0f); // GetIconColor(startPin->Type);
+
+    endPin.link = newLink;
 
     WriteShaderGraphData();
 }
 
 void ShaderGraphManager::DrawLinks()
 {
-    for (auto& link : graphLinks)
-        ed::Link(link.id, link.startPinID, link.endPinID, link.color, 2.0f);
+    for (const Link* link : graphLinks)
+        ed::Link(link->id, link->startPinID, link->endPinID, link->color, 2.0f);
 }
 
 void ShaderGraphManager::QueryLinks()
@@ -682,10 +692,10 @@ void ShaderGraphManager::DrawPopups()
         if (ImGui::MenuItem("Time"))
             node = BuildNode(TimeNode::GetTypeName());
         
-        // Special
-        ImGui::Separator();
-        if (ImGui::MenuItem("Fresnel"))
-            node = BuildNode(DummyNode::GetTypeName());
+        // // Special
+        // ImGui::Separator();
+        // if (ImGui::MenuItem("Fresnel"))
+        //     node = BuildNode(DummyNode::GetTypeName());
 
         if (node)
         {
@@ -807,4 +817,8 @@ void ShaderGraphManager::GenerateShaderFiles()
         
         fout.close();
     }
+
+    GUIManager::GetInstance()->MarkReloadShaders();
+
+    std::cout << "Shader has been generated!\n";
 }

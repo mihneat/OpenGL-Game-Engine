@@ -7,11 +7,6 @@
 #include "ShaderResourceManager.h"
 #include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 #include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
 
 using namespace rendering;

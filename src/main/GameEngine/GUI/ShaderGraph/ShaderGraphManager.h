@@ -56,7 +56,7 @@ namespace shader_graph
         ImVec2 openPopupPosition = ImVec2(0, 0);
 
         std::vector<Node*> graphNodes;
-        std::vector<Link> graphLinks;
+        std::vector<Link*> graphLinks;
 
         std::string nodeDataPath;
         std::string nodeData;

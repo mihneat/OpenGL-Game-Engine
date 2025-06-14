@@ -17,3 +17,14 @@ const std::string& shader_graph::Vector2Node::GetName() const
 {
     return GetTypeName();
 }
+
+std::string shader_graph::Vector2Node::GenerateShaderCode(std::unordered_map<std::string, std::string>& uniforms)
+{
+    const Pin& xPin = inputs[0];
+    std::string xCode = xPin.GenerateShaderCode(uniforms);
+    
+    const Pin& yPin = inputs[1];
+    std::string yCode = yPin.GenerateShaderCode(uniforms);
+    
+    return std::string("vec2(" + xCode + ", " + yCode + ")");
+}
