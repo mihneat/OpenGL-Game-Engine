@@ -38,5 +38,7 @@ namespace loaders
         static rendering::Shader* LoadMinimapShader();
         static rendering::Shader* LoadViewDepthTextureShader();
         static rendering::Shader* LoadViewColorTextureShader();
+        static rendering::Shader* LoadSimpleShader();
+        static rendering::Shader* LoadColorShader();
     };
 }   // namespace loaders

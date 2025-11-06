@@ -31,6 +31,7 @@ public:
 
     bool IsGamePlaying() const;
     bool IsGamePaused() const;
+    bool IsGameStepping() const;
     bool IsGameActive() const;
 
     bool IsGameWindowResized() const;
@@ -39,10 +40,13 @@ public:
 
     bool ShouldPlay() const;
     bool ShouldPause() const;
+    bool ShouldStep() const;
     bool ShouldReset() const;
     void UnmarkReset();
     bool ShouldSave() const;
     void UnmarkSave();
+    
+    void StopGameStepping();
 
     bool ShouldReloadShaders() const;
     void MarkReloadShaders();
@@ -63,6 +67,7 @@ public:
 
     void ToggleGamePlaying();
     void ToggleGamePaused();
+    void ToggleGameStepping();
 
     utils::FBOContainer* GetSceneFBOContainer();
     utils::FBOContainer* GetGameFBOContainer();
@@ -89,7 +94,7 @@ private:
     bool showHierarchy = true;
     bool showInspector = true;
     bool showPreferences = false;
-    bool showShaderGraph = true;
+    bool showShaderGraph = false;
     bool showDebugConsole = false;
     bool showDemoWindow = true;
 
@@ -99,6 +104,7 @@ private:
 
     bool gameIsPlaying = false;
     bool gameIsPaused = false;
+    bool gameIsStepping = false;
 
     bool isSceneWindowFocused = false;
     bool isGameWindowFocused = false;
@@ -110,6 +116,7 @@ private:
     bool markStateReset = false;
     bool markStatePlay = false;
     bool markStatePause = false;
+    bool markStateStep = false;
     
     bool markStateSave = false;
     

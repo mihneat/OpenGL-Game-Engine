@@ -8,9 +8,11 @@
 #include "Serializer.h"
 
 #include "CppHeaderParser.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Physics\Colliders\BoxCollider.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Camera.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\CameraFollow.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\CameraStick.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Physics\Collider.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\DirectionalLight.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\DistanceDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\AsteroidHills\FractalTreeRoot.h"
@@ -31,9 +33,11 @@
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Player\PlayerController.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\PointLight.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Helicopter\PropellerRotation.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Physics\Rigidbody.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\RunsDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\ScoreDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\SpeedSelectionDisplay.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Physics\Colliders\SphereCollider.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\SpotLight.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\UI\StartRunDisplay.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Shading\SteepShaderParams.h"
@@ -60,9 +64,11 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
     static const SerializedClassFields serializedClassFields = {
         // The empty string is necessary
         {"", std::vector<SerializedField>{}},
-        {"Camera", std::vector<SerializedField>{{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},}},
+        {"BoxCollider", std::vector<SerializedField>{{"halfSize", FieldTypeVec3},}},
+        {"Camera", std::vector<SerializedField>{{"skyboxColor", FieldTypeColour},{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},}},
         {"CameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"distanceToTarget", FieldTypeFloat},{"forwardFollowDistance", FieldTypeFloat},{"angleScale", FieldTypeFloat},{"retroAngleScale", FieldTypeFloat},{"isRetroCam", FieldTypeBool},}},
         {"CameraStick", std::vector<SerializedField>{}},
+        {"Collider", std::vector<SerializedField>{}},
         {"DirectionalLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"DistanceDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"FractalTreeRoot", std::vector<SerializedField>{{"selectionValue", FieldTypeFloat},}},
@@ -83,9 +89,11 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"PlayerController", std::vector<SerializedField>{{"acceleration", FieldTypeFloat},{"speed", FieldTypeFloat},{"maxSpeed", FieldTypeFloat},{"playerBody", FieldTypeTransform},{"tilt", FieldTypeFloat},{"tiltFactor", FieldTypeFloat},{"lives", FieldTypeInt},{"maxLives", FieldTypeInt},{"initialPosition", FieldTypeVec3},}},
         {"PointLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"PropellerRotation", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationAxis", FieldTypeVec3},}},
+        {"Rigidbody", std::vector<SerializedField>{{"mass", FieldTypeFloat},{"velocity", FieldTypeVec3},{"angularVelocity", FieldTypeVec3},{"restitutionCoefficient", FieldTypeFloat},{"isStatic", FieldTypeBool},}},
         {"RunsDisplay", std::vector<SerializedField>{}},
         {"ScoreDisplay", std::vector<SerializedField>{}},
         {"SpeedSelectionDisplay", std::vector<SerializedField>{}},
+        {"SphereCollider", std::vector<SerializedField>{{"radius", FieldTypeFloat},}},
         {"SpotLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"StartRunDisplay", std::vector<SerializedField>{}},
         {"SteepShaderParams", std::vector<SerializedField>{{"groundMat", FieldTypeGUID, "Material"},}},
@@ -114,9 +122,22 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
 
 void* Serializer::GetAttributeReference(Component* instance, const std::string& attributeName)
 {
+    if (instance->GetName() == "BoxCollider")
+    {
+        BoxCollider* obj = dynamic_cast<BoxCollider*>(instance);
+
+        if (attributeName == "halfSize")
+            return &obj->halfSize;
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "Camera")
     {
         Camera* obj = dynamic_cast<Camera*>(instance);
+
+        if (attributeName == "skyboxColor")
+            return &obj->skyboxColor;
 
         if (attributeName == "distanceToTarget")
             return &obj->distanceToTarget;
@@ -155,6 +176,13 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     if (instance->GetName() == "CameraStick")
     {
         CameraStick* obj = dynamic_cast<CameraStick*>(instance);
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "Collider")
+    {
+        Collider* obj = dynamic_cast<Collider*>(instance);
 
         return nullptr;
     }
@@ -530,6 +558,28 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         return nullptr;
     }
 
+    if (instance->GetName() == "Rigidbody")
+    {
+        Rigidbody* obj = dynamic_cast<Rigidbody*>(instance);
+
+        if (attributeName == "mass")
+            return &obj->mass;
+
+        if (attributeName == "velocity")
+            return &obj->velocity;
+
+        if (attributeName == "angularVelocity")
+            return &obj->angularVelocity;
+
+        if (attributeName == "restitutionCoefficient")
+            return &obj->restitutionCoefficient;
+
+        if (attributeName == "isStatic")
+            return &obj->isStatic;
+
+        return nullptr;
+    }
+
     if (instance->GetName() == "RunsDisplay")
     {
         RunsDisplay* obj = dynamic_cast<RunsDisplay*>(instance);
@@ -547,6 +597,16 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
     if (instance->GetName() == "SpeedSelectionDisplay")
     {
         SpeedSelectionDisplay* obj = dynamic_cast<SpeedSelectionDisplay*>(instance);
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "SphereCollider")
+    {
+        SphereCollider* obj = dynamic_cast<SphereCollider*>(instance);
+
+        if (attributeName == "radius")
+            return &obj->radius;
 
         return nullptr;
     }
@@ -694,9 +754,11 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
 Component* Serializer::ComponentFactory(const std::string& className, transform::Transform* parent)
 {
+    if (className == "BoxCollider") return new BoxCollider(parent);
     if (className == "Camera") return new Camera(parent);
     if (className == "CameraFollow") return new CameraFollow(parent);
     if (className == "CameraStick") return new CameraStick(parent);
+    if (className == "Collider") return new Collider(parent);
     if (className == "DirectionalLight") return new DirectionalLight(parent);
     if (className == "DistanceDisplay") return new DistanceDisplay(parent);
     if (className == "FractalTreeRoot") return new FractalTreeRoot(parent);
@@ -717,9 +779,11 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     if (className == "PlayerController") return new PlayerController(parent);
     if (className == "PointLight") return new PointLight(parent);
     if (className == "PropellerRotation") return new PropellerRotation(parent);
+    if (className == "Rigidbody") return new Rigidbody(parent);
     if (className == "RunsDisplay") return new RunsDisplay(parent);
     if (className == "ScoreDisplay") return new ScoreDisplay(parent);
     if (className == "SpeedSelectionDisplay") return new SpeedSelectionDisplay(parent);
+    if (className == "SphereCollider") return new SphereCollider(parent);
     if (className == "SpotLight") return new SpotLight(parent);
     if (className == "StartRunDisplay") return new StartRunDisplay(parent);
     if (className == "SteepShaderParams") return new SteepShaderParams(parent);
@@ -742,7 +806,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 
 const std::vector<std::string>& Serializer::GetSerializedClasses()
 {
-    static const std::vector<std::string> classNames = {"Camera","CameraFollow","CameraStick","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","MinimapCamera","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","TreeSpawner","UiPanel","UpdateLightPosition",};
+    static const std::vector<std::string> classNames = {"BoxCollider","Camera","CameraFollow","CameraStick","Collider","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","MinimapCamera","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","Rigidbody","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SphereCollider","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","TreeSpawner","UiPanel","UpdateLightPosition",};
     /**
      * Template(CLASS_NAME):
      *

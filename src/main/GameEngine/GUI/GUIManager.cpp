@@ -33,6 +33,8 @@ static const char* MainWindow_PlayBtnActive = "MainWindow_PlayBtnActive";
 static const char* MainWindow_PlayBtnInactive = "MainWindow_PlayBtnInactive";
 static const char* MainWindow_PauseBtnActive = "MainWindow_PauseBtnActive";
 static const char* MainWindow_PauseBtnInactive = "MainWindow_PauseBtnInactive";
+static const char* MainWindow_StepBtnActive = "MainWindow_StepBtnActive";
+static const char* MainWindow_StepBtnInactive = "MainWindow_StepBtnInactive";
 static const char* InspectorWindow_Header = "InspectorWindow_Header";
 
 GUIManager* GUIManager::GetInstance()
@@ -70,6 +72,8 @@ void GUIManager::LoadPreferences()
         {MainWindow_PlayBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
         {MainWindow_PauseBtnActive, glm::vec4(203, 183, 38, 255) / 255.0f},
         {MainWindow_PauseBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
+        {MainWindow_StepBtnActive, glm::vec4(203, 68, 38, 255) / 255.0f},
+        {MainWindow_StepBtnInactive, glm::vec4(54, 54, 54, 255) / 255.0f},
         {InspectorWindow_Header, glm::vec4(29, 34, 44, 255) / 255.0f}
     };
 }
@@ -82,6 +86,7 @@ void GUIManager::ShowMainMenuBar()
         {
             if (ImGui::MenuItem("Play", "CTRL+P", this->gameIsPlaying)) { markStatePlay = true; }
             if (ImGui::MenuItem("Pause", "CTRL+O", this->gameIsPaused)) { markStatePause = true; }
+            if (ImGui::MenuItem("Step", nullptr, this->gameIsStepping)) { markStateSave = true; }
             ImGui::Separator();
             if (ImGui::MenuItem("Save scene", "CTRL+S", nullptr, !this->gameIsPlaying)) { markStateSave = true; }
             if (ImGui::MenuItem("Serialise", "CTRL+R")) { CppHeaderParser::GenerateSerializedData(); }
@@ -129,6 +134,14 @@ void GUIManager::ToggleGamePaused()
 {
     gameIsPaused = !gameIsPaused;
     markStatePause = false;
+}
+
+void GUIManager::ToggleGameStepping()
+{
+    if (gameIsPlaying && gameIsPaused)
+        gameIsStepping = true;
+    
+    markStateStep = false;
 }
 
 void GUIManager::BeginRenderGUI(const World* world)
@@ -273,6 +286,7 @@ void GUIManager::ShowMainWindow()
         // Retrieve button colors
         glm::vec4 playBtnCol = IsGamePlaying() ? colors[MainWindow_PlayBtnActive] : colors[MainWindow_PlayBtnInactive];
         glm::vec4 pauseBtnCol = IsGamePaused() ? colors[MainWindow_PauseBtnActive] : colors[MainWindow_PauseBtnInactive];
+        glm::vec4 stepBtnCol = IsGameStepping() ? colors[MainWindow_StepBtnActive] : colors[MainWindow_StepBtnInactive];
         
         ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(playBtnCol));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(playBtnCol, 0.05f));
@@ -284,6 +298,12 @@ void GUIManager::ShowMainWindow()
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(pauseBtnCol, 0.05f));
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(pauseBtnCol, 0.15f));
         if (ImGui::Button("Pause##PauseBtn", buttonSize)) markStatePause = true;
+        ImGui::PopStyleColor(3);
+        
+        ImGui::PushStyleColor(ImGuiCol_Button, GlmVec4ToImVec4(stepBtnCol));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, GlmVec4ToImVec4(stepBtnCol, 0.05f));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, GlmVec4ToImVec4(stepBtnCol, 0.15f));
+        if (ImGui::Button("Step##StepBtn", buttonSize)) markStateStep = true;
         ImGui::PopStyleColor(3);
         
         ImGui::EndMenuBar();
@@ -1130,6 +1150,11 @@ void GUIManager::ShowPreferences()
     ImGui::Text("Pause button inactive"); ImGui::SameLine();
     ImGui::ColorEdit4("##Pause button inactive color", reinterpret_cast<float*>(&colors[MainWindow_PauseBtnInactive]));
     
+    ImGui::Text("Step button active"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Step btn active color", reinterpret_cast<float*>(&colors[MainWindow_StepBtnActive]));
+    ImGui::Text("Step button inactive"); ImGui::SameLine();
+    ImGui::ColorEdit4("##Step button inactive color", reinterpret_cast<float*>(&colors[MainWindow_StepBtnInactive]));
+    
     ImGui::Text("Inspector header"); ImGui::SameLine();
     ImGui::ColorEdit4("##Inspector header color", reinterpret_cast<float*>(&colors[InspectorWindow_Header]));
     
@@ -1187,9 +1212,14 @@ bool GUIManager::IsGamePaused() const
     return gameIsPaused;
 }
 
+bool GUIManager::IsGameStepping() const
+{
+    return gameIsStepping;
+}
+
 bool GUIManager::IsGameActive() const
 {
-    return gameIsPlaying && !gameIsPaused;
+    return gameIsPlaying && (!gameIsPaused || gameIsStepping);
 }
 
 bool GUIManager::IsGameWindowResized() const
@@ -1212,6 +1242,11 @@ bool GUIManager::ShouldPause() const
     return markStatePause;
 }
 
+bool GUIManager::ShouldStep() const
+{
+    return markStateStep;
+}
+
 bool GUIManager::ShouldReset() const
 {
     return markStateReset;
@@ -1230,6 +1265,11 @@ bool GUIManager::ShouldSave() const
 void GUIManager::UnmarkSave()
 {
     markStateSave = false;
+}
+
+void GUIManager::StopGameStepping()
+{
+    gameIsStepping = false;
 }
 
 bool GUIManager::ShouldReloadShaders() const

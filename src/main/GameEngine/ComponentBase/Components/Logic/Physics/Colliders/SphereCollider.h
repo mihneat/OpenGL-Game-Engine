@@ -1,0 +1,27 @@
+#pragma once
+
+#include <vector>
+#include <unordered_set>
+
+#include "utils/glm_utils.h"
+#include "main/GameEngine/ComponentBase/Component.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Collider.h"
+
+namespace component
+{
+    SERIALIZE_CLASS
+    class SphereCollider : public Collider
+    {
+        MARK_SERIALIZABLE(SphereCollider)
+        
+    public:
+        SphereCollider(transform::Transform* transform) : Collider(transform) { }
+        virtual ~SphereCollider() { }
+
+        bool CollidesWith(Collider* other, CollisionHit& hit) override;
+        
+        SERIALIZE_FIELD float radius = 0.0f;
+        
+    protected:
+    };
+}

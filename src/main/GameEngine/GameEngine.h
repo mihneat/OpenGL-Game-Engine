@@ -86,6 +86,7 @@ namespace m1
 
         void AwakeComponents(transform::Transform *currentTransform);
         void StartComponents(transform::Transform *currentTransform);
+        void SimulatePhysics(transform::Transform* transform, const float deltaTime);
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
@@ -107,7 +108,7 @@ namespace m1
         utils::FBOContainer shadowMapFBOContainer;
         component::Camera* shadowMappingCamera;
 
-        bool drawDebugShadowMappingTextures = true;
+        bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;
 
     };

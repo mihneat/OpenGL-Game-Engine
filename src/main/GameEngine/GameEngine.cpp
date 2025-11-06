@@ -9,6 +9,8 @@
 #include <vector>
 #include <stack>
 
+#include "ComponentBase/Components/Logic/Physics/Collider.h"
+#include "ComponentBase/Components/Logic/Physics/Rigidbody.h"
 #include "main/GameEngine/Serialization/Serializer.h"
 #include "ComponentBase/Components/Rendering/Camera.h"
 #include "core/managers/resource_path.h"
@@ -42,7 +44,7 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     
@@ -171,6 +173,12 @@ void GameEngine::FrameStart()
     
     if (GUIManager::GetInstance()->ShouldPause())
         GUIManager::GetInstance()->ToggleGamePaused();
+
+    if (GUIManager::GetInstance()->IsGameStepping())
+        GUIManager::GetInstance()->StopGameStepping();
+    
+    if (GUIManager::GetInstance()->ShouldStep())
+        GUIManager::GetInstance()->ToggleGameStepping();
     
     if (GUIManager::GetInstance()->ShouldReset())
     {
@@ -245,6 +253,10 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
     if (GUIManager::GetInstance()->IsGameActive())
     {
         this->StartComponents(hierarchy);
+
+        // Unity places the physics update between Start and Update
+        this->SimulatePhysics(hierarchy, deltaTimeSeconds);
+        
         this->UpdateComponents(hierarchy, deltaTimeSeconds);
         this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
     }
@@ -662,6 +674,147 @@ void GameEngine::StartComponents(Transform* currentTransform)
             component->Start();
         }
     });
+}
+
+void ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hit)
+{
+    // std::cout << "Detected collision between " << colliderA->transform->GetName() << " and " << colliderB->transform->GetName() << '\n';
+    
+    Rigidbody* rbA = colliderA->transform->GetComponent<Rigidbody>();
+    Rigidbody* rbB = colliderB->transform->GetComponent<Rigidbody>();
+    float massA = rbA->GetMass();
+    float massB = rbB->GetMass();
+    glm::vec3 velocityA = rbA->IsStatic() ? glm::vec3(0.0f) : rbA->GetVelocity();
+    glm::vec3 velocityB = rbB->IsStatic() ? glm::vec3(0.0f) : rbB->GetVelocity();
+
+    if (rbA == nullptr || rbB == nullptr || rbA == rbB)
+    {
+        std::cout << "Either a Rigidbody is missing, or they are the same\n";
+        return;
+    }
+
+    // Compute the new linear velocities
+    // Source 1: https://perso.liris.cnrs.fr/nicolas.pronost/UUCourses/GamePhysics/lectures/lecture%207%20Collision%20Resolution.pdf
+    // Source 2: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
+    float massFactor;
+    if (rbA->IsStatic() && rbB->IsStatic())
+    {
+        massFactor = 1.0f;
+    }
+    else if (rbA->IsStatic())
+    {
+        massFactor = massB;
+    }
+    else if (rbB->IsStatic())
+    {
+        massFactor = massA;
+    }
+    else
+    {
+        massFactor = massA * massB / (massA + massB);
+    }
+    
+    float commonImpulseMagnitudeFactor = -1.0f * massFactor * glm::dot(velocityA - velocityB, hit.normal);
+    float impulseMagnitudeA = (1.0f + rbA->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor;
+    float impulseMagnitudeB = (1.0f + rbB->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor;
+
+    glm::vec3 newLinearVelocityA = rbA->GetVelocity() + (impulseMagnitudeA / massA) * hit.normal;
+    glm::vec3 newLinearVelocityB = rbB->GetVelocity() - (impulseMagnitudeB / massB) * hit.normal;
+    
+    rbA->SetVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityA);
+    rbB->SetVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityB);
+
+    // TODO: Compute the new angular velocities
+
+    // TODO: Compute friction
+}
+
+void GameEngine::SimulatePhysics(transform::Transform* transform, const float deltaTime)
+{
+    static constexpr float g = 9.81f;
+    
+    // Find all Colliders
+    std::vector<Collider*> colliders;
+    std::vector<Rigidbody*> rbs;
+    ApplyToComponents(transform, [&colliders, &rbs](Component* component) {
+        Collider* collider = dynamic_cast<Collider*>(component);
+        Rigidbody* rb = dynamic_cast<Rigidbody*>(component);
+        
+        if (collider != nullptr && collider->IsActive())
+            colliders.push_back(collider);
+        
+        if (rb != nullptr && rb->IsActive())
+            rbs.push_back(rb);
+    });
+
+    // Apply external forces
+    for (auto rb : rbs)
+    {
+        if (rb->IsStatic())
+            continue;
+
+        // Apply external forces
+        float G = rb->GetMass() * g;
+        rb->AddForce(glm::vec3_down * G);
+    }
+
+    // Predict one step
+    std::vector<glm::vec3> prevVelocities;
+    for (auto rb : rbs)
+    {
+        prevVelocities.push_back(rb->GetVelocity());
+        
+        if (rb->IsStatic())
+            continue;
+
+        // Apply physics update
+        rb->transform->Translate(rb->GetVelocity() * deltaTime);
+
+        // TODO: Predict angular velocity (somehow)
+    }
+    
+    // Resolve collisions
+    for (int i = 0; i < colliders.size(); ++i)
+    {
+        Collider* colliderA = colliders[i];
+        for (int j = i + 1; j < colliders.size(); ++j)
+        {
+            Collider* colliderB = colliders[j];
+            
+            // Detect and resolve collision
+            CollisionHit hit;
+            hit.hasHit = false;
+            
+            if (colliderA->CollidesWith(colliderB, hit))
+                ResolveCollision(colliderA, colliderB, hit);
+        }
+    }
+    
+    // Revert prediction
+    for (int i = 0; i < rbs.size(); ++i)
+    {
+        Rigidbody* rb = rbs[i];
+        if (rb->IsStatic())
+            continue;
+
+        // TODO: Revert angular velocity (somehow)
+
+        // Revert physics update
+        rb->transform->Translate(-prevVelocities[i] * deltaTime);
+    }
+    
+    // Apply physics update
+    for (int i = 0; i < rbs.size(); ++i)
+    {
+        Rigidbody* rb = rbs[i];
+        if (rb->IsStatic())
+            continue;
+
+        // Apply physics update
+        rb->transform->Translate(rb->GetVelocity() * deltaTime);
+
+        // TODO: Apply angular velocity (somehow)
+    }
 }
 
 void GameEngine::UpdateComponents(Transform* currentTransform, const float deltaTime)

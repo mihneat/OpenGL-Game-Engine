@@ -82,7 +82,7 @@ namespace component
         glm::vec2 viewportBottomLeft = glm::vec2();
         glm::vec2 viewportWidthHeight = glm::vec2();
 
-        glm::vec4 skyboxColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        SERIALIZE_FIELD glm::vec4 skyboxColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
     protected:
         SERIALIZE_FIELD float distanceToTarget;

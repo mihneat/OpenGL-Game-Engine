@@ -85,11 +85,11 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
         break;
 
     case Simple:
-        newShader = LoadShader("Simple", "MVP.Texture.VS.glsl", "Default.FS.glsl");
+        newShader = LoadSimpleShader();
         break;
 
     case Color:
-        newShader = LoadShader("Color", "MVP.Texture.VS.glsl", "Color.FS.glsl");
+        newShader = LoadColorShader();
         break;
 
     case VertexNormal:
@@ -260,6 +260,38 @@ Shader* ShaderLoader::LoadViewColorTextureShader()
             true);
     
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE, newShader);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadSimpleShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_SIMPLE) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_SIMPLE,
+            "Shaders/Base/MVP.Texture.VS.glsl",
+            "Shaders/Base/Default.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_SIMPLE, newShader);
+
+    return newShader;
+}
+
+Shader* ShaderLoader::LoadColorShader()
+{
+    // Check if the name exists
+    if (ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_COLOR) != nullptr)
+        return nullptr;
+    
+    Shader *newShader = LoadShader(ShaderResourceManager::SHADER_COLOR,
+            "Shaders/Base/MVP.Texture.VS.glsl",
+            "Shaders/Base/Color.FS.glsl",
+            true);
+    
+    ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_COLOR, newShader);
 
     return newShader;
 }
