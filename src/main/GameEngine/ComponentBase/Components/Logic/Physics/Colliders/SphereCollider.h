@@ -15,7 +15,7 @@ namespace component
         MARK_SERIALIZABLE(SphereCollider)
         
     public:
-        SphereCollider(transform::Transform* transform) : Collider(transform) { }
+        SphereCollider(transform::Transform* transform, float radius = 0.0f) : Collider(transform), radius(radius) { }
         virtual ~SphereCollider() { }
 
         bool CollidesWith(Collider* other, CollisionHit& hit) override;

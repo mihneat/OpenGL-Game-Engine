@@ -3,6 +3,9 @@
 #include "ComponentBase/Components/Logic/Objects/AsteroidHills/FractalTreeRoot.h"
 #include "ComponentBase/Components/Logic/Objects/AsteroidHills/FractalTreeSegment.h"
 #include "ComponentBase/Components/Logic/Objects/AsteroidHills/Marker.h"
+#include "ComponentBase/Components/Logic/Physics/Rigidbody.h"
+#include "ComponentBase/Components/Logic/Physics/Colliders/BoxCollider.h"
+#include "ComponentBase/Components/Logic/Physics/Colliders/SphereCollider.h"
 #include "main/GameEngine/Managers/TextureLoader.h"
 #include "Managers/GameInstance.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
@@ -444,5 +447,43 @@ Transform* PrefabManager::CreateFractalTreeSegment(Transform* parent)
     mesh->GetComponent<MeshRenderer>()->SetTexture3(TextureLoader::GetTextureByName("TreeCorona"));
     
     return fractalTreeSegment;
+}
+
+// Physics engine prefabs
+Transform* PrefabManager::CreatePhysicsSphere(Transform* parent)
+{
+    // Build a random color
+    glm::vec4 col = glm::vec4(69.0f / 255.0f, 205.0f / 255.0f, 234.0f / 255.0f, 1.0f);
+    
+    Transform* physicsObj = new Transform(parent, "SphereClone");
+    physicsObj->SetScale(glm::vec3(5, 5, 5));
+    physicsObj->AddComponent(new MeshRenderer(physicsObj, MeshRenderer::Sphere, "physicsSphere", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE),
+        MeshRenderer::Default, glm::vec3(1), col));
+    physicsObj->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("Player3"));
+    physicsObj->AddComponent(new Rigidbody(physicsObj));
+    physicsObj->AddComponent(new SphereCollider(physicsObj, 2.5f));
+    
+    return physicsObj;
+}
+
+Transform* PrefabManager::CreatePhysicsCube(Transform* parent)
+{
+    // Build a random color
+    glm::vec4 col = glm::vec4(1.0f);
+    
+    Transform* physicsObj = new Transform(parent, "BoxClone");
+    physicsObj->SetScale(glm::vec3(3, 3, 3));
+    physicsObj->AddComponent(new MeshRenderer(physicsObj, MeshRenderer::Cube, "physicsBox", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE),
+        MeshRenderer::Default, glm::vec3(1), col));
+    physicsObj->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("Player3"));
+    physicsObj->AddComponent(new Rigidbody(physicsObj));
+    physicsObj->AddComponent(new BoxCollider(physicsObj, glm::vec3(3.0f)));
+    
+    return physicsObj;
+}
+
+Transform* PrefabManager::CreatePhysicsCone(Transform* parent)
+{
+    return nullptr;
 }
 

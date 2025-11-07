@@ -60,6 +60,9 @@ namespace prefabManager
         static transform::Transform* CreateMarker(transform::Transform* parent = nullptr);
         static transform::Transform* CreateFractalTreeRoot(transform::Transform* parent);
         static transform::Transform* CreateFractalTreeSegment(transform::Transform* parent);
+        static transform::Transform* CreatePhysicsSphere(transform::Transform* parent);
+        static transform::Transform* CreatePhysicsCube(transform::Transform* parent);
+        static transform::Transform* CreatePhysicsCone(transform::Transform* parent);
 
     private:
         PrefabManager() {}

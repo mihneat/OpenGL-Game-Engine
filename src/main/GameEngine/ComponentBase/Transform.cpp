@@ -123,7 +123,7 @@ Transform* Transform::GetTransformByTag(std::string tag)
     }
 
     // We have NOT found any transforms with the given tag
-    return NULL;
+    return nullptr;
 }
 
 Transform* Transform::Instantiate(Transform* transform)

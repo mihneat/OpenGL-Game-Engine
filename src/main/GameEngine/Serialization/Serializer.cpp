@@ -30,6 +30,7 @@
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\ObjectSpawner.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\Obstacle.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Camera\OrthoCameraFollow.h"
+#include "..\src\main\GameEngine\ComponentBase\Components\Logic\Objects\PhysicsSimulation\PhysicsObjectSpawner.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Player\PlayerController.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Rendering\Lights\PointLight.h"
 #include "..\src\main\GameEngine\ComponentBase\Components\Logic\Helicopter\PropellerRotation.h"
@@ -81,11 +82,12 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"Marker", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationSpeed", FieldTypeFloat},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"faceCullingMode", FieldTypeEnum, "FaceCullingMode"},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
         {"MinimapCamera", std::vector<SerializedField>{}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
         {"OrthoCameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"isFixed", FieldTypeBool},{"zoom", FieldTypeFloat},{"minDimensions", FieldTypeVec2},{"maxDimensions", FieldTypeVec2},{"fixedDimensions", FieldTypeVec2},{"zoomSpeed", FieldTypeFloat},}},
+        {"PhysicsObjectSpawner", std::vector<SerializedField>{{"spawnBoxSize", FieldTypeVec3},{"spheresCustomBatch", FieldTypeInt},{"cubesCustomBatch", FieldTypeInt},{"conesCustomBatch", FieldTypeInt},}},
         {"PlayerController", std::vector<SerializedField>{{"acceleration", FieldTypeFloat},{"speed", FieldTypeFloat},{"maxSpeed", FieldTypeFloat},{"playerBody", FieldTypeTransform},{"tilt", FieldTypeFloat},{"tiltFactor", FieldTypeFloat},{"lives", FieldTypeInt},{"maxLives", FieldTypeInt},{"initialPosition", FieldTypeVec3},}},
         {"PointLight", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"PropellerRotation", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationAxis", FieldTypeVec3},}},
@@ -392,6 +394,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         if (attributeName == "meshScale")
             return &obj->meshScale;
 
+        if (attributeName == "faceCullingMode")
+            return &obj->faceCullingMode;
+
         if (attributeName == "debugOnly")
             return &obj->debugOnly;
 
@@ -485,6 +490,25 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "zoomSpeed")
             return &obj->zoomSpeed;
+
+        return nullptr;
+    }
+
+    if (instance->GetName() == "PhysicsObjectSpawner")
+    {
+        PhysicsObjectSpawner* obj = dynamic_cast<PhysicsObjectSpawner*>(instance);
+
+        if (attributeName == "spawnBoxSize")
+            return &obj->spawnBoxSize;
+
+        if (attributeName == "spheresCustomBatch")
+            return &obj->spheresCustomBatch;
+
+        if (attributeName == "cubesCustomBatch")
+            return &obj->cubesCustomBatch;
+
+        if (attributeName == "conesCustomBatch")
+            return &obj->conesCustomBatch;
 
         return nullptr;
     }
@@ -776,6 +800,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
     if (className == "ObjectSpawner") return new ObjectSpawner(parent);
     if (className == "Obstacle") return new Obstacle(parent);
     if (className == "OrthoCameraFollow") return new OrthoCameraFollow(parent);
+    if (className == "PhysicsObjectSpawner") return new PhysicsObjectSpawner(parent);
     if (className == "PlayerController") return new PlayerController(parent);
     if (className == "PointLight") return new PointLight(parent);
     if (className == "PropellerRotation") return new PropellerRotation(parent);
@@ -806,7 +831,7 @@ Component* Serializer::ComponentFactory(const std::string& className, transform:
 
 const std::vector<std::string>& Serializer::GetSerializedClasses()
 {
-    static const std::vector<std::string> classNames = {"BoxCollider","Camera","CameraFollow","CameraStick","Collider","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","MinimapCamera","ObjectSpawner","Obstacle","OrthoCameraFollow","PlayerController","PointLight","PropellerRotation","Rigidbody","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SphereCollider","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","TreeSpawner","UiPanel","UpdateLightPosition",};
+    static const std::vector<std::string> classNames = {"BoxCollider","Camera","CameraFollow","CameraStick","Collider","DirectionalLight","DistanceDisplay","FractalTreeRoot","FractalTreeSegment","GameManager","GameOverDisplay","GroundStick","HelicopterMovement","HighScoreDisplay","LifeDisplay","Light","Marker","MeshRenderer","MinimapCamera","ObjectSpawner","Obstacle","OrthoCameraFollow","PhysicsObjectSpawner","PlayerController","PointLight","PropellerRotation","Rigidbody","RunsDisplay","ScoreDisplay","SpeedSelectionDisplay","SphereCollider","SpotLight","StartRunDisplay","SteepShaderParams","Sun","TextRenderer","TransformVisualizer","TreeSpawner","UiPanel","UpdateLightPosition",};
     /**
      * Template(CLASS_NAME):
      *
@@ -826,6 +851,7 @@ const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum
         {"TransformDirection", {{"TransformDirectionForward", 0},{"TransformDirectionRight", 1},{"TransformDirectionUp", 2},{"TransformDirectionCenter", 3},}},
         {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cylinder", 3},{"Cube", 4},{"CubeMesh", 5},{"Sphere", 6},{"Heart", 7},{"Cone", 8},{"None", 9},}},
         {"LayerEnum", {{"Default", 0},{"UI", 1},{"Minimap", 2},}},
+        {"FaceCullingMode", {{"CullNone", 0},{"CullBack", 1},{"CullFront", 2},{"CullBoth", 3},}},
 
         /**
          * Template(ENUM_NAME, ENUM_VALUES[])

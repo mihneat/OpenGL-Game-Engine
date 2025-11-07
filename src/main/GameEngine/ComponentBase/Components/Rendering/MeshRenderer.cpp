@@ -197,7 +197,7 @@ mesh_desc MeshRenderer::CreateFragmentedSquare()
                 glm::mix(1.0f, 0.0f, 1.0f * l / (fragCount - 1))
             );
 
-            vertices.push_back(VertexFormat(verticesMat[l][c], glm::vec3(1.0f), glm::vec3_forward, texMat[l][c]));
+            vertices.push_back(VertexFormat(verticesMat[l][c], glm::vec3(1.0f), -glm::vec3_forward, texMat[l][c]));
         }
     }
 
@@ -453,7 +453,7 @@ mesh_desc MeshRenderer::CreateCube()
     {
         // Face 2-3-0-1: 0 - 3
         0, 1, 2,
-        3, 1, 2,
+        1, 3, 2,
 
         // Face 4-5-6-7: 4 - 7
         4, 5, 6,

@@ -64,6 +64,26 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
             SetLocalUniforms(material->shader, meshRenderer, cam, shadowDepthTextureId, resolution);
             
             SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
+
+            // Set up face culling
+            switch (meshRenderer->faceCullingMode)
+            {
+            case component::MeshRenderer::CullNone:
+                glDisable(GL_CULL_FACE);
+                break;
+            case component::MeshRenderer::CullBack:
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
+                break;
+            case component::MeshRenderer::CullFront:
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT);
+                break;
+            case component::MeshRenderer::CullBoth:
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_FRONT_AND_BACK);
+                break;
+            }
             
             // Render the mesh
             const Mesh *mesh = MeshResourceManager::meshes[std::to_string(meshRenderer->meshType)];

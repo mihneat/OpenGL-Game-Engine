@@ -17,7 +17,7 @@ namespace component
         
     public:
         // Note: Box collider has the implementation of an OBB
-        BoxCollider(transform::Transform* transform) : Collider(transform) { }
+        BoxCollider(transform::Transform* transform, glm::vec3 halfSize = glm::vec3(.5f)) : Collider(transform), halfSize(halfSize) { }
         virtual ~BoxCollider() { }
 
         bool CollidesWith(Collider* other, CollisionHit& hit) override;

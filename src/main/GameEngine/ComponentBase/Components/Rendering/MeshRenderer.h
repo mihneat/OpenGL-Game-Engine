@@ -55,6 +55,14 @@ namespace component
             Minimap
         };
 
+        SERIALIZE_ENUM
+        enum FaceCullingMode {
+            CullNone,
+            CullBack,
+            CullFront,
+            CullBoth
+        };
+
         MeshRenderer(
             transform::Transform* transform,
             MeshEnum meshType = Cube,
@@ -93,6 +101,7 @@ namespace component
         SERIALIZE_FIELD MeshEnum meshType = Cube;
         SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
         SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1);
+        SERIALIZE_FIELD FaceCullingMode faceCullingMode = CullBack;
 
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
