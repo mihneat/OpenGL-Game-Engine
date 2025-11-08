@@ -48,9 +48,14 @@ bool BoxCollider::CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm:
         minimumOverlap = overlap;
         
         hit.normal = hitNormal;
-        
+
+        // This is a very raw approximation of the collision point, but finding the correct collision point is VERY tough
         glm::vec3 vectorToMiddle = hitNormal * (halfSizeProjectionsA - overlap / 2.0f);
         hit.point = boxA->transform->GetWorldPosition() + vectorToMiddle;
+        
+        // glm::vec3 vectorToMiddleA = boxA->transform->GetWorldPosition() + hitNormal * halfSizeProjectionsA;
+        // glm::vec3 vectorToMiddleB = boxB->transform->GetWorldPosition() - hitNormal * halfSizeProjectionsB;
+        // hit.point = (vectorToMiddleA + vectorToMiddleA) / 2.0f;
     }
 
     return false;

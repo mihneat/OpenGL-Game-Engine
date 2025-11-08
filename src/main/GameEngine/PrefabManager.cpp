@@ -476,7 +476,7 @@ Transform* PrefabManager::CreatePhysicsCube(Transform* parent)
     physicsObj->AddComponent(new MeshRenderer(physicsObj, MeshRenderer::Cube, "physicsBox", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE),
         MeshRenderer::Default, glm::vec3(1), col));
     physicsObj->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("Player3"));
-    physicsObj->AddComponent(new Rigidbody(physicsObj));
+    physicsObj->AddComponent(new Rigidbody(physicsObj, 0.1f, 0.4f));
     physicsObj->AddComponent(new BoxCollider(physicsObj, glm::vec3(3.0f)));
     
     return physicsObj;

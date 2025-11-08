@@ -1,6 +1,7 @@
 #include "PhysicsObjectSpawner.h"
 
 #include "main/GameEngine/PrefabManager.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 
 using namespace std;
 using namespace component;
@@ -115,5 +116,22 @@ void PhysicsObjectSpawner::KeyPress(const int key, const int mods)
 
         Reset();
         SpawnObjects();
+    } else if (key == GLFW_KEY_SPACE)
+    {
+        for (int i = spawnParent->GetChildCount() - 1; i >= 0; i--) {
+            Rigidbody* rb = spawnParent->GetChild(i)->GetComponent<Rigidbody>();
+            if (rb == nullptr)
+                continue;
+            
+            const glm::vec3 randomVector(
+                1.0f * (rand() * rand() % 1001) / 500.0f - 1.0f, // [-1, 1]
+                1.0f * (rand() * rand() % 1001) / 500.0f - 1.0f, // [-1, 1]
+                1.0f * (rand() * rand() % 1001) / 500.0f - 1.0f  // [-1, 1]
+            );
+            
+            const float randomForceMagnitude = 1.0f * (rand() * rand() % 200);
+
+            rb->AddForce(randomVector * randomForceMagnitude);
+        }
     }
 }

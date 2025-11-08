@@ -449,7 +449,7 @@
           },
           "rotation": {
             "x": 0.0,
-            "y": 1.5707963705062866,
+            "y": -1.5707963705062866,
             "z": 0.0
           },
           "scale": {
@@ -489,7 +489,7 @@
                 {
                   "name": "faceCullingMode",
                   "type": "FieldTypeEnum",
-                  "value": 2
+                  "value": 1
                 },
                 {
                   "name": "debugOnly",
@@ -618,7 +618,7 @@
           },
           "rotation": {
             "x": 0.0,
-            "y": -1.5707963705062866,
+            "y": 1.5707963705062866,
             "z": 0.0
           },
           "scale": {
@@ -658,7 +658,7 @@
                 {
                   "name": "faceCullingMode",
                   "type": "FieldTypeEnum",
-                  "value": 2
+                  "value": 1
                 },
                 {
                   "name": "debugOnly",
@@ -1114,6 +1114,82 @@
             }
           ],
           "children": []
+        },
+        {
+          "name": "GroundCollision",
+          "tag": "Default",
+          "position": {
+            "x": 0.0,
+            "y": -5.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": -1.5707963705062866,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 200.0,
+            "y": 100.0,
+            "z": 5.0
+          },
+          "components": [
+            {
+              "className": "Rigidbody",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "mass",
+                  "type": "FieldTypeFloat",
+                  "value": 0.10000000149011612
+                },
+                {
+                  "name": "velocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "angularVelocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "restitutionCoefficient",
+                  "type": "FieldTypeFloat",
+                  "value": 0.800000011920929
+                },
+                {
+                  "name": "isStatic",
+                  "type": "FieldTypeBool",
+                  "value": true
+                }
+              ]
+            },
+            {
+              "className": "BoxCollider",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "halfSize",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 200.0,
+                    "y": 100.0,
+                    "z": 5.0
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
         }
       ]
     },
@@ -1122,7 +1198,7 @@
       "tag": "Default",
       "position": {
         "x": 0.0,
-        "y": 0.0,
+        "y": -73.05999755859375,
         "z": 0.0
       },
       "rotation": {
@@ -1801,8 +1877,8 @@
           "name": "Box",
           "tag": "Default",
           "position": {
-            "x": 12.84000015258789,
-            "y": 35.540000915527344,
+            "x": -19.18000030517578,
+            "y": 8.34000015258789,
             "z": 0.0
           },
           "rotation": {
@@ -1922,7 +1998,7 @@
                   "name": "velocity",
                   "type": "FieldTypeVec3",
                   "value": {
-                    "x": 0.0,
+                    "x": -20.0,
                     "y": 0.0,
                     "z": 0.0
                   }
@@ -1939,7 +2015,7 @@
                 {
                   "name": "restitutionCoefficient",
                   "type": "FieldTypeFloat",
-                  "value": 0.800000011920929
+                  "value": 0.20000000298023224
                 },
                 {
                   "name": "isStatic",
@@ -2269,7 +2345,7 @@
                   "name": "angularVelocity",
                   "type": "FieldTypeVec3",
                   "value": {
-                    "x": 0.0,
+                    "x": 1.1799999475479126,
                     "y": 2.0,
                     "z": 0.0
                   }

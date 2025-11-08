@@ -14,7 +14,7 @@ namespace component
         MARK_SERIALIZABLE(Rigidbody)
         
     public:
-        Rigidbody(transform::Transform* transform) : Component(transform) { }
+        Rigidbody(transform::Transform* transform, float mass = 0.1f, float restitutionCoefficient = 0.8f) : Component(transform), mass(mass), restitutionCoefficient(restitutionCoefficient) { }
         virtual ~Rigidbody() { }
 
         bool IsStatic() const;

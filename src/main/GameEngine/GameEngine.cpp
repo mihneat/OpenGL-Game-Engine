@@ -711,6 +711,14 @@ void ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hi
     if (glm::dot(relativeVelocity, hit.normal) < 0.0f)
         return;
 
+    // Check for resting contact
+    float restitutionCoefficientA = rbA->GetRestitutionCoefficient();
+    float restitutionCoefficientB = rbB->GetRestitutionCoefficient();
+    float restitutionCoefficient = min(restitutionCoefficientA, restitutionCoefficientB);
+    
+    // if (abs(glm::dot(relativeVelocity, hit.normal)) < 1.0f)
+    //     restitutionCoefficient = 0.0f;
+
     // Compute the new linear velocities
     // Source 1: https://perso.liris.cnrs.fr/nicolas.pronost/UUCourses/GamePhysics/lectures/lecture%207%20Collision%20Resolution.pdf
     // Source 2: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
@@ -734,22 +742,48 @@ void ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hi
     );
     float denominator = massFactor + angularVelocityTerm;
     
-    float impulseMagnitudeA = (1.0f + rbA->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor / denominator;
-    float impulseMagnitudeB = (1.0f + rbB->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor / denominator;
+    float impulseMagnitude = (1.0f + restitutionCoefficient) * commonImpulseMagnitudeFactor / denominator;
+    
+    glm::vec3 impulse = hit.normal * impulseMagnitude;
 
-    glm::vec3 newLinearVelocityA = rbA->GetVelocity() + (impulseMagnitudeA / massA) * hit.normal;
-    glm::vec3 newLinearVelocityB = rbB->GetVelocity() - (impulseMagnitudeB / massB) * hit.normal;
+    // Compute the friction force
+    glm::vec3 tangent = relativeVelocity - glm::dot(relativeVelocity, hit.normal) * hit.normal; // glm::normalize(glm::cross(glm::cross(hit.normal, relativeVelocity), hit.normal));
+    if (glm::length(tangent) < 0.1f)
+        tangent = glm::vec3(0);
+    else
+        tangent = -glm::normalize(tangent);
+    
+    float staticFrictionCoefficient = 0.6f;
+    float dynamicFrictionCoefficient = 0.4f;
 
-    glm::vec3 newAngularVelocityA = rbA->GetAngularVelocity() + momentOfInertiaInverseA * glm::cross(vecToHitPointA, impulseMagnitudeA * hit.normal);
-    glm::vec3 newAngularVelocityB = rbB->GetAngularVelocity() - momentOfInertiaInverseB * glm::cross(vecToHitPointB, impulseMagnitudeB * hit.normal);
+    float tangent_commonImpulseMagnitudeFactor = -1.0f * glm::dot(relativeVelocity, tangent);
+    float tangent_angularVelocityTerm = glm::dot(
+        (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, tangent), vecToHitPointA)) +
+        (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, tangent), vecToHitPointB)),
+        tangent
+    );
+    float tangent_denominator = massFactor + tangent_angularVelocityTerm;
+    
+    float tangent_impulseMagnitude = tangent_commonImpulseMagnitudeFactor / tangent_denominator;
+
+    // Check Coulomb's law
+    glm::vec3 tangent_impulse;
+    if (abs(tangent_impulseMagnitude) < impulseMagnitude * staticFrictionCoefficient)
+        tangent_impulse = tangent_impulseMagnitude * tangent;
+    else
+        tangent_impulse = -impulseMagnitude * tangent * dynamicFrictionCoefficient;
+
+    glm::vec3 newLinearVelocityA = rbA->GetVelocity() + impulse / massA + tangent_impulse / massA;
+    glm::vec3 newLinearVelocityB = rbB->GetVelocity() - impulse / massB - tangent_impulse / massB;
+
+    glm::vec3 newAngularVelocityA = rbA->GetAngularVelocity() + momentOfInertiaInverseA * glm::cross(vecToHitPointA, impulse) + momentOfInertiaInverseA * glm::cross(vecToHitPointA, tangent_impulse);
+    glm::vec3 newAngularVelocityB = rbB->GetAngularVelocity() - momentOfInertiaInverseB * glm::cross(vecToHitPointB, impulse) - momentOfInertiaInverseB * glm::cross(vecToHitPointB, tangent_impulse);
     
     rbA->SetVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityA);
     rbB->SetVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityB);
     
-    rbA->SetAngularVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : -newAngularVelocityA);
-    rbB->SetAngularVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : -newAngularVelocityB);
-
-    // TODO: Compute friction
+    rbA->SetAngularVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newAngularVelocityA);
+    rbB->SetAngularVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newAngularVelocityB);
 }
 
 void GameEngine::SimulatePhysics(transform::Transform* transform, const float deltaTime)
@@ -837,7 +871,7 @@ void GameEngine::SimulatePhysics(transform::Transform* transform, const float de
         rb->transform->Translate(rb->GetVelocity() * deltaTime);
 
         // Apply angular velocity
-        rb->transform->Rotate(rb->GetAngularVelocity() * deltaTime);
+        rb->transform->Rotate(-rb->GetAngularVelocity() * deltaTime);
     }
 }
 
