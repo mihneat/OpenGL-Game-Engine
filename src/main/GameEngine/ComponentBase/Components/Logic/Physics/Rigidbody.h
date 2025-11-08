@@ -21,7 +21,9 @@ namespace component
         float GetMass() const;
         float GetRestitutionCoefficient() const;
         glm::vec3 GetVelocity() const;
+        glm::vec3 GetAngularVelocity() const;
         void SetVelocity(glm::vec3 velocity);
+        void SetAngularVelocity(glm::vec3 newAngularVelocity);
         
         void AddForce(glm::vec3 force);
 

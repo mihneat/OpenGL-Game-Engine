@@ -45,6 +45,7 @@ namespace component
             Sphere,
             Heart,
             Cone,
+            Line,
             None
         };
 
@@ -108,6 +109,7 @@ namespace component
         mesh_desc CreateCircle(const int circleVertexCount, const bool makeRainbow, const bool makeHollow);
         mesh_desc CreateCylinder(int segmentCount);
         mesh_desc CreateCube();
+        mesh_desc CreateLine();
         mesh_desc CreateRoad();
 
     private:

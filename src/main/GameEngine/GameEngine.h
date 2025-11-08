@@ -72,6 +72,8 @@ namespace m1
 
         void ReloadScene();
 
+        void InitDebugShapes();
+
     public:
         static glm::vec4 ExtractSelectionData(int mouseX, int mouseY);
         

@@ -19,6 +19,7 @@ namespace component
         virtual ~SphereCollider() { }
 
         bool CollidesWith(Collider* other, CollisionHit& hit) override;
+        float GetMomentOfInertia(float mass) override;
         
         SERIALIZE_FIELD float radius = 0.0f;
         

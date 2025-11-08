@@ -6,6 +6,7 @@
 #include "MeshResourceManager.h"
 #include "ShaderResourceManager.h"
 #include "main/GameEngine/GameEngine.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 #include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 #include "main/GameEngine/Systems/Editor/EditorRuntimeSettings.h"
 
@@ -100,6 +101,43 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
                 textRenderer->RenderText(text->text, text->position.x, text->position.y, text->scale, text->color);
             }
         });
+
+    // TODO: Fix this code, it has potential :((
+
+    // // Render debug shapes
+    // glClear(GL_DEPTH_BUFFER_BIT);
+    // m1::GameEngine::ApplyToComponents(hierarchy, [this, cam](component::Component* component) {
+    //     component::Rigidbody* rb = dynamic_cast<component::Rigidbody*>(component);
+    //     if (rb != nullptr) {
+    //         // Use a debug shader
+    //         Shader* shader = ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_COLOR);
+    //         shader->Use();
+    //
+    //         if (glm::length(rb->GetVelocity()) > 0.001f)
+    //         {
+    //             glLineWidth(2.0f);
+    //
+    //             // Set the uniforms
+    //             glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), rb->transform->GetWorldPosition());
+    //             modelMatrix = glm::scale(modelMatrix, glm::vec3(glm::length(rb->GetVelocity())));
+    //             modelMatrix *= glm::lookAt(glm::vec3(0, 0, 0), glm::normalize(rb->GetVelocity()), glm::cross(glm::normalize(rb->GetVelocity()), glm::vec3(0, 0, -1)));
+    //             
+    //             glUniformMatrix4fv(shader->loc_model_matrix, 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    //             glUniformMatrix4fv(shader->loc_view_matrix, 1, GL_FALSE, glm::value_ptr(cam->GetViewMatrix()));
+    //             glUniformMatrix4fv(shader->loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(cam->GetProjectionMatrix()));
+    //
+    //             glm::vec4 lineColor = glm::vec4(1, .2, .2, 1);
+    //             glUniform4fv(glGetUniformLocation(shader->program, "mesh_color"), 1, glm::value_ptr(lineColor));
+    //
+    //             // Render the debug velocity line
+    //             const Mesh *mesh = MeshResourceManager::meshes[std::to_string(component::MeshRenderer::Line)];
+    //             mesh->Render();
+    //
+    //             // Reset the line width
+    //             glLineWidth(1.0f);
+    //         }
+    //     }
+    // });
 }
 
 void RenderingSystem::SetGlobalUniforms(

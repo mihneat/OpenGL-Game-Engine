@@ -26,6 +26,7 @@ namespace component
 
         // TODO: This should be pure abstract, but the serializer doesn't allow it yet :)
         virtual bool CollidesWith(Collider* other, CollisionHit& hit);
+        virtual float GetMomentOfInertia(float mass);
         
     };
 }

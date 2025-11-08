@@ -41,3 +41,9 @@ bool SphereCollider::CollidesWith(Collider* other, CollisionHit& hit)
     
     return false;
 }
+
+// Check: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+float SphereCollider::GetMomentOfInertia(float mass)
+{
+    return 2.0f / 5.0f * mass * radius * radius;
+}

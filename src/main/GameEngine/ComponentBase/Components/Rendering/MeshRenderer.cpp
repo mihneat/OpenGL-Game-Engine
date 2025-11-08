@@ -115,6 +115,10 @@ void MeshRenderer::MeshFactory()
         meshDescription = CreateCube();
         break;
 
+    case Line:
+        meshDescription = CreateLine();
+        break;
+
     case CubeMesh:
         LoadMesh("box.obj", "primitives");
         break;
@@ -369,40 +373,6 @@ mesh_desc MeshRenderer::CreateCylinder(const int segmentCount)
 
 mesh_desc MeshRenderer::CreateCube()
 {
-    //vector<VertexFormat> vertices
-    //{
-    //    VertexFormat(glm::vec3(-1, -1, -1), glm::vec3(1.0f), glm::vec3(-1, -1, -1)), // 0
-    //    VertexFormat(glm::vec3(-1, -1,  1), glm::vec3(1.0f), glm::vec3(-1, -1,  1)), // 1
-    //    VertexFormat(glm::vec3(1, -1, -1), glm::vec3(1.0f), glm::vec3(1, -1, -1)), // 2
-    //    VertexFormat(glm::vec3(1, -1,  1), glm::vec3(1.0f), glm::vec3(1, -1,  1)), // 3
-
-    //    VertexFormat(glm::vec3(-1,  1, -1), glm::vec3(1.0f), glm::vec3(-1,  1, -1)), // 4
-    //    VertexFormat(glm::vec3(-1,  1,  1), glm::vec3(1.0f), glm::vec3(-1,  1,  1)), // 5
-    //    VertexFormat(glm::vec3(1,  1, -1), glm::vec3(1.0f), glm::vec3(1,  1, -1)), // 6
-    //    VertexFormat(glm::vec3(1,  1,  1), glm::vec3(1.0f), glm::vec3(1,  1,  1)), // 7
-    //};
-
-    //vector<unsigned int> indices =
-    //{
-    //    2, 1, 0,
-    //    2, 3, 1,
-
-    //    5, 7, 4,
-    //    7, 6, 4,
-
-    //    1, 3, 5,
-    //    3, 7, 5,
-
-    //    2, 0, 6,
-    //    0, 4, 6,
-
-    //    3, 2, 7,
-    //    2, 6, 7,
-
-    //    0, 1, 4,
-    //    1, 5, 4,
-    //};
-
     vector<VertexFormat> vertices
     {
         // Face 2-3-0-1
@@ -478,4 +448,20 @@ mesh_desc MeshRenderer::CreateCube()
     };
 
     return { vertices, indices, GL_TRIANGLES };
+}
+
+mesh_desc MeshRenderer::CreateLine()
+{
+    vector<VertexFormat> vertices
+    {
+        VertexFormat(glm::vec3(0, 0, 0), glm::vec3(1.0f), glm::vec3_down, glm::vec2(0, 0)),
+        VertexFormat(glm::vec3(0,  0, -1), glm::vec3(1.0f), glm::vec3_up, glm::vec2(0, 1)),
+    };
+
+    vector<unsigned int> indices =
+    {
+        0, 1
+    };
+
+    return { vertices, indices, GL_LINES };
 }

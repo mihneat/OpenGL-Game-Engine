@@ -21,6 +21,7 @@ namespace component
         virtual ~BoxCollider() { }
 
         bool CollidesWith(Collider* other, CollisionHit& hit) override;
+        float GetMomentOfInertia(float mass) override;
         
     protected:
         SERIALIZE_FIELD glm::vec3 halfSize = glm::vec3(.5f);

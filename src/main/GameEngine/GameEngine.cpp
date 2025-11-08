@@ -78,10 +78,20 @@ void GameEngine::Init()
     ShaderLoader::InitShaders();
     TextureLoader::InitTextures();
     MaterialManager::InitMaterials();
+    InitDebugShapes();
 
     CreateSceneCamera();
 
     ReloadScene();
+}
+
+void GameEngine::InitDebugShapes()
+{
+    Transform* debugTransform = new Transform();
+    MeshRenderer* line = new MeshRenderer(debugTransform, MeshRenderer::Line, "debugLine");
+    line->MeshFactory();
+
+    DeleteComponents(debugTransform);
 }
 
 void GameEngine::CreateShadowMappingCamera()
@@ -678,53 +688,66 @@ void GameEngine::StartComponents(Transform* currentTransform)
 
 void ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hit)
 {
-    // std::cout << "Detected collision between " << colliderA->transform->GetName() << " and " << colliderB->transform->GetName() << '\n';
-    
     Rigidbody* rbA = colliderA->transform->GetComponent<Rigidbody>();
     Rigidbody* rbB = colliderB->transform->GetComponent<Rigidbody>();
-    float massA = rbA->GetMass();
-    float massB = rbB->GetMass();
-    glm::vec3 velocityA = rbA->IsStatic() ? glm::vec3(0.0f) : rbA->GetVelocity();
-    glm::vec3 velocityB = rbB->IsStatic() ? glm::vec3(0.0f) : rbB->GetVelocity();
-
     if (rbA == nullptr || rbB == nullptr || rbA == rbB)
     {
         std::cout << "Either a Rigidbody is missing, or they are the same\n";
         return;
     }
+    
+    float massA = rbA->GetMass();
+    float massB = rbB->GetMass();
+    glm::vec3 vecToHitPointA = hit.point - colliderA->transform->GetWorldPosition();
+    glm::vec3 vecToHitPointB = hit.point - colliderB->transform->GetWorldPosition();
+    glm::vec3 velocityA = rbA->IsStatic() ? glm::vec3(0.0f) : rbA->GetVelocity() + glm::cross(rbA->GetAngularVelocity(), vecToHitPointA);
+    glm::vec3 velocityB = rbB->IsStatic() ? glm::vec3(0.0f) : rbB->GetVelocity() + glm::cross(rbB->GetAngularVelocity(), vecToHitPointB);
+    glm::vec3 relativeVelocity = velocityA - velocityB;
+    
+    // If relative normal velocity is negative, ignore the collision
+    // Source: https://www.chrishecker.com/images/e/e7/Gdmphys3.pdf
+
+    // TODO: This does not work perfectly, but I am hopeful that it can be fixed
+    if (glm::dot(relativeVelocity, hit.normal) < 0.0f)
+        return;
 
     // Compute the new linear velocities
     // Source 1: https://perso.liris.cnrs.fr/nicolas.pronost/UUCourses/GamePhysics/lectures/lecture%207%20Collision%20Resolution.pdf
     // Source 2: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
     float massFactor;
     if (rbA->IsStatic() && rbB->IsStatic())
-    {
         massFactor = 1.0f;
-    }
     else if (rbA->IsStatic())
-    {
-        massFactor = massB;
-    }
+        massFactor = 1.0f / massB;
     else if (rbB->IsStatic())
-    {
-        massFactor = massA;
-    }
+        massFactor = 1.0f / massA;
     else
-    {
-        massFactor = massA * massB / (massA + massB);
-    }
+        massFactor = (massA + massB) / (massA * massB);
     
-    float commonImpulseMagnitudeFactor = -1.0f * massFactor * glm::dot(velocityA - velocityB, hit.normal);
-    float impulseMagnitudeA = (1.0f + rbA->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor;
-    float impulseMagnitudeB = (1.0f + rbB->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor;
+    float commonImpulseMagnitudeFactor = -1.0f * glm::dot(relativeVelocity, hit.normal);
+    float momentOfInertiaInverseA = 1.0f / colliderA->GetMomentOfInertia(rbA->GetMass());
+    float momentOfInertiaInverseB = 1.0f / colliderB->GetMomentOfInertia(rbB->GetMass());
+    float angularVelocityTerm = glm::dot(
+        (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, hit.normal), vecToHitPointA)) +
+        (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, hit.normal), vecToHitPointB)),
+        hit.normal
+    );
+    float denominator = massFactor + angularVelocityTerm;
+    
+    float impulseMagnitudeA = (1.0f + rbA->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor / denominator;
+    float impulseMagnitudeB = (1.0f + rbB->GetRestitutionCoefficient()) * commonImpulseMagnitudeFactor / denominator;
 
     glm::vec3 newLinearVelocityA = rbA->GetVelocity() + (impulseMagnitudeA / massA) * hit.normal;
     glm::vec3 newLinearVelocityB = rbB->GetVelocity() - (impulseMagnitudeB / massB) * hit.normal;
+
+    glm::vec3 newAngularVelocityA = rbA->GetAngularVelocity() + momentOfInertiaInverseA * glm::cross(vecToHitPointA, impulseMagnitudeA * hit.normal);
+    glm::vec3 newAngularVelocityB = rbB->GetAngularVelocity() - momentOfInertiaInverseB * glm::cross(vecToHitPointB, impulseMagnitudeB * hit.normal);
     
     rbA->SetVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityA);
     rbB->SetVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityB);
-
-    // TODO: Compute the new angular velocities
+    
+    rbA->SetAngularVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : -newAngularVelocityA);
+    rbB->SetAngularVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : -newAngularVelocityB);
 
     // TODO: Compute friction
 }
@@ -813,7 +836,8 @@ void GameEngine::SimulatePhysics(transform::Transform* transform, const float de
         // Apply physics update
         rb->transform->Translate(rb->GetVelocity() * deltaTime);
 
-        // TODO: Apply angular velocity (somehow)
+        // Apply angular velocity
+        rb->transform->Rotate(rb->GetAngularVelocity() * deltaTime);
     }
 }
 

@@ -48,11 +48,10 @@ bool BoxCollider::CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm:
         minimumOverlap = overlap;
         
         hit.normal = hitNormal;
+        
+        glm::vec3 vectorToMiddle = hitNormal * (halfSizeProjectionsA - overlap / 2.0f);
+        hit.point = boxA->transform->GetWorldPosition() + vectorToMiddle;
     }
-    
-    // Add the current collision to the collision point
-    glm::vec3 vectorToMiddle = hitNormal * (halfSizeProjectionsA - overlap / 2.0f);
-    hit.point += vectorToMiddle;
 
     return false;
 }
@@ -145,4 +144,12 @@ bool BoxCollider::CollidesWith(Collider* other, CollisionHit& hit)
         return CheckBoxCollision(this, dynamic_cast<BoxCollider*>(other), hit);
     
     return false;
+}
+
+// Check: https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+float BoxCollider::GetMomentOfInertia(float mass)
+{
+    // Very crude approximation (normally we should detect which side of the box was hit, but we'll be using cubes)
+    float sizeApproximation = (halfSize.x + halfSize.y + halfSize.z) / 3.0f;
+    return 1.0f / 6.0f * mass * sizeApproximation * sizeApproximation;
 }

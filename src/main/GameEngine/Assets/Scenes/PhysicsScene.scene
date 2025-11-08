@@ -1141,7 +1141,7 @@
           "name": "Ball",
           "tag": "Default",
           "position": {
-            "x": 0.4000000059604645,
+            "x": 13.720000267028809,
             "y": 44.400001525878906,
             "z": 0.0
           },
@@ -1801,7 +1801,7 @@
           "name": "Box",
           "tag": "Default",
           "position": {
-            "x": -20.780000686645508,
+            "x": 12.84000015258789,
             "y": 35.540000915527344,
             "z": 0.0
           },
@@ -1939,7 +1939,7 @@
                 {
                   "name": "restitutionCoefficient",
                   "type": "FieldTypeFloat",
-                  "value": 0.4000000059604645
+                  "value": 0.800000011920929
                 },
                 {
                   "name": "isStatic",
@@ -2128,6 +2128,175 @@
                     "x": 7.0,
                     "y": 7.0,
                     "z": 7.0
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "Cone",
+          "tag": "Default",
+          "position": {
+            "x": 82.73999786376953,
+            "y": 44.939998626708984,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 10.0,
+            "y": 10.0,
+            "z": 10.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 8
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 1.0,
+                    "g": 1.0,
+                    "b": 1.0,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200009"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100003"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "Rigidbody",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "mass",
+                  "type": "FieldTypeFloat",
+                  "value": 0.10000000149011612
+                },
+                {
+                  "name": "velocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "angularVelocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 2.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "restitutionCoefficient",
+                  "type": "FieldTypeFloat",
+                  "value": 0.5
+                },
+                {
+                  "name": "isStatic",
+                  "type": "FieldTypeBool",
+                  "value": false
+                }
+              ]
+            },
+            {
+              "className": "BoxCollider",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "halfSize",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 10.0,
+                    "y": 10.0,
+                    "z": 10.0
                   }
                 }
               ]

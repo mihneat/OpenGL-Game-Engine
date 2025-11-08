@@ -10,6 +10,11 @@ glm::vec3 component::Rigidbody::GetVelocity() const
     return velocity;
 }
 
+glm::vec3 component::Rigidbody::GetAngularVelocity() const
+{
+    return angularVelocity;
+}
+
 float component::Rigidbody::GetMass() const
 {
     return mass;
@@ -23,6 +28,11 @@ float component::Rigidbody::GetRestitutionCoefficient() const
 void component::Rigidbody::SetVelocity(glm::vec3 newVelocity)
 {
     velocity = newVelocity;
+}
+
+void component::Rigidbody::SetAngularVelocity(glm::vec3 newAngularVelocity)
+{
+    angularVelocity = newAngularVelocity;
 }
 
 void component::Rigidbody::AddForce(glm::vec3 force)
