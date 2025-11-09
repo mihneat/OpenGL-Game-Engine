@@ -26,8 +26,8 @@ void PhysicsObjectSpawner::SpawnObjects()
     for (int i = 0; i < cubesToSpawn; ++i)
         spawnOrder.push_back(1);
 
-    // for (int i = 0; i < conesToSpawn; ++i)
-    //     spawnOrder.push_back(2);
+    for (int i = 0; i < conesToSpawn; ++i)
+        spawnOrder.push_back(2);
 
     // Here is the place to shuffle the array if necessary
 
@@ -58,13 +58,21 @@ void PhysicsObjectSpawner::SpawnObject(int objType)
 
     // Choose a random place to spawn it
     const glm::vec3 randomNormalizedValues(
-        1.0f * (rand() * rand() % 1001) / 1000.0f, // [0, 1]
-        1.0f * (rand() * rand() % 1001) / 1000.0f, // [0, 1]
-        1.0f * (rand() * rand() % 1001) / 1000.0f  // [0, 1]
+        1.0f * (rand() * rand() % 1001) / 1000.0f,      // [0, 1]
+        1.0f * (rand() * rand() % 1001) / 1000.0f,      // [0, 1]
+        1.0f * (rand() * rand() % 1001) / 1000.0f       // [0, 1]
+    );
+
+    // Choose a random rotation
+    const glm::vec3 randomNormalizedRotation(
+        1.0f * (rand() * rand() % 3600) / 360.0f,   // [0, 360)
+        1.0f * (rand() * rand() % 3600) / 360.0f,   // [0, 360)
+        1.0f * (rand() * rand() % 3600) / 360.0f    // [0, 360)
     );
 
     glm::vec3 randomOffset = randomNormalizedValues * (2.0f * spawnBoxSize) - spawnBoxSize;
     spawnedObject->Translate(transform->GetWorldPosition() + randomOffset);
+    spawnedObject->Rotate(randomNormalizedRotation);
 }
 
 void PhysicsObjectSpawner::Reset()

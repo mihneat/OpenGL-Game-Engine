@@ -484,6 +484,17 @@ Transform* PrefabManager::CreatePhysicsCube(Transform* parent)
 
 Transform* PrefabManager::CreatePhysicsCone(Transform* parent)
 {
-    return nullptr;
+    // Build a random color
+    glm::vec4 col = glm::vec4(190.0f / 255.0f, 128.0f / 255.0f, 213.0f / 255.0f, 1.0f);
+    
+    Transform* physicsObj = new Transform(parent, "ConeClone");
+    physicsObj->SetScale(glm::vec3(5, 5, 5));
+    physicsObj->AddComponent(new MeshRenderer(physicsObj, MeshRenderer::Cone, "physicsCone", MaterialManager::GetMaterial(MaterialManager::MAT_SIMPLE),
+        MeshRenderer::Default, glm::vec3(1), col));
+    physicsObj->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("Player3"));
+    physicsObj->AddComponent(new Rigidbody(physicsObj, 0.1f, 0.5f));
+    physicsObj->AddComponent(new BoxCollider(physicsObj, glm::vec3(5.0f)));
+    
+    return physicsObj;
 }
 

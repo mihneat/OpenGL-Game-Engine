@@ -15,6 +15,11 @@
 
 #include "Utils/Containers.h"
 
+namespace physics
+{
+    class PhysicsEngine;
+}
+
 namespace component
 {
     class SceneCamera;
@@ -88,7 +93,6 @@ namespace m1
 
         void AwakeComponents(transform::Transform *currentTransform);
         void StartComponents(transform::Transform *currentTransform);
-        void SimulatePhysics(transform::Transform* transform, const float deltaTime);
         void UpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void LateUpdateComponents(transform::Transform* currentTransform, const float deltaTime);
         void DeleteComponents(transform::Transform* currentTransform);
@@ -106,6 +110,8 @@ namespace m1
     private:
         rendering::RenderingSystem* renderingSystem;
         component::SceneCamera* sceneCamera;
+
+        physics::PhysicsEngine* physicsEngine = nullptr;
 
         utils::FBOContainer shadowMapFBOContainer;
         component::Camera* shadowMappingCamera;

@@ -1198,7 +1198,7 @@
       "tag": "Default",
       "position": {
         "x": 0.0,
-        "y": -73.05999755859375,
+        "y": 0.0,
         "z": 0.0
       },
       "rotation": {
@@ -1217,7 +1217,7 @@
           "name": "Ball",
           "tag": "Default",
           "position": {
-            "x": 13.720000267028809,
+            "x": 27.540000915527344,
             "y": 44.400001525878906,
             "z": 0.0
           },
@@ -1547,7 +1547,7 @@
           "name": "BallStuck",
           "tag": "Default",
           "position": {
-            "x": 16.040000915527344,
+            "x": 12.579999923706055,
             "y": 53.439998626708984,
             "z": 25.0
           },
@@ -1877,14 +1877,14 @@
           "name": "Box",
           "tag": "Default",
           "position": {
-            "x": -19.18000030517578,
+            "x": -19.760000228881836,
             "y": 8.34000015258789,
             "z": 0.0
           },
           "rotation": {
             "x": 0.0,
             "y": 0.0,
-            "z": 0.0
+            "z": -0.3476695716381073
           },
           "scale": {
             "x": 3.0,
@@ -2225,9 +2225,9 @@
             "z": 0.0
           },
           "scale": {
-            "x": 10.0,
-            "y": 10.0,
-            "z": 10.0
+            "x": 5.0,
+            "y": 5.0,
+            "z": 5.0
           },
           "components": [
             {
@@ -2345,8 +2345,8 @@
                   "name": "angularVelocity",
                   "type": "FieldTypeVec3",
                   "value": {
-                    "x": 1.1799999475479126,
-                    "y": 2.0,
+                    "x": 0.0,
+                    "y": 0.0,
                     "z": 0.0
                   }
                 },
@@ -2370,9 +2370,178 @@
                   "name": "halfSize",
                   "type": "FieldTypeVec3",
                   "value": {
-                    "x": 10.0,
-                    "y": 10.0,
-                    "z": 10.0
+                    "x": 5.0,
+                    "y": 5.0,
+                    "z": 5.0
+                  }
+                }
+              ]
+            }
+          ],
+          "children": []
+        },
+        {
+          "name": "RotatyCube",
+          "tag": "Default",
+          "position": {
+            "x": 2.7799999713897705,
+            "y": 20.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "scale": {
+            "x": 4.0,
+            "y": 4.0,
+            "z": 4.0
+          },
+          "components": [
+            {
+              "className": "MeshRenderer",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "meshType",
+                  "type": "FieldTypeEnum",
+                  "value": 4
+                },
+                {
+                  "name": "color",
+                  "type": "FieldTypeColour",
+                  "value": {
+                    "r": 0.7149823904037476,
+                    "g": 0.9558823704719543,
+                    "b": 0.5997692942619324,
+                    "a": 1.0
+                  }
+                },
+                {
+                  "name": "meshScale",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0,
+                    "z": 1.0
+                  }
+                },
+                {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
+                  "name": "debugOnly",
+                  "type": "FieldTypeBool",
+                  "value": false
+                },
+                {
+                  "name": "renderInWorldSpace",
+                  "type": "FieldTypeBool",
+                  "value": true
+                },
+                {
+                  "name": "layer",
+                  "type": "FieldTypeEnum",
+                  "value": 0
+                },
+                {
+                  "name": "texture1",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "200009"
+                  }
+                },
+                {
+                  "name": "texture2",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture3",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texture4",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": ""
+                  }
+                },
+                {
+                  "name": "texScale",
+                  "type": "FieldTypeVec2",
+                  "value": {
+                    "x": 1.0,
+                    "y": 1.0
+                  }
+                },
+                {
+                  "name": "material",
+                  "type": "FieldTypeGUID",
+                  "value": {
+                    "guid": "100003"
+                  }
+                }
+              ]
+            },
+            {
+              "className": "Rigidbody",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "mass",
+                  "type": "FieldTypeFloat",
+                  "value": 0.10000000149011612
+                },
+                {
+                  "name": "velocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "angularVelocity",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0
+                  }
+                },
+                {
+                  "name": "restitutionCoefficient",
+                  "type": "FieldTypeFloat",
+                  "value": 0.800000011920929
+                },
+                {
+                  "name": "isStatic",
+                  "type": "FieldTypeBool",
+                  "value": false
+                }
+              ]
+            },
+            {
+              "className": "BoxCollider",
+              "enabled": true,
+              "attributes": [
+                {
+                  "name": "halfSize",
+                  "type": "FieldTypeVec3",
+                  "value": {
+                    "x": 4.0,
+                    "y": 4.0,
+                    "z": 4.0
                   }
                 }
               ]

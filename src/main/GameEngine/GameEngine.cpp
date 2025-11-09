@@ -1,16 +1,11 @@
 #include "main/GameEngine/GameEngine.h"
 
-#include "main/GameEngine/ComponentBase/Components/Logic/Camera/CameraFollow.h"
-#include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
-#include "main/GameEngine/ComponentBase/Components/Rendering/Interfaces/IRenderable.h"
-
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <stack>
 
 #include "ComponentBase/Components/Logic/Physics/Collider.h"
-#include "ComponentBase/Components/Logic/Physics/Rigidbody.h"
 #include "main/GameEngine/Serialization/Serializer.h"
 #include "ComponentBase/Components/Rendering/Camera.h"
 #include "core/managers/resource_path.h"
@@ -22,6 +17,7 @@
 #include "Systems/SceneManager.h"
 #include "Systems/Editor/EditorRuntimeSettings.h"
 #include "Systems/Editor/SceneCamera.h"
+#include "Systems/Physics/PhysicsEngine.h"
 #include "Systems/Rendering/MaterialManager.h"
 #include "Systems/Rendering/MeshResourceManager.h"
 #include "Systems/Rendering/ShaderResourceManager.h"
@@ -47,6 +43,7 @@ GameEngine::GameEngine()
     startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
 
     this->renderingSystem = new RenderingSystem();
+    this->physicsEngine = new physics::PhysicsEngine();
     
     LightManager::Init();
 
@@ -265,7 +262,7 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
         this->StartComponents(hierarchy);
 
         // Unity places the physics update between Start and Update
-        this->SimulatePhysics(hierarchy, deltaTimeSeconds);
+        physicsEngine->SimulatePhysics(hierarchy, deltaTimeSeconds);
         
         this->UpdateComponents(hierarchy, deltaTimeSeconds);
         this->LateUpdateComponents(hierarchy, deltaTimeSeconds);
@@ -684,195 +681,6 @@ void GameEngine::StartComponents(Transform* currentTransform)
             component->Start();
         }
     });
-}
-
-void ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hit)
-{
-    Rigidbody* rbA = colliderA->transform->GetComponent<Rigidbody>();
-    Rigidbody* rbB = colliderB->transform->GetComponent<Rigidbody>();
-    if (rbA == nullptr || rbB == nullptr || rbA == rbB)
-    {
-        std::cout << "Either a Rigidbody is missing, or they are the same\n";
-        return;
-    }
-    
-    float massA = rbA->GetMass();
-    float massB = rbB->GetMass();
-    glm::vec3 vecToHitPointA = hit.point - colliderA->transform->GetWorldPosition();
-    glm::vec3 vecToHitPointB = hit.point - colliderB->transform->GetWorldPosition();
-    glm::vec3 velocityA = rbA->IsStatic() ? glm::vec3(0.0f) : rbA->GetVelocity() + glm::cross(rbA->GetAngularVelocity(), vecToHitPointA);
-    glm::vec3 velocityB = rbB->IsStatic() ? glm::vec3(0.0f) : rbB->GetVelocity() + glm::cross(rbB->GetAngularVelocity(), vecToHitPointB);
-    glm::vec3 relativeVelocity = velocityA - velocityB;
-    
-    // If relative normal velocity is negative, ignore the collision
-    // Source: https://www.chrishecker.com/images/e/e7/Gdmphys3.pdf
-
-    // TODO: This does not work perfectly, but I am hopeful that it can be fixed
-    if (glm::dot(relativeVelocity, hit.normal) < 0.0f)
-        return;
-
-    // Check for resting contact
-    float restitutionCoefficientA = rbA->GetRestitutionCoefficient();
-    float restitutionCoefficientB = rbB->GetRestitutionCoefficient();
-    float restitutionCoefficient = min(restitutionCoefficientA, restitutionCoefficientB);
-    
-    // if (abs(glm::dot(relativeVelocity, hit.normal)) < 1.0f)
-    //     restitutionCoefficient = 0.0f;
-
-    // Compute the new linear velocities
-    // Source 1: https://perso.liris.cnrs.fr/nicolas.pronost/UUCourses/GamePhysics/lectures/lecture%207%20Collision%20Resolution.pdf
-    // Source 2: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
-    float massFactor;
-    if (rbA->IsStatic() && rbB->IsStatic())
-        massFactor = 1.0f;
-    else if (rbA->IsStatic())
-        massFactor = 1.0f / massB;
-    else if (rbB->IsStatic())
-        massFactor = 1.0f / massA;
-    else
-        massFactor = (massA + massB) / (massA * massB);
-    
-    float commonImpulseMagnitudeFactor = -1.0f * glm::dot(relativeVelocity, hit.normal);
-    float momentOfInertiaInverseA = 1.0f / colliderA->GetMomentOfInertia(rbA->GetMass());
-    float momentOfInertiaInverseB = 1.0f / colliderB->GetMomentOfInertia(rbB->GetMass());
-    float angularVelocityTerm = glm::dot(
-        (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, hit.normal), vecToHitPointA)) +
-        (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, hit.normal), vecToHitPointB)),
-        hit.normal
-    );
-    float denominator = massFactor + angularVelocityTerm;
-    
-    float impulseMagnitude = (1.0f + restitutionCoefficient) * commonImpulseMagnitudeFactor / denominator;
-    
-    glm::vec3 impulse = hit.normal * impulseMagnitude;
-
-    // Compute the friction force
-    glm::vec3 tangent = relativeVelocity - glm::dot(relativeVelocity, hit.normal) * hit.normal; // glm::normalize(glm::cross(glm::cross(hit.normal, relativeVelocity), hit.normal));
-    if (glm::length(tangent) < 0.1f)
-        tangent = glm::vec3(0);
-    else
-        tangent = -glm::normalize(tangent);
-    
-    float staticFrictionCoefficient = 0.6f;
-    float dynamicFrictionCoefficient = 0.4f;
-
-    float tangent_commonImpulseMagnitudeFactor = -1.0f * glm::dot(relativeVelocity, tangent);
-    float tangent_angularVelocityTerm = glm::dot(
-        (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, tangent), vecToHitPointA)) +
-        (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, tangent), vecToHitPointB)),
-        tangent
-    );
-    float tangent_denominator = massFactor + tangent_angularVelocityTerm;
-    
-    float tangent_impulseMagnitude = tangent_commonImpulseMagnitudeFactor / tangent_denominator;
-
-    // Check Coulomb's law
-    glm::vec3 tangent_impulse;
-    if (abs(tangent_impulseMagnitude) < impulseMagnitude * staticFrictionCoefficient)
-        tangent_impulse = tangent_impulseMagnitude * tangent;
-    else
-        tangent_impulse = -impulseMagnitude * tangent * dynamicFrictionCoefficient;
-
-    glm::vec3 newLinearVelocityA = rbA->GetVelocity() + impulse / massA + tangent_impulse / massA;
-    glm::vec3 newLinearVelocityB = rbB->GetVelocity() - impulse / massB - tangent_impulse / massB;
-
-    glm::vec3 newAngularVelocityA = rbA->GetAngularVelocity() + momentOfInertiaInverseA * glm::cross(vecToHitPointA, impulse) + momentOfInertiaInverseA * glm::cross(vecToHitPointA, tangent_impulse);
-    glm::vec3 newAngularVelocityB = rbB->GetAngularVelocity() - momentOfInertiaInverseB * glm::cross(vecToHitPointB, impulse) - momentOfInertiaInverseB * glm::cross(vecToHitPointB, tangent_impulse);
-    
-    rbA->SetVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityA);
-    rbB->SetVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newLinearVelocityB);
-    
-    rbA->SetAngularVelocity(rbA->IsStatic() ? glm::vec3(0.0f) : newAngularVelocityA);
-    rbB->SetAngularVelocity(rbB->IsStatic() ? glm::vec3(0.0f) : newAngularVelocityB);
-}
-
-void GameEngine::SimulatePhysics(transform::Transform* transform, const float deltaTime)
-{
-    static constexpr float g = 9.81f;
-    
-    // Find all Colliders
-    std::vector<Collider*> colliders;
-    std::vector<Rigidbody*> rbs;
-    ApplyToComponents(transform, [&colliders, &rbs](Component* component) {
-        Collider* collider = dynamic_cast<Collider*>(component);
-        Rigidbody* rb = dynamic_cast<Rigidbody*>(component);
-        
-        if (collider != nullptr && collider->IsActive())
-            colliders.push_back(collider);
-        
-        if (rb != nullptr && rb->IsActive())
-            rbs.push_back(rb);
-    });
-
-    // Apply external forces
-    for (auto rb : rbs)
-    {
-        if (rb->IsStatic())
-            continue;
-
-        // Apply external forces
-        float G = rb->GetMass() * g;
-        rb->AddForce(glm::vec3_down * G);
-    }
-
-    // Predict one step
-    std::vector<glm::vec3> prevVelocities;
-    for (auto rb : rbs)
-    {
-        prevVelocities.push_back(rb->GetVelocity());
-        
-        if (rb->IsStatic())
-            continue;
-
-        // Apply physics update
-        rb->transform->Translate(rb->GetVelocity() * deltaTime);
-
-        // TODO: Predict angular velocity (somehow)
-    }
-    
-    // Resolve collisions
-    for (int i = 0; i < colliders.size(); ++i)
-    {
-        Collider* colliderA = colliders[i];
-        for (int j = i + 1; j < colliders.size(); ++j)
-        {
-            Collider* colliderB = colliders[j];
-            
-            // Detect and resolve collision
-            CollisionHit hit;
-            hit.hasHit = false;
-            
-            if (colliderA->CollidesWith(colliderB, hit))
-                ResolveCollision(colliderA, colliderB, hit);
-        }
-    }
-    
-    // Revert prediction
-    for (int i = 0; i < rbs.size(); ++i)
-    {
-        Rigidbody* rb = rbs[i];
-        if (rb->IsStatic())
-            continue;
-
-        // TODO: Revert angular velocity (somehow)
-
-        // Revert physics update
-        rb->transform->Translate(-prevVelocities[i] * deltaTime);
-    }
-    
-    // Apply physics update
-    for (int i = 0; i < rbs.size(); ++i)
-    {
-        Rigidbody* rb = rbs[i];
-        if (rb->IsStatic())
-            continue;
-
-        // Apply physics update
-        rb->transform->Translate(rb->GetVelocity() * deltaTime);
-
-        // Apply angular velocity
-        rb->transform->Rotate(-rb->GetAngularVelocity() * deltaTime);
-    }
 }
 
 void GameEngine::UpdateComponents(Transform* currentTransform, const float deltaTime)
