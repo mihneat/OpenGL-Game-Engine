@@ -187,8 +187,8 @@ void PhysicsEngine::ResolveCollisionWithRotation(Collider* colliderA, Collider* 
     else
         massFactor = (massA + massB) / (massA * massB);
 
-    float momentOfInertiaInverseA = 1.0f / colliderA->GetMomentOfInertia(rbA->GetMass());
-    float momentOfInertiaInverseB = 1.0f / colliderB->GetMomentOfInertia(rbB->GetMass());
+    float momentOfInertiaInverseA = 0.1f / colliderA->GetMomentOfInertia(rbA->GetMass());
+    float momentOfInertiaInverseB = 0.1f / colliderB->GetMomentOfInertia(rbB->GetMass());
     float angularVelocityTerm = glm::dot(
         (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, hit.normal), vecToHitPointA)) +
         (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, hit.normal), vecToHitPointB)),
@@ -229,12 +229,23 @@ void PhysicsEngine::ResolveCollisionWithRotationAndFriction(Collider* colliderA,
     glm::vec3 velocityA = rbA->IsStatic() ? glm::vec3(0.0f) : rbA->GetVelocity() + glm::cross(rbA->GetAngularVelocity(), vecToHitPointA);
     glm::vec3 velocityB = rbB->IsStatic() ? glm::vec3(0.0f) : rbB->GetVelocity() + glm::cross(rbB->GetAngularVelocity(), vecToHitPointB);
     glm::vec3 relativeVelocity = velocityA - velocityB;
-    
+
+    // if ((colliderA->transform->GetName() == "Box" && colliderB->transform->GetName() == "Ground") ||
+    //     (colliderB->transform->GetName() == "Box" && colliderA->transform->GetName() == "Ground"))
+    // {
+    //     std::cout << "=============================================================================================================\n";
+    //     std::cout << colliderA->transform->GetName() << ": " << velocityA << ", " << colliderB->transform->GetName() << ": " << velocityB << '\n';
+    //     std::cout << "Relative velocity: " << relativeVelocity << '\n';
+    //     std::cout << "Hit point: " << hit.point << '\n';
+    //     std::cout << "Hit normal: " << hit.normal << '\n';
+    //     std::cout << "Hit normal tip: " << hit.point + hit.normal << '\n';
+    //     std::cout << "Dot product: " << glm::dot(relativeVelocity, hit.normal) << '\n';
+    //     std::cout << "\n";
+    // }
+
     // If relative normal velocity is negative, ignore the collision
     // Source: https://www.chrishecker.com/images/e/e7/Gdmphys3.pdf
-
-    // TODO: This does not work perfectly, but I am hopeful that it can be fixed
-    if (glm::dot(relativeVelocity, hit.normal) < 0.0f)
+    if (glm::dot(relativeVelocity, hit.normal) > 0.0f)
         return;
 
     // Check for resting contact
@@ -258,8 +269,8 @@ void PhysicsEngine::ResolveCollisionWithRotationAndFriction(Collider* colliderA,
     else
         massFactor = (massA + massB) / (massA * massB);
 
-    float momentOfInertiaInverseA = 1.0f / colliderA->GetMomentOfInertia(rbA->GetMass());
-    float momentOfInertiaInverseB = 1.0f / colliderB->GetMomentOfInertia(rbB->GetMass());
+    float momentOfInertiaInverseA = 0.1f / colliderA->GetMomentOfInertia(rbA->GetMass());
+    float momentOfInertiaInverseB = 0.1f / colliderB->GetMomentOfInertia(rbB->GetMass());
     float angularVelocityTerm = glm::dot(
         (rbA->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseA * glm::cross(vecToHitPointA, hit.normal), vecToHitPointA)) +
         (rbB->IsStatic() ? glm::vec3(0.0f) : glm::cross(momentOfInertiaInverseB * glm::cross(vecToHitPointB, hit.normal), vecToHitPointB)),
@@ -276,7 +287,7 @@ void PhysicsEngine::ResolveCollisionWithRotationAndFriction(Collider* colliderA,
     if (glm::length(tangent) < 0.001f)
         tangent = glm::vec3(0);
     else
-        tangent = glm::normalize(tangent);
+        tangent = -glm::normalize(tangent);
     
     float staticFrictionCoefficient = 0.4f;
     float dynamicFrictionCoefficient = 0.1f;
@@ -472,7 +483,7 @@ void PhysicsEngine::SimulatePhysics(transform::Transform* transform, const float
             hit.hasHit = false;
             
             if (colliderA->CollidesWith(colliderB, hit))
-                ResolveCollisionWithRotation(colliderA, colliderB, hit);
+                ResolveCollisionWithRotationAndFriction(colliderA, colliderB, hit);
         }
     }
     

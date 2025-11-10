@@ -40,9 +40,42 @@ namespace utils
             return glm::vec3(angle_P, angle_H, angle_B);
         }
 
+        // Thanks to: https://www.youtube.com/watch?v=HC5YikQxwZA
+        // The generalized formulas were done on paper, by hand
+        static std::tuple<bool, bool, glm::vec3, glm::vec3> ClosestPointsBetweenLines(glm::vec3 p1, glm::vec3 v1, glm::vec3 p2, glm::vec3 v2)
+        {
+            // TODO: What should be done if v1 and v2 are orthogonal? kc would be 0, and the hit point would be NaN..
+            // This might not happen in the edge-edge collision check (it did when it had a mistake), but could happen to others
+            
+            glm::vec3 v1_n = glm::normalize(v1);
+            glm::vec3 v2_n = glm::normalize(v2);
+            
+            // General case
+            float kc = glm::dot(v1, v2);
+            float kt1 = glm::dot(v1, v1);
+            float ks2 = glm::dot(v2, v2);
+            float k1 = glm::dot(v1, p2 - p1);
+            float k2 = glm::dot(v2, p2 - p1);
+
+            float t;
+            if (glm::dot(v1_n, v2_n) > 0.999999f)
+                // Directions are parallel, choose a random t
+                t = 0.5f;
+            else
+                // General case, a single closest point
+                t = (k1 * ks2 - k2 * kc) / (ks2 * kt1 - kc * kc);
+            
+            float s = (t * kt1 - k1) / kc;
+
+            bool pOnSegment = t >= 0.0f && t <= 1.0f;
+            bool qOnSegment = s >= 0.0f && s <= 1.0f;
+
+            return { pOnSegment, qOnSegment, p1 + t * v1, p2 + s * v2 };
+        }
+
     private:
-        MathUtils() {};
-        ~MathUtils() {};
+        MathUtils() {}
+        ~MathUtils() {}
 
     };
 }   // namespace utils

@@ -4,14 +4,18 @@
 #include <GLFW/glfw3native.h>
 
 #include "SphereCollider.h"
+#include "main/GameEngine/MathUtils.h"
 
 using namespace component;
+using namespace utils;
 
 // Thanks to: https://stackoverflow.com/a/52010428
 // And to: https://www.youtube.com/watch?v=EB6NY5sGd08
 
-bool BoxCollider::CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm::vec3& plane, const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit, float& minimumOverlap) const
+bool BoxCollider::CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm::vec3& plane, const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit, float& minimumOverlap, int& currentOverlapIndex, int& minimumOverlapIndex) const
 {
+    ++currentOverlapIndex;
+    
     // Corner case
     if (glm::length2(plane) < 0.0001f)
         return false;
@@ -46,19 +50,226 @@ bool BoxCollider::CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm:
     if (overlap < minimumOverlap)
     {
         minimumOverlap = overlap;
+        minimumOverlapIndex = currentOverlapIndex;
+
+        if (glm::dot(hitNormal, boxA->transform->GetWorldPosition() - boxB->transform->GetWorldPosition()) < 0.0f)
+            hitNormal = -hitNormal;
         
         hit.normal = hitNormal;
 
         // This is a very raw approximation of the collision point, but finding the correct collision point is VERY tough
         glm::vec3 vectorToMiddle = hitNormal * (halfSizeProjectionsA - overlap / 2.0f);
         hit.point = boxA->transform->GetWorldPosition() + vectorToMiddle;
-        
-        // glm::vec3 vectorToMiddleA = boxA->transform->GetWorldPosition() + hitNormal * halfSizeProjectionsA;
-        // glm::vec3 vectorToMiddleB = boxB->transform->GetWorldPosition() - hitNormal * halfSizeProjectionsB;
-        // hit.point = (vectorToMiddleA + vectorToMiddleA) / 2.0f;
     }
 
     return false;
+}
+
+std::pair<glm::vec3, glm::vec3> BoxCollider::GetClosestEdgeInDirectionOfAxis(char pDirChar, glm::vec3 axis, glm::vec3 otherBoxCenter) const
+{
+    glm::vec3 pVec, oVec1, oVec2;
+    switch (pDirChar)
+    {
+    case 'x':
+        pVec = transform->right * halfSize.x;
+        oVec1 = transform->up * halfSize.y;
+        oVec2 = transform->forward * halfSize.z;
+        break;
+    case 'y':
+        pVec = transform->up * halfSize.y;
+        oVec1 = transform->right * halfSize.x;
+        oVec2 = transform->forward * halfSize.z;
+        break;
+    case 'z':
+        pVec = transform->forward * halfSize.z;
+        oVec1 = transform->right * halfSize.x;
+        oVec2 = transform->up * halfSize.y;
+        break;
+    default:
+        std::cerr << "You must use either x, y or z";
+        return {};
+    }
+    
+    glm::vec3 center = transform->GetWorldPosition();
+
+    // Update the axis if needed
+    glm::vec3 rPos = otherBoxCenter - center;
+    if (glm::dot(axis, rPos) < 0.0f)
+        axis = -axis;
+
+    // Get the centers of each edge
+    std::vector<glm::vec3> ps = { center + oVec1 + oVec2, center + oVec1 - oVec2, center - oVec1 + oVec2, center - oVec1 - oVec2 };
+
+    glm::vec3 maxPoint;
+    float maxValue = -9999.0f;
+    for (int i = 0; i < ps.size(); ++i)
+    {
+        float pValue = glm::dot(axis, glm::normalize(ps[i] - center));
+        if (maxValue < pValue)
+        {
+            maxValue = pValue;
+            maxPoint = ps[i];
+        }
+    }
+
+    return { maxPoint - pVec, 2.0f * pVec };
+}
+
+void CheckEdgeToEdgeCollision(const BoxCollider* boxA, char pDirCharA, const BoxCollider* boxB, char pDirCharB, glm::vec3 axis, CollisionHit& hit)
+{
+    // Find the closest edges
+    std::pair<glm::vec3, glm::vec3> edgeA = boxA->GetClosestEdgeInDirectionOfAxis(pDirCharA, axis, boxB->transform->GetWorldPosition());
+    std::pair<glm::vec3, glm::vec3> edgeB = boxB->GetClosestEdgeInDirectionOfAxis(pDirCharB, axis, boxA->transform->GetWorldPosition());
+
+    // Find the closest contact points
+    std::tuple<bool, bool, glm::vec3, glm::vec3> pq = MathUtils::ClosestPointsBetweenLines(edgeA.first, edgeA.second, edgeB.first, edgeB.second);
+
+    // Check if the segments intersect
+    if (std::get<0>(pq) == false || std::get<1>(pq) == false)
+        return;
+
+    // Set the point halfway through
+    hit.point = (std::get<2>(pq) + std::get<3>(pq)) / 2.0f;
+    
+    // if ((boxA->transform->GetName() == "Box" && boxB->transform->GetName() == "Ground") ||
+    //     (boxB->transform->GetName() == "Box" && boxA->transform->GetName() == "Ground"))
+    // {
+    //     std::cout << "Edge A: " << edgeA.first << " -> " << edgeA.first + edgeA.second << "\n";
+    //     std::cout << "Edge B: " << edgeB.first << " -> " << edgeB.first + edgeB.second << "\n";
+    //     std::cout << "PQ: " << std::get<2>(pq) << ", " << std::get<3>(pq) << "\n";
+    //     std::cout << "\n";
+    // }
+}
+
+bool BoxCollider::CheckPointIsInside(glm::vec3 point) const
+{
+    // Move the point to the box's local coordinate system
+    glm::vec3 boxToPoint = point - this->transform->GetWorldPosition();
+    glm::vec3 localPoint = glm::vec3(
+        glm::dot(boxToPoint, this->transform->right),
+        glm::dot(boxToPoint, this->transform->up),
+        glm::dot(boxToPoint, this->transform->forward)
+        );
+
+    if (localPoint.x < -halfSize.x || halfSize.x < localPoint.x)
+        return false;
+
+    if (localPoint.y < -halfSize.y || halfSize.y < localPoint.y)
+        return false;
+
+    if (localPoint.z < -halfSize.z || halfSize.z < localPoint.z)
+        return false;
+
+    return true;
+}
+
+void BoxCollider::CheckFaceFaceCollision(const BoxCollider* referenceBox, const BoxCollider* incidentBox, glm::vec3 refPlaneCenter, CollisionHit& hit, bool useRetryFallback) const
+{
+    // The reference face is the one pointing in the same direction as the axis
+    glm::vec3 referencePlaneDir = glm::normalize(refPlaneCenter - referenceBox->transform->GetWorldPosition());
+
+    // The incident face is the one whose direction has the smallest dot product value with the axis
+    std::vector<glm::vec3> incidentPlaneDirs = { incidentBox->transform->right, -incidentBox->transform->right, incidentBox->transform->up, -incidentBox->transform->up, incidentBox->transform->forward, -incidentBox->transform->forward };
+    std::vector<char> incidentPlaneDirTypes = { 'x', 'y', 'z' };
+    glm::vec3 incidentPlaneDir;
+    char incidentPlaneDirType;
+    float smallestValue = 9999.0f;
+
+    for (int i = 0; i < incidentPlaneDirs.size(); ++i)
+    {
+        float currValue = glm::dot(referencePlaneDir, incidentPlaneDirs[i]);
+        if (currValue < smallestValue)
+        {
+            smallestValue = currValue;
+            incidentPlaneDir = incidentPlaneDirs[i];
+            incidentPlaneDirType = incidentPlaneDirTypes[i / 2];
+        }
+    }
+
+    // Find the incident plane's vertices
+    glm::vec3 incidentPlaneCenter;
+    glm::vec3 oVec1, oVec2;
+    std::vector<glm::vec3> incidentVertices;
+    switch (incidentPlaneDirType)
+    {
+    case 'x':
+        incidentPlaneCenter = incidentBox->transform->GetWorldPosition() + incidentPlaneDir * incidentBox->halfSize.x;
+        oVec1 = incidentBox->transform->up * incidentBox->halfSize.y;
+        oVec2 = incidentBox->transform->forward * incidentBox->halfSize.z;
+        break;
+
+    case 'y':
+        incidentPlaneCenter = incidentBox->transform->GetWorldPosition() + incidentPlaneDir * incidentBox->halfSize.y;
+        oVec1 = incidentBox->transform->right * incidentBox->halfSize.x;
+        oVec2 = incidentBox->transform->forward * incidentBox->halfSize.z;
+        break;
+
+    case 'z':
+        incidentPlaneCenter = incidentBox->transform->GetWorldPosition() + incidentPlaneDir * incidentBox->halfSize.z;
+        oVec1 = incidentBox->transform->right * incidentBox->halfSize.x;
+        oVec2 = incidentBox->transform->up * incidentBox->halfSize.y;
+        break;
+
+    default:
+        std::cerr << "Invalid direction type";
+        hit.point = refPlaneCenter;
+        return;
+    }
+    
+    incidentVertices.push_back(incidentPlaneCenter + oVec1 + oVec2);
+    incidentVertices.push_back(incidentPlaneCenter + oVec1 - oVec2);
+    incidentVertices.push_back(incidentPlaneCenter - oVec1 + oVec2);
+    incidentVertices.push_back(incidentPlaneCenter - oVec1 - oVec2);
+
+    // if ((referenceBox->transform->GetName() == "Box" && incidentBox->transform->GetName() == "Ground") ||
+    //     (incidentBox->transform->GetName() == "Box" && referenceBox->transform->GetName() == "Ground"))
+    // {
+    //     std::cout << "Reference dir: " << referencePlaneDir << "\n";
+    //     std::cout << "Incident vertices:\n";
+    //     std::cout << "1: " << incidentVertices[0] << "\n";
+    //     std::cout << "2: " << incidentVertices[1] << "\n";
+    //     std::cout << "3: " << incidentVertices[2] << "\n";
+    //     std::cout << "4: " << incidentVertices[3] << "\n";
+    //     std::cout << "\n";
+    // }
+
+    // Warning: this is ALSO a crude approximation of the contact point, but (should be) MUCH more accurate than the last
+    // Compute the average of the contact points
+    std::vector<glm::vec3> contactPoints;
+    glm::vec3 averagePoint(0.0f);
+
+    for(const auto& incidentVertex : incidentVertices)
+    {
+        // Another approximation; check the commented code below
+        if (referenceBox->CheckPointIsInside(incidentVertex))
+        {
+            contactPoints.push_back(incidentVertex);
+            averagePoint += incidentVertex;
+        }
+        
+        // // Calculate distance from vertex to the plane
+        // float dist = glm::dot(refFaceWorldNormal, v) - planeDist;
+        //
+        // // This vertex is behind or on the reference plane
+        // if (dist <= 0.0f)
+        // {
+        //     // Project the point onto the plane along the normal
+        //     glm::vec3 contact = v - refFaceWorldNormal * dist;
+        //     contactPoints.push_back(contact);
+        //     averagePoint += contact;
+        // }
+    }
+
+    if (contactPoints.empty())
+    {
+        if (useRetryFallback)
+            CheckFaceFaceCollision(incidentBox, referenceBox, incidentPlaneCenter, hit, false);
+        else
+            hit.point = refPlaneCenter;
+    } else
+    {
+        hit.point = averagePoint / static_cast<float>(contactPoints.size());
+    }
 }
 
 bool BoxCollider::CheckBoxCollision(const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit) const
@@ -73,32 +284,88 @@ bool BoxCollider::CheckBoxCollision(const BoxCollider* boxA, const BoxCollider* 
     glm::vec3 boxBY = boxB->transform->up;
     glm::vec3 boxBZ = boxB->transform->forward;
 
+    int currentOverlapIndex = -1;
+    int minimumOverlapIndex = -1;
     float minimumOverlap = 1000000.0f;
 
     hit.normal = glm::vec3_up;
     hit.point = boxA->transform->GetWorldPosition();
     
     hit.hasHit = !(
-        CheckSeparatingPlaneForBoxes(rPos, boxAX, boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, boxAY, boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, boxAZ, boxA, boxB, hit, minimumOverlap) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxAX, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxAY, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxAZ, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
 
-        CheckSeparatingPlaneForBoxes(rPos, boxBX, boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, boxBY, boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, boxBZ, boxA, boxB, hit, minimumOverlap) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxBX, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxBY, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, boxBZ, boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
         
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBX), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBY), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBZ), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBX), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBY), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBZ), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBX), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBY), boxA, boxB, hit, minimumOverlap) ||
-        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBZ), boxA, boxB, hit, minimumOverlap)
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBX), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBY), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAX, boxBZ), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBX), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBY), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAY, boxBZ), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBX), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBY), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex) ||
+        CheckSeparatingPlaneForBoxes(rPos, glm::cross(boxAZ, boxBZ), boxA, boxB, hit, minimumOverlap, currentOverlapIndex, minimumOverlapIndex)
     );
 
-    return hit.hasHit;
+    if (!hit.hasHit)
+        return false;
+
+    switch (minimumOverlapIndex)
+    {
+    case 0:
+        CheckFaceFaceCollision(boxA, boxB, boxA->transform->GetWorldPosition() - hit.normal * boxA->halfSize.x, hit);
+        break;
+    case 1:
+        CheckFaceFaceCollision(boxA, boxB, boxA->transform->GetWorldPosition() - hit.normal * boxA->halfSize.y, hit);
+        break;
+    case 2:
+        CheckFaceFaceCollision(boxA, boxB, boxA->transform->GetWorldPosition() - hit.normal * boxA->halfSize.z, hit);
+        break;
+    case 3:
+        CheckFaceFaceCollision(boxB, boxA, boxB->transform->GetWorldPosition() + hit.normal * boxB->halfSize.x, hit);
+        break;
+    case 4:
+        CheckFaceFaceCollision(boxB, boxA, boxB->transform->GetWorldPosition() + hit.normal * boxB->halfSize.y, hit);
+        break;
+    case 5:
+        CheckFaceFaceCollision(boxB, boxA, boxB->transform->GetWorldPosition() + hit.normal * boxB->halfSize.z, hit);
+        break;
+    case 6:
+        CheckEdgeToEdgeCollision(boxA, 'x', boxB, 'x', hit.normal, hit);
+        break;
+    case 7:
+        CheckEdgeToEdgeCollision(boxA, 'x', boxB, 'y', hit.normal, hit);
+        break;
+    case 8:
+        CheckEdgeToEdgeCollision(boxA, 'x', boxB, 'z', hit.normal, hit);
+        break;
+    case 9:
+        CheckEdgeToEdgeCollision(boxA, 'y', boxB, 'x', hit.normal, hit);
+        break;
+    case 10:
+        CheckEdgeToEdgeCollision(boxA, 'y', boxB, 'y', hit.normal, hit);
+        break;
+    case 11:
+        CheckEdgeToEdgeCollision(boxA, 'y', boxB, 'z', hit.normal, hit);
+        break;
+    case 12:
+        CheckEdgeToEdgeCollision(boxA, 'z', boxB, 'x', hit.normal, hit);
+        break;
+    case 13:
+        CheckEdgeToEdgeCollision(boxA, 'z', boxB, 'y', hit.normal, hit);
+        break;
+    case 14:
+        CheckEdgeToEdgeCollision(boxA, 'z', boxB, 'z', hit.normal, hit);
+        break;
+    default:
+        break;
+    }
+
+    return true;
 }
 
 // Thanks to: https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection#sphere_vs._aabb
@@ -133,9 +400,9 @@ bool BoxCollider::CheckSphereCollision(const BoxCollider* box, const SphereColli
     
     glm::vec3 hitNormal = sphere->transform->GetWorldPosition() - hit.point;
     if (glm::length(hitNormal) < 0.00001f)
-        hit.normal = glm::vec3_up;
+        hit.normal = -glm::vec3_up;
     else
-        hit.normal = glm::normalize(hitNormal);
+        hit.normal = -glm::normalize(hitNormal);
 
     return true;
 }

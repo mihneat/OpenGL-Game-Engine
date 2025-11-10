@@ -98,7 +98,6 @@ void PhysicsObjectSpawner::KeyPress(const int key, const int mods)
         cubesToSpawn = cubesCustomBatch;
         conesToSpawn = conesCustomBatch;
 
-        Reset();
         SpawnObjects();
     } else if (key == GLFW_KEY_1)
     {
@@ -137,7 +136,7 @@ void PhysicsObjectSpawner::KeyPress(const int key, const int mods)
                 1.0f * (rand() * rand() % 1001) / 500.0f - 1.0f  // [-1, 1]
             );
             
-            const float randomForceMagnitude = 1.0f * (rand() * rand() % 200);
+            const float randomForceMagnitude = 1.0f * (rand() * rand() % 120);
 
             rb->AddForce(randomVector * randomForceMagnitude);
         }

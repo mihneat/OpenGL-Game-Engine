@@ -23,12 +23,16 @@ namespace component
         bool CollidesWith(Collider* other, CollisionHit& hit) override;
         float GetMomentOfInertia(float mass) override;
         
+        std::pair<glm::vec3, glm::vec3> GetClosestEdgeInDirectionOfAxis(char pDirChar, glm::vec3 axis, glm::vec3 otherBoxCenter) const;
+        void CheckFaceFaceCollision(const BoxCollider* referenceBox, const BoxCollider* incidentBox, glm::vec3 refPlaneCenter, CollisionHit& hit, bool useRetryFallback = true) const;
+        bool CheckPointIsInside(glm::vec3 point) const;
+        
     protected:
         SERIALIZE_FIELD glm::vec3 halfSize = glm::vec3(.5f);
 
         // These methods are used for checking OBB collisions
         bool CheckBoxCollision(const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit) const;
-        bool CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm::vec3& plane, const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit, float& minimumOverlap) const;
+        bool CheckSeparatingPlaneForBoxes(const glm::vec3& rPos, const glm::vec3& plane, const BoxCollider* boxA, const BoxCollider* boxB, CollisionHit& hit, float& minimumOverlap, int& currentOverlapIndex, int& minimumOverlapIndex) const;
 
         bool CheckSphereCollision(const BoxCollider* box, const SphereCollider* sphere, CollisionHit& hit) const;
     };

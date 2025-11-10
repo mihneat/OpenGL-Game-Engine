@@ -21,10 +21,10 @@ bool SphereCollider::CollidesWith(Collider* other, CollisionHit& hit)
         if (!hit.hasHit)
             return false;
 
-        glm::vec3 hitNormal = (otherPosition - thisPosition) / sphereDistance;
+        glm::vec3 hitNormal = (thisPosition - otherPosition) / sphereDistance;
         hit.normal = hitNormal;
 
-        glm::vec3 vectorToMiddle = hitNormal * (this->radius - (totalRadius - sphereDistance) / 2.0f);
+        glm::vec3 vectorToMiddle = -hitNormal * (this->radius - (totalRadius - sphereDistance) / 2.0f);
         hit.point = thisPosition + vectorToMiddle;
 
         return hit.hasHit;
