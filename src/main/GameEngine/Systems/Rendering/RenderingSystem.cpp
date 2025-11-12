@@ -91,6 +91,8 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
             mesh->Render();
         }
     }
+    
+    glDisable(GL_CULL_FACE);
 
     // Render the text
     // TODO: Temporary variable until making a full canvas system
