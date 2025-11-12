@@ -1120,7 +1120,7 @@
           "tag": "Default",
           "position": {
             "x": 0.0,
-            "y": -50.0,
+            "y": -200.0,
             "z": 0.0
           },
           "rotation": {
@@ -1131,7 +1131,7 @@
           "scale": {
             "x": 200.0,
             "y": 100.0,
-            "z": 50.0
+            "z": 200.0
           },
           "components": [
             {
@@ -1183,7 +1183,7 @@
                   "value": {
                     "x": 200.0,
                     "y": 100.0,
-                    "z": 50.0
+                    "z": 200.0
                   }
                 }
               ]
@@ -1198,7 +1198,7 @@
       "tag": "Default",
       "position": {
         "x": 0.0,
-        "y": -103.4000015258789,
+        "y": -1000.0,
         "z": 0.0
       },
       "rotation": {
@@ -1332,7 +1332,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -1497,7 +1497,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.0010000000474974513
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -1662,7 +1662,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -1827,7 +1827,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.0010000000474974513
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -1992,7 +1992,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -2161,7 +2161,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -2330,7 +2330,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -2499,7 +2499,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.009999999776482582
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -2668,7 +2668,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -2837,7 +2837,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -3006,7 +3006,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.10000000149011612
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",
@@ -3175,7 +3175,7 @@
                 {
                   "name": "mass",
                   "type": "FieldTypeFloat",
-                  "value": 0.20000000298023224
+                  "value": 10.0
                 },
                 {
                   "name": "velocity",

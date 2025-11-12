@@ -253,10 +253,10 @@ void PhysicsEngine::ResolveCollisionWithRotationAndFriction(Collider* colliderA,
     float restitutionCoefficientB = rbB->GetRestitutionCoefficient();
     float restitutionCoefficient = glm::min(restitutionCoefficientA, restitutionCoefficientB);
     
-    if (abs(glm::dot(relativeVelocity, hit.normal)) < 1.0f)
+    if (glm::length(relativeVelocity) < 0.0001f)
         restitutionCoefficient = 0.0f;
 
-    // Compute the new linear velocities
+    // Compute the impulse magnitude
     // Source 1: https://perso.liris.cnrs.fr/nicolas.pronost/UUCourses/GamePhysics/lectures/lecture%207%20Collision%20Resolution.pdf
     // Source 2: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
     float massFactor;
@@ -302,11 +302,12 @@ void PhysicsEngine::ResolveCollisionWithRotationAndFriction(Collider* colliderA,
     
     // Check Coulomb's law
     glm::vec3 frictionImpulse;
-    if (abs(tangent_impulseMagnitude) <= abs(impulseMagnitude) * staticFrictionCoefficient)
+    if (abs(tangent_impulseMagnitude) <= impulseMagnitude * staticFrictionCoefficient)
         frictionImpulse = tangent_impulseMagnitude * tangent * 0.1f;
     else
         frictionImpulse = impulseMagnitude * tangent * dynamicFrictionCoefficient;
-    
+
+    // Get the total impulse
     glm::vec3 totalImpulse = impulse + frictionImpulse;
 
     glm::vec3 newLinearVelocityA = rbA->GetVelocity() + totalImpulse / massA;
@@ -449,7 +450,7 @@ void PhysicsEngine::SimulatePhysics(transform::Transform* transform, const float
 
         // Apply external forces
         float G = rb->GetMass() * g;
-        rb->AddForce(glm::vec3_down * G);
+        rb->AddForce(glm::vec3_down * G * deltaTime);
     }
 
     // Predict one step

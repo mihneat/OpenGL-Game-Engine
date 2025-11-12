@@ -14,7 +14,7 @@ namespace component
         MARK_SERIALIZABLE(Rigidbody)
         
     public:
-        Rigidbody(transform::Transform* transform, float mass = 0.1f, float restitutionCoefficient = 0.8f) : Component(transform), mass(mass), restitutionCoefficient(restitutionCoefficient) { }
+        Rigidbody(transform::Transform* transform, float mass = 10.0f, float restitutionCoefficient = 0.8f) : Component(transform), mass(mass), restitutionCoefficient(restitutionCoefficient) { }
         virtual ~Rigidbody() { }
 
         bool IsStatic() const;
@@ -28,7 +28,7 @@ namespace component
         void AddForce(glm::vec3 force);
 
     protected:
-        SERIALIZE_FIELD float mass = 0.1f;
+        SERIALIZE_FIELD float mass = 10.0f;
         
         SERIALIZE_FIELD glm::vec3 velocity = glm::vec3(0.0f);
         SERIALIZE_FIELD glm::vec3 angularVelocity = glm::vec3(0.0f);
