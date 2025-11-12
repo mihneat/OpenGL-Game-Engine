@@ -45,6 +45,16 @@
           "enabled": true,
           "attributes": [
             {
+              "name": "skyboxColor",
+              "type": "FieldTypeColour",
+              "value": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            },
+            {
               "name": "distanceToTarget",
               "type": "FieldTypeFloat",
               "value": 0.0
@@ -87,6 +97,16 @@
           "className": "Camera",
           "enabled": true,
           "attributes": [
+            {
+              "name": "skyboxColor",
+              "type": "FieldTypeColour",
+              "value": {
+                "r": 0.0,
+                "g": 0.0,
+                "b": 0.0,
+                "a": 1.0
+              }
+            },
             {
               "name": "distanceToTarget",
               "type": "FieldTypeFloat",
@@ -153,6 +173,11 @@
                 "y": 1.0,
                 "z": 1.0
               }
+            },
+            {
+              "name": "faceCullingMode",
+              "type": "FieldTypeEnum",
+              "value": 2
             },
             {
               "name": "debugOnly",
@@ -225,7 +250,7 @@
             "z": 0.0
           },
           "rotation": {
-            "x": 0.0,
+            "x": 3.1415927410125732,
             "y": 0.0,
             "z": 0.0
           },
@@ -262,6 +287,11 @@
                     "y": 1.0,
                     "z": 1.0
                   }
+                },
+                {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
                 },
                 {
                   "name": "debugOnly",
@@ -311,7 +341,7 @@
                   "type": "FieldTypeVec2",
                   "value": {
                     "x": 1.0,
-                    "y": 1.0
+                    "y": -1.0
                   }
                 },
                 {
@@ -546,6 +576,11 @@
                       }
                     },
                     {
+                      "name": "faceCullingMode",
+                      "type": "FieldTypeEnum",
+                      "value": 1
+                    },
+                    {
                       "name": "debugOnly",
                       "type": "FieldTypeBool",
                       "value": false
@@ -654,6 +689,11 @@
                         "y": 1.0,
                         "z": 1.0
                       }
+                    },
+                    {
+                      "name": "faceCullingMode",
+                      "type": "FieldTypeEnum",
+                      "value": 1
                     },
                     {
                       "name": "debugOnly",
@@ -807,6 +847,11 @@
                           }
                         },
                         {
+                          "name": "faceCullingMode",
+                          "type": "FieldTypeEnum",
+                          "value": 1
+                        },
+                        {
                           "name": "debugOnly",
                           "type": "FieldTypeBool",
                           "value": false
@@ -917,6 +962,11 @@
                           }
                         },
                         {
+                          "name": "faceCullingMode",
+                          "type": "FieldTypeEnum",
+                          "value": 1
+                        },
+                        {
                           "name": "debugOnly",
                           "type": "FieldTypeBool",
                           "value": false
@@ -1025,6 +1075,11 @@
                             "y": 1.0,
                             "z": 1.0
                           }
+                        },
+                        {
+                          "name": "faceCullingMode",
+                          "type": "FieldTypeEnum",
+                          "value": 1
                         },
                         {
                           "name": "debugOnly",
@@ -1180,6 +1235,11 @@
                           }
                         },
                         {
+                          "name": "faceCullingMode",
+                          "type": "FieldTypeEnum",
+                          "value": 1
+                        },
+                        {
                           "name": "debugOnly",
                           "type": "FieldTypeBool",
                           "value": false
@@ -1290,6 +1350,11 @@
                           }
                         },
                         {
+                          "name": "faceCullingMode",
+                          "type": "FieldTypeEnum",
+                          "value": 1
+                        },
+                        {
                           "name": "debugOnly",
                           "type": "FieldTypeBool",
                           "value": false
@@ -1365,7 +1430,7 @@
             "z": 0.0
           },
           "rotation": {
-            "x": 1.5707963705062866,
+            "x": -1.5707963705062866,
             "y": 0.0,
             "z": 1.5707963705062866
           },
@@ -1402,6 +1467,11 @@
                     "y": 1.0,
                     "z": 1.0
                   }
+                },
+                {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
                 },
                 {
                   "name": "debugOnly",
@@ -1574,6 +1644,11 @@
                   }
                 },
                 {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
                   "name": "debugOnly",
                   "type": "FieldTypeBool",
                   "value": false
@@ -1684,6 +1759,11 @@
                   }
                 },
                 {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
                   "name": "debugOnly",
                   "type": "FieldTypeBool",
                   "value": false
@@ -1792,6 +1872,11 @@
                     "y": 1.0,
                     "z": 1.0
                   }
+                },
+                {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
                 },
                 {
                   "name": "debugOnly",
@@ -1959,6 +2044,11 @@
                   }
                 },
                 {
+                  "name": "faceCullingMode",
+                  "type": "FieldTypeEnum",
+                  "value": 1
+                },
+                {
                   "name": "debugOnly",
                   "type": "FieldTypeBool",
                   "value": false
@@ -2069,6 +2159,11 @@
                 "y": 1.0,
                 "z": 1.0
               }
+            },
+            {
+              "name": "faceCullingMode",
+              "type": "FieldTypeEnum",
+              "value": 2
             },
             {
               "name": "debugOnly",
@@ -2298,7 +2393,7 @@
       "components": [
         {
           "className": "MeshRenderer",
-          "enabled": true,
+          "enabled": false,
           "attributes": [
             {
               "name": "meshType",
@@ -2323,6 +2418,11 @@
                 "y": 1.0,
                 "z": 1.0
               }
+            },
+            {
+              "name": "faceCullingMode",
+              "type": "FieldTypeEnum",
+              "value": 1
             },
             {
               "name": "debugOnly",
