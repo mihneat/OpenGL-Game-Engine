@@ -89,6 +89,7 @@ namespace transform
         glm::vec3 GetLocalPosition() const;
         glm::vec3 GetWorldPosition() const;
         glm::vec3 GetLocalScale() const;
+        glm::vec3 GetWorldScale() const;
         glm::vec3 GetLocalRotation() const;
 
         void SetLocalPosition(const glm::vec3& translate);

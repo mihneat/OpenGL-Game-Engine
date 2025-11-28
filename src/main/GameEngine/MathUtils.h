@@ -1,9 +1,47 @@
 #pragma once
 
+#include <tuple>
+
 #include "glm/glm.hpp"
 
 namespace utils
 {
+    struct Plane
+    {
+        // The direction the plane is facing
+        glm::vec3 normal;
+        // The distance from the origin
+        float distance;
+
+        Plane() : normal({0.f, 1.f, 0.f}), distance(0.0f) {}
+        Plane(const glm::vec3& point, const glm::vec3& normal): normal(glm::normalize(normal)), distance(glm::dot(glm::normalize(normal), point)) { }
+
+        float GetSignedDistanceToPlane(const glm::vec3& point) const;
+    };
+
+    struct AABB
+    {
+        glm::vec3 center{ 0.f, 0.f, 0.f };
+        glm::vec3 extents{ 0.f, 0.f, 0.f };
+
+        AABB(const glm::vec3& center, float extI, float extJ, float extK): center(center), extents({extI, extJ, extK}) { }
+        AABB(const glm::vec3& minPoint, const glm::vec3& maxPoint);
+
+        bool IsOnOrInFrontOfPlane(const Plane& plane) const;
+    };
+
+    struct Frustum
+    {
+        Plane topFace;
+        Plane bottomFace;
+
+        Plane rightFace;
+        Plane leftFace;
+
+        Plane farFace;
+        Plane nearFace;
+    };
+    
     class MathUtils
     {
     public:

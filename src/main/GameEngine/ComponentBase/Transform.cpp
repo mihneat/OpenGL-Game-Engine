@@ -221,6 +221,15 @@ glm::vec3 Transform::GetLocalScale() const
     return this->localScale;
 }
 
+glm::vec3 Transform::GetWorldScale() const
+{
+    return {
+        length(glm::vec3(modelMatrix[0])),
+        length(glm::vec3(modelMatrix[1])),
+        length(glm::vec3(modelMatrix[2]))
+    };
+}
+
 glm::vec3 Transform::GetLocalRotation() const
 {
     return this->localRotation;

@@ -10,7 +10,7 @@ using namespace component;
 using namespace component;
 using namespace transform;
 
-std::unordered_set<MeshRenderer::MeshEnum> MeshRenderer::loadedMeshes;
+std::unordered_map<MeshRenderer::MeshEnum, ExtraMeshData> MeshRenderer::loadedMeshes;
 
 MeshRenderer::MeshRenderer(
 	Transform* transform,
@@ -82,6 +82,47 @@ void MeshRenderer::SetMaterialOverrides(rendering::MaterialOverrides* materialOv
     this->materialOverrides = materialOverrides;
 }
 
+// Reference: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+bool MeshRenderer::IsInFrustum(const utils::Frustum& frustum) const
+{
+    // Retrieve the bounding box
+    const utils::AABB& boundingBox = loadedMeshes[meshType].boundingBox;
+    
+    // Get global scale
+    const auto model = transform->GetModelMatrix();
+    const glm::vec3 globalCenter{ model * glm::vec4(boundingBox.center, 1.f) };
+
+    // Extract the scale
+    glm::vec3 scale = transform->GetWorldScale();
+
+    // Scaled orientation
+    const glm::vec3 right = transform->right * boundingBox.extents.x * scale.x;
+    const glm::vec3 up = transform->up * boundingBox.extents.y * scale.y;
+    const glm::vec3 forward = transform->forward * boundingBox.extents.z * scale.z;
+
+    const float newIi = std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, right)) +
+        std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, up)) +
+        std::abs(glm::dot(glm::vec3{ 1.f, 0.f, 0.f }, forward));
+
+    const float newIj = std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, right)) +
+        std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, up)) +
+        std::abs(glm::dot(glm::vec3{ 0.f, 1.f, 0.f }, forward));
+
+    const float newIk = std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, right)) +
+        std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, up)) +
+        std::abs(glm::dot(glm::vec3{ 0.f, 0.f, 1.f }, forward));
+
+    // We don't need to divide scale because it's based on the half extension of the AABB
+    const utils::AABB globalAABB(globalCenter, newIi, newIj, newIk);
+
+    return globalAABB.IsOnOrInFrontOfPlane(frustum.leftFace) &&
+           globalAABB.IsOnOrInFrontOfPlane(frustum.rightFace) &&
+           globalAABB.IsOnOrInFrontOfPlane(frustum.topFace) &&
+           globalAABB.IsOnOrInFrontOfPlane(frustum.bottomFace) &&
+           globalAABB.IsOnOrInFrontOfPlane(frustum.nearFace) &&
+           globalAABB.IsOnOrInFrontOfPlane(frustum.farFace);
+}
+
 void MeshRenderer::MeshFactory()
 {
     // Check if mesh has already been created
@@ -89,7 +130,7 @@ void MeshRenderer::MeshFactory()
         return;
     }
     
-    loadedMeshes.insert(this->meshType);
+    loadedMeshes[this->meshType] = ExtraMeshData();
     
     mesh_desc meshDescription;
     generateMesh = true;
@@ -140,17 +181,53 @@ void MeshRenderer::MeshFactory()
         return;
     }
 
-    if (!generateMesh) {
-        return;
+    if (generateMesh) {
+        rendering::MeshResourceManager::GenerateMesh(std::to_string(meshType), meshDescription.drawMode, meshDescription.vertices, meshDescription.indices);
     }
 
-    rendering::MeshResourceManager::GenerateMesh(std::to_string(meshType), meshDescription.drawMode, meshDescription.vertices, meshDescription.indices);
+    GenerateAABB();
 }
 
 void MeshRenderer::LoadMesh(const std::string name, const std::string path)
 {
     generateMesh = false;
     rendering::MeshResourceManager::LoadMesh(std::to_string(meshType), name, path);
+}
+
+void MeshRenderer::GenerateAABB()
+{
+    const Mesh* mesh = rendering::MeshResourceManager::meshes[std::to_string(meshType)];
+    ExtraMeshData& meshData = loadedMeshes[this->meshType];
+    
+    // Compute the min and max points
+    glm::vec3 minPoint;
+    glm::vec3 maxPoint;
+    
+    if (generateMesh)
+    {
+        // Use the VertexFormat, for manually described objects
+        minPoint = mesh->vertices[0].position;
+        maxPoint = mesh->vertices[0].position;
+
+        for (const VertexFormat& vertex : mesh->vertices)
+        {
+            minPoint = glm::min(minPoint, vertex.position);
+            maxPoint = glm::max(maxPoint, vertex.position);
+        }
+    } else
+    {
+        // Use the positions vector, for imported models
+        minPoint = mesh->positions[0];
+        maxPoint = mesh->positions[0];
+
+        for (const glm::vec3& position : mesh->positions)
+        {
+            minPoint = glm::min(minPoint, position);
+            maxPoint = glm::max(maxPoint, position);
+        }
+    }
+
+    meshData.boundingBox = utils::AABB(minPoint, maxPoint);
 }
 
 mesh_desc MeshRenderer::CreateSquare()

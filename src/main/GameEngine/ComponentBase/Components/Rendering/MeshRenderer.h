@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_set>
+#include <unordered_map>
 
 #include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/ComponentBase/Component.h"
@@ -22,10 +22,17 @@ namespace m1
 
 namespace component
 {
+    struct ExtraMeshData
+    {
+        utils::AABB boundingBox;
+
+        ExtraMeshData() : boundingBox({}, {}) { }
+    };
+    
     struct mesh_desc {
         std::vector<VertexFormat> vertices;
         std::vector<unsigned int> indices;
-        int drawMode;
+        int drawMode = GL_TRIANGLES;
     };
     
     SERIALIZE_CLASS
@@ -93,15 +100,17 @@ namespace component
 
         LayerEnum GetLayer() { return layer; }
 
+        bool IsInFrustum(const utils::Frustum& frustum) const;
+
         // To be implemented when needed
         // void ChangeMesh(std::string newMeshName);
 
-        static std::unordered_set<MeshEnum> loadedMeshes;
+        static std::unordered_map<MeshEnum, ExtraMeshData> loadedMeshes;
 
     protected:
         SERIALIZE_FIELD MeshEnum meshType = Cube;
         SERIALIZE_FIELD glm::vec4 color = glm::vec4(1);
-        SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1);
+        SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1); // This needs to be deprecated
         SERIALIZE_FIELD FaceCullingMode faceCullingMode = CullBack;
 
         mesh_desc CreateSquare();
@@ -130,6 +139,8 @@ namespace component
 
         void MeshFactory();
         void LoadMesh(const std::string name, const std::string path);
+
+        void GenerateAABB();
 
         friend class rendering::RenderingSystem;
         friend class m1::GameEngine;

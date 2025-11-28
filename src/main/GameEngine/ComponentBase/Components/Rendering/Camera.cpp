@@ -6,9 +6,30 @@
 #include <iostream>
 #include <utility>
 
+#include "main/GameEngine/GUI/GUIManager.h"
+
 using namespace std;
 using namespace component;
 using namespace transform;
+
+void Camera::KeyPress(const int key, const int mods)
+{
+    Component::KeyPress(key, mods);
+
+    if (key == GLFW_KEY_P && transform->GetName() == "Main Camera")
+    {
+        std::cout << "Camera right: " << transform->right << "\n";
+        std::cout << "Camera up: " << transform->up << "\n";
+        std::cout << "Camera forward: " << transform->forward << "\n\n";
+        std::cout << "Frustum near: " << frustum.nearFace.normal << ", " << frustum.nearFace.distance << "\n";
+        std::cout << "Frustum far: " << frustum.farFace.normal << ", " << frustum.farFace.distance << "\n";
+        std::cout << "Frustum right: " << frustum.rightFace.normal << ", " << frustum.rightFace.distance << "\n";
+        std::cout << "Frustum left: " << frustum.leftFace.normal << ", " << frustum.leftFace.distance << "\n";
+        std::cout << "Frustum top: " << frustum.topFace.normal << ", " << frustum.topFace.distance << "\n";
+        std::cout << "Frustum bottom: " << frustum.bottomFace.normal << ", " << frustum.bottomFace.distance << "\n";
+        std::cout << "\n\n";
+    }
+}
 
 void Camera::Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up)
 {
@@ -106,16 +127,74 @@ void Camera::RotateThirdPerson_OZ(float angle)
 
 }
 
-void Camera::SetPerspective(const float fov, const float aspectRatio)
+// Reference: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
+void Camera::UpdatePerspectiveFrustum()
 {
-    isPerspective = true;
-    projectionMatrix = glm::perspective(glm::radians(fov), aspectRatio, 0.01f, 5000.0f);
+    const glm::vec3 position = transform->GetWorldPosition();
+    const float halfVSide = zFar * tanf(fovY * .5f);
+    const float halfHSide = halfVSide * aspectRatio;
+
+    const glm::vec3 camRight = transform->right;
+    const glm::vec3 camUp = transform->up;
+    const glm::vec3 camForward = transform->forward;
+    
+    const glm::vec3 frontMultFar = zFar * camForward;
+
+    frustum.nearFace = { position + zNear * camForward, camForward };
+    frustum.farFace = { position + frontMultFar, -camForward };
+    frustum.rightFace = { position, glm::cross(frontMultFar - camRight * halfHSide, camUp) };
+    frustum.leftFace = { position, glm::cross(camUp,frontMultFar + camRight * halfHSide) };
+    frustum.topFace = { position, glm::cross(camRight, frontMultFar - camUp * halfVSide) };
+    frustum.bottomFace = { position, glm::cross(frontMultFar + camUp * halfVSide, camRight) };
 }
 
-void Camera::SetOrthographic(const float width, const float height, const float zNear, const float zFar)
+// TODO: Needs to be tested
+void Camera::UpdateOrthographicFrustum()
+{
+    const glm::vec3 position = transform->GetWorldPosition();
+
+    const glm::vec3 camRight = transform->right;
+    const glm::vec3 camUp = transform->up;
+    const glm::vec3 camForward = transform->forward;
+
+    frustum.nearFace = { position + zNear * camForward, camForward };
+    frustum.farFace = { position + zFar * camForward, -camForward };
+    frustum.rightFace = { position + orthoWidth / 2.0f * camRight, -camRight };
+    frustum.leftFace = { position + orthoWidth / 2.0f * -camRight, camRight };
+    frustum.topFace = { position + orthoHeight / 2.0f * camUp, -camUp };
+    frustum.bottomFace = { position + orthoHeight / 2.0f * -camUp, camUp };
+}
+
+void Camera::UpdateFrustum()
+{
+    if (isPerspective)
+        UpdatePerspectiveFrustum();
+    else
+        UpdateOrthographicFrustum();
+}
+
+void Camera::SetPerspective(const float fov, const float newAspectRatio)
+{
+    isPerspective = true;
+    projectionMatrix = glm::perspective(glm::radians(fov), newAspectRatio, 0.01f, 5000.0f);
+
+    zNear = 0.01f;
+    zFar = 5000.0f;
+
+    aspectRatio = newAspectRatio;
+    fovY = fov;
+}
+
+void Camera::SetOrthographic(const float width, const float height, const float newZNear, const float newZFar)
 {
     isPerspective = false;
-    projectionMatrix = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, zNear, zFar);
+    projectionMatrix = glm::ortho(-width / 2.0f, width / 2.0f, -height / 2.0f, height / 2.0f, newZNear, newZFar);
+
+    zNear = newZNear;
+    zFar = newZFar;
+
+    orthoWidth = width;
+    orthoHeight = height;
 }
 
 glm::mat4 Camera::GetViewMatrix()
@@ -127,6 +206,11 @@ glm::mat4 Camera::GetViewMatrix()
 glm::vec3 Camera::GetTargetPosition()
 {
     return transform->GetLocalPosition() + transform->forward * distanceToTarget;
+}
+
+const utils::Frustum& Camera::GetFrustum() const
+{
+    return frustum;
 }
 
 bool Camera::IsLayerRendered(int layer) 

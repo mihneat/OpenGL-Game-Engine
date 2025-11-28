@@ -4,10 +4,11 @@
 #include <unordered_set>
 
 #include "utils/glm_utils.h"
-#include "utils/math_utils.h"
+#include "main/GameEngine/MathUtils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
 #include "main/GameEngine/ComponentBase/Components/Rendering/MeshRenderer.h"
-#include "main/GameEngine/ComponentBase/Components/Logic/Managers/GameManager.h"
+
+class Serializer;
 
 namespace component
 {
@@ -46,10 +47,12 @@ namespace component
 
         ~Camera() { }
 
+        void KeyPress(const int key, const int mods) override;
+
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
-        void SetPerspective(const float fov, const float aspectRatio);
-        void SetOrthographic(const float width, const float height, const float zNear = 0.01f, const float zFar = 5000.0f);
+        void SetPerspective(const float fov, const float newAspectRatio);
+        void SetOrthographic(const float width, const float height, const float newZNear = 0.01f, const float newZFar = 5000.0f);
 
         void MoveForward(float distance);
 
@@ -65,6 +68,10 @@ namespace component
         void RotateThirdPerson_OY(float angle);
         void RotateThirdPerson_OZ(float angle);
 
+        void UpdatePerspectiveFrustum();
+        void UpdateOrthographicFrustum();
+        void UpdateFrustum();
+        
         void WindowResize(int width, int height);
 
         void SetRenderLayers(std::unordered_set<int> renderLayers);
@@ -79,6 +86,8 @@ namespace component
         glm::vec4 GetViewportDimensions() { return glm::vec4(viewportBottomLeft.x, viewportBottomLeft.y,
             viewportWidthHeight.x, viewportWidthHeight.y); }
 
+        const utils::Frustum& GetFrustum() const;
+
         glm::vec2 viewportBottomLeft = glm::vec2();
         glm::vec2 viewportWidthHeight = glm::vec2();
 
@@ -90,10 +99,26 @@ namespace component
         SERIALIZE_FIELD bool autoResize = true;
 
         // TODO: Implement this functionality
-        // S ERIALIZE_FIELD bool isMainCam = false;
+        // S*RIALIZE_FIELD bool isMainCam = false;
 
         std::unordered_set<int> layers;
 
-        bool isPerspective = false;
+        bool isPerspective = true;
+
+        // Common projection parameters
+        float zNear;
+        float zFar;
+        
+        // Perspective parameters
+        float fovY;
+        float aspectRatio;
+
+        // Orthographic parameters
+        float orthoWidth;
+        float orthoHeight;
+
+        utils::Frustum frustum;
+
+        // Projection parameters
     };
 }

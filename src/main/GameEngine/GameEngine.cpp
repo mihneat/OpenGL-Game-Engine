@@ -40,7 +40,8 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
+    // startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     this->physicsEngine = new physics::PhysicsEngine();
@@ -284,7 +285,7 @@ void GameEngine::RenderGameView()
     glViewport(0, 0, 4096, 4096);
 
     // Render the scene through the sun's eyes
-    renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+    renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
         true, glm::ivec2(4096), GUIManager::GetInstance()->IsGamePlaying(), true, false);
 
     // Get the game FBO container
@@ -300,7 +301,7 @@ void GameEngine::RenderGameView()
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderingSystem->Render(hierarchy, textRenderer, mainCam, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+    renderingSystem->Render(hierarchy, textRenderer, mainCam, shadowMappingCamera, mainCam, shadowMapFBOContainer.GetDepthTextureID(),
         false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true);
 
     // Render secondary cameras
@@ -310,7 +311,7 @@ void GameEngine::RenderGameView()
         glViewport((int)cam->GetViewportDimensions().x, (int)cam->GetViewportDimensions().y,
             (int)cam->GetViewportDimensions().z, (int)cam->GetViewportDimensions().a);
 
-        renderingSystem->Render(hierarchy, textRenderer, cam, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+        renderingSystem->Render(hierarchy, textRenderer, cam, shadowMappingCamera, cam, shadowMapFBOContainer.GetDepthTextureID(),
             false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), true, false);
     }
 
@@ -346,7 +347,7 @@ void GameEngine::RenderSceneView()
     
     sceneCamera->UpdateValues(fboContainer->GetResolution());
 
-    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, shadowMappingCamera, shadowMapFBOContainer.GetDepthTextureID(),
+    renderingSystem->Render(hierarchy, textRenderer, sceneCamera, shadowMappingCamera, mainCam, shadowMapFBOContainer.GetDepthTextureID(),
         false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), false, false);
 }
 

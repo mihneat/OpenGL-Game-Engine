@@ -13,15 +13,29 @@
 using namespace rendering;
 using namespace loaders;
 
-void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer* textRenderer, component::Camera* cam,
-                             component::Camera* shadowCam, int shadowDepthTextureId, bool isShadowPass, const glm::ivec2 resolution, bool isInPlayMode, bool isInGameView, bool renderText)
+void RenderingSystem::Render(
+    transform::Transform* hierarchy,
+    gfxc::TextRenderer* textRenderer,
+    component::Camera* cam,
+    component::Camera* shadowCam,
+    component::Camera* cullCam,
+    int shadowDepthTextureId,
+    bool isShadowPass,
+    const glm::ivec2 resolution,
+    bool isInPlayMode,
+    bool isInGameView,
+    bool renderText
+)
 {
+    // Update camera frustum
+    cullCam->UpdateFrustum();
+    
     // Clear rendering state
     meshesByShader.clear();
     LightManager::ClearValues();
     
     // Render the meshes and the lights
-    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam](component::Component* component) {
+    m1::GameEngine::ApplyToComponents(hierarchy, [this, cam, cullCam](component::Component* component) {
         component::Light* light = dynamic_cast<component::Light*>(component);
         if (light != nullptr) {
             light->UpdateLightValues();
@@ -40,6 +54,9 @@ void RenderingSystem::Render(transform::Transform* hierarchy, gfxc::TextRenderer
             
             // Initialize the mesh
             meshRenderer->MeshFactory();
+
+            // Check if the mesh should be culled (mesh must be initialized first)
+            if (!meshRenderer->IsInFrustum(cullCam->GetFrustum())) return;
 
             // Check if the renderer has a material
             const Material* material = meshRenderer->GetMaterial();
