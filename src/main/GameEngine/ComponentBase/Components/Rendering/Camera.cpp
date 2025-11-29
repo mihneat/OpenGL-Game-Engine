@@ -12,25 +12,6 @@ using namespace std;
 using namespace component;
 using namespace transform;
 
-void Camera::KeyPress(const int key, const int mods)
-{
-    Component::KeyPress(key, mods);
-
-    if (key == GLFW_KEY_P && transform->GetName() == "Main Camera")
-    {
-        std::cout << "Camera right: " << transform->right << "\n";
-        std::cout << "Camera up: " << transform->up << "\n";
-        std::cout << "Camera forward: " << transform->forward << "\n\n";
-        std::cout << "Frustum near: " << frustum.nearFace.normal << ", " << frustum.nearFace.distance << "\n";
-        std::cout << "Frustum far: " << frustum.farFace.normal << ", " << frustum.farFace.distance << "\n";
-        std::cout << "Frustum right: " << frustum.rightFace.normal << ", " << frustum.rightFace.distance << "\n";
-        std::cout << "Frustum left: " << frustum.leftFace.normal << ", " << frustum.leftFace.distance << "\n";
-        std::cout << "Frustum top: " << frustum.topFace.normal << ", " << frustum.topFace.distance << "\n";
-        std::cout << "Frustum bottom: " << frustum.bottomFace.normal << ", " << frustum.bottomFace.distance << "\n";
-        std::cout << "\n\n";
-    }
-}
-
 void Camera::Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up)
 {
     transform->SetLocalPosition(position);
@@ -131,10 +112,10 @@ void Camera::RotateThirdPerson_OZ(float angle)
 void Camera::UpdatePerspectiveFrustum()
 {
     const glm::vec3 position = transform->GetWorldPosition();
-    const float halfVSide = zFar * tanf(fovY * .5f);
+    const float halfVSide = zFar * tanf(glm::radians(fovY) * .5f);
     const float halfHSide = halfVSide * aspectRatio;
 
-    const glm::vec3 camRight = transform->right;
+    const glm::vec3 camRight = -transform->right;
     const glm::vec3 camUp = transform->up;
     const glm::vec3 camForward = transform->forward;
     
@@ -153,7 +134,7 @@ void Camera::UpdateOrthographicFrustum()
 {
     const glm::vec3 position = transform->GetWorldPosition();
 
-    const glm::vec3 camRight = transform->right;
+    const glm::vec3 camRight = -transform->right;
     const glm::vec3 camUp = transform->up;
     const glm::vec3 camForward = transform->forward;
 

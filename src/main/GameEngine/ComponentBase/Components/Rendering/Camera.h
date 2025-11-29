@@ -47,8 +47,6 @@ namespace component
 
         ~Camera() { }
 
-        void KeyPress(const int key, const int mods) override;
-
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
         void SetPerspective(const float fov, const float newAspectRatio);
