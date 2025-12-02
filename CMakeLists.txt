@@ -148,6 +148,7 @@ file(GLOB IMGUI_NODE_EDITOR_HEADERS
 # Gather the include directories
 set(GFXF_INCLUDE_DIRS_PRIVATE
     ${GFXF_ROOT_DIR}/deps/api
+    ${GFXF_ROOT_DIR}/deps/common/inc
     ${CMAKE_CURRENT_LIST_DIR}/src
     ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui
     ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui-node-editor
@@ -203,6 +204,7 @@ add_subdirectory(src/external/json-develop)
 target_link_libraries(${target_name} PRIVATE
     ${OPENGL_LIBRARIES}
     nlohmann_json::nlohmann_json
+    cudart_static.lib
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")

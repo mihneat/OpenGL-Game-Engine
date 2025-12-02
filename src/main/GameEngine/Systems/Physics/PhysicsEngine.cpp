@@ -2,6 +2,13 @@
 
 #include <iostream>
 
+// Include CUDA
+#include <cuda_runtime.h>
+
+// Include helper functions
+#include <helper_cuda.h>
+#include <helper_functions.h>
+
 #include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 

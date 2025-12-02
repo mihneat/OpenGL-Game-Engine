@@ -40,8 +40,8 @@ using namespace component;
 GameEngine::GameEngine()
 {
     // TODO: Read from config file
-    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
-    // startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
+    // startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
+    startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
 
     this->renderingSystem = new RenderingSystem();
     this->physicsEngine = new physics::PhysicsEngine();
