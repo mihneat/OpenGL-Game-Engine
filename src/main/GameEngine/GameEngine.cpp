@@ -21,6 +21,7 @@
 #include "Systems/Rendering/MaterialManager.h"
 #include "Systems/Rendering/MeshResourceManager.h"
 #include "Systems/Rendering/ShaderResourceManager.h"
+#include "Utils/CUDAUtils.h"
 
 using namespace std;
 using namespace m1;
@@ -39,12 +40,14 @@ using namespace component;
 
 GameEngine::GameEngine()
 {
+    useGPUAcceleration = CUDAUtils::InitCUDA();
+    
     // TODO: Read from config file
     // startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "AsteroidHills.scene");
     startScene = PATH_JOIN(ENGINE_PATH::ASSETS, "Scenes", "PhysicsScene.scene");
 
     this->renderingSystem = new RenderingSystem();
-    this->physicsEngine = new physics::PhysicsEngine();
+    this->physicsEngine = new physics::PhysicsEngine(useGPUAcceleration);
     
     LightManager::Init();
 

@@ -119,5 +119,7 @@ namespace m1
         bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;
 
+        bool useGPUAcceleration = false;
+
     };
 }   // namespace m1
