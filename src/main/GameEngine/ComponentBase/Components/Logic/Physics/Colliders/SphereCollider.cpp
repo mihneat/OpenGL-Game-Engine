@@ -1,6 +1,7 @@
 #include "SphereCollider.h"
 
 #include "BoxCollider.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 
 using namespace component;
 
@@ -46,4 +47,23 @@ bool SphereCollider::CollidesWith(Collider* other, CollisionHit& hit)
 float SphereCollider::GetMomentOfInertia(float mass)
 {
     return 2.0f / 5.0f * mass * radius * radius;
+}
+
+void SphereCollider::CloneToDevice(SphereCollider_Dev& sphereCollider_d)
+{
+    sphereCollider_d.transform.worldPosition = transform->GetWorldPosition();
+
+    Rigidbody* rb = transform->GetComponent<Rigidbody>();
+    sphereCollider_d.rb.isAttached = rb != nullptr;
+    if (rb != nullptr)
+    {
+        sphereCollider_d.rb.isStatic = rb->IsStatic();
+        sphereCollider_d.rb.velocity = rb->GetVelocity();
+        sphereCollider_d.rb.angularVelocity = rb->GetAngularVelocity();
+        sphereCollider_d.rb.mass = rb->GetMass();
+        sphereCollider_d.rb.restitutionCoefficient = rb->GetRestitutionCoefficient();
+        sphereCollider_d.rb.momentOfInertia = GetMomentOfInertia(rb->GetMass());
+    }
+
+    sphereCollider_d.radius = radius;
 }

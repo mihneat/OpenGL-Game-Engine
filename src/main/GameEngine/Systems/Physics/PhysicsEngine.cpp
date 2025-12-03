@@ -9,13 +9,20 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>
 
-#include "PhysicsEngineGPU.cuh"
-
 #include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 
 using namespace physics;
 using namespace component;
+
+extern "C"
+cudaError_t ProcessCollisionsOnGPU(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d,
+    int boxCnt, int sphereCnt, dim3 DIM_GRID, dim3 DIM_BLOCK);
+
+PhysicsEngine::~PhysicsEngine()
+{
+    FreeData();
+}
 
 void PhysicsEngine::ResolveCollision(Collider* colliderA, Collider* colliderB, CollisionHit& hit)
 {
@@ -425,6 +432,104 @@ void PhysicsEngine::SimulatePhysicsCPU(transform::Transform* transform, const fl
     }
 }
 
+inline void PhysicsEngine::CopyDataHostToDevice(const std::vector<BoxCollider*>& boxColliders, const std::vector<SphereCollider*>& sphereColliders)
+{
+    int boxCnt = static_cast<int>(boxColliders.size());
+    int sphereCnt = static_cast<int>(sphereColliders.size());
+    if (boxCnt != prevBoxCnt || sphereCnt != prevSphereCnt)
+    {
+        prevBoxCnt = boxCnt;
+        prevSphereCnt = sphereCnt;
+        
+        // Reallocate the device memory
+        FreeData();
+
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&hit_d), 1 * sizeof(CollisionHit_Dev)));
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&boxColliders_d), boxCnt * sizeof(BoxCollider_Dev)));
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&sphereColliders_d), sphereCnt * sizeof(SphereCollider_Dev)));
+
+        boxColliders_h = static_cast<BoxCollider_Dev*>(malloc(boxCnt * sizeof(BoxCollider_Dev)));
+        sphereColliders_h = static_cast<SphereCollider_Dev*>(malloc(sphereCnt * sizeof(SphereCollider_Dev)));
+    }
+    
+    checkCudaErrors(cudaMemset(hit_d, 0x0, 1 * sizeof(CollisionHit_Dev)));
+    checkCudaErrors(cudaMemset(boxColliders_d, 0x0, boxCnt * sizeof(BoxCollider_Dev)));
+    checkCudaErrors(cudaMemset(sphereColliders_d, 0x0, sphereCnt * sizeof(SphereCollider_Dev)));
+
+    for (int i = 0; i < boxCnt; ++i)
+        boxColliders[i]->CloneToDevice(boxColliders_h[i]);
+
+    for (int i = 0; i < sphereCnt; ++i)
+        sphereColliders[i]->CloneToDevice(sphereColliders_h[i]);
+    
+	checkCudaErrors(cudaMemcpy(boxColliders_d, boxColliders_h, boxCnt * sizeof(BoxCollider_Dev), cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(sphereColliders_d, sphereColliders_h, sphereCnt * sizeof(SphereCollider_Dev), cudaMemcpyHostToDevice));
+}
+
+inline void PhysicsEngine::CopyDataDeviceToHost(std::vector<BoxCollider*>& boxColliders, std::vector<SphereCollider*>& sphereColliders)
+{
+    int boxCnt = static_cast<int>(boxColliders.size());
+    int sphereCnt = static_cast<int>(sphereColliders.size());
+    checkCudaErrors(cudaMemcpy(boxColliders_h, boxColliders_d, boxCnt * sizeof(BoxCollider_Dev), cudaMemcpyDeviceToHost));
+    checkCudaErrors(cudaMemcpy(sphereColliders_h, sphereColliders_d, sphereCnt * sizeof(SphereCollider_Dev), cudaMemcpyDeviceToHost));
+
+    // TODO: This is quite inefficient.. getting the rigidbody every single time
+    
+    // Update the velocities
+    for (int i = 0; i < boxCnt; ++i)
+    {
+        Rigidbody* rb = boxColliders[i]->transform->GetComponent<Rigidbody>();
+        if (!rb)
+            continue;
+
+        rb->SetVelocity(boxColliders_h->rb.velocity);
+        rb->SetAngularVelocity(boxColliders_h->rb.angularVelocity);
+    }
+
+    for (int i = 0; i < sphereCnt; ++i)
+    {
+        Rigidbody* rb = sphereColliders[i]->transform->GetComponent<Rigidbody>();
+        if (!rb)
+            continue;
+
+        rb->SetVelocity(sphereColliders_h->rb.velocity);
+        rb->SetAngularVelocity(sphereColliders_h->rb.angularVelocity);
+    }
+}
+
+inline void PhysicsEngine::FreeData()
+{
+    if (hit_d != nullptr)
+    {
+        checkCudaErrors(cudaFree(hit_d));
+        hit_d = nullptr;
+    }
+    
+    if (boxColliders_d != nullptr)
+    {
+        checkCudaErrors(cudaFree(boxColliders_d));
+        boxColliders_d = nullptr;
+    }
+    
+    if (sphereColliders_d != nullptr)
+    {
+        checkCudaErrors(cudaFree(sphereColliders_d));
+        sphereColliders_d = nullptr;
+    }
+    
+    if (boxColliders_h != nullptr)
+    {
+        free(boxColliders_h);
+        boxColliders_h = nullptr;
+    }
+    
+    if (sphereColliders_h != nullptr)
+    {
+        free(sphereColliders_h);
+        sphereColliders_h = nullptr;
+    }
+}
+
 void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const float deltaTime)
 {
     int gpuBlockSize = 16;
@@ -434,8 +539,10 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
     // Find all Colliders
     int boxCnt = 0, sphereCnt = 0;
     std::vector<Collider*> colliders;
+    std::vector<BoxCollider*> boxColliders;
+    std::vector<SphereCollider*> sphereColliders;
     std::vector<Rigidbody*> rbs;
-    m1::GameEngine::ApplyToComponents(transform, [&colliders, &rbs, &boxCnt, &sphereCnt](Component* component) {
+    m1::GameEngine::ApplyToComponents(transform, [&colliders, &rbs, &boxColliders, &sphereColliders](Component* component) {
         Collider* collider = dynamic_cast<Collider*>(component);
         Rigidbody* rb = dynamic_cast<Rigidbody*>(component);
         
@@ -443,9 +550,9 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
         {
             colliders.push_back(collider);
             if (dynamic_cast<BoxCollider*>(collider) != nullptr)
-                ++boxCnt;
+                boxColliders.push_back(dynamic_cast<BoxCollider*>(collider));
             else if (dynamic_cast<SphereCollider*>(collider) != nullptr)
-                ++sphereCnt;
+                sphereColliders.push_back(dynamic_cast<SphereCollider*>(collider));
         }
         
         if (rb != nullptr && rb->IsActive())
@@ -480,48 +587,17 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
         // Predict angular velocity
         rb->transform->Rotate(-rb->GetAngularVelocity() * deltaTime);
     }
-
-
-
     
-
     // Allocate memory on the GPU
     dim3 dimBlock(gpuBlockSize, 1);
     dim3 dimGrid((static_cast<int>(colliders.size()) + gpuBlockSize - 1) / dimBlock.x, 1);
 
+    CopyDataHostToDevice(boxColliders, sphereColliders);
     
+    checkCudaErrors(ProcessCollisionsOnGPU(hit_d, boxColliders_d, sphereColliders_d, boxCnt, sphereCnt, dimGrid, dimBlock));
+    checkCudaErrors(cudaDeviceSynchronize());
     
-    // Resolve collisions
-    for (int i = 0; i < colliders.size(); ++i)
-    {
-        Collider* colliderA = colliders[i];
-        for (int j = i + 1; j < colliders.size(); ++j)
-        {
-            Collider* colliderB = colliders[j];
-            
-            // Detect and resolve collision
-            CollisionHit hit;
-            hit.hasHit = false;
-            
-            if (colliderA->CollidesWith(colliderB, hit))
-                ResolveCollisionWithRotationAndFriction(colliderA, colliderB, hit);
-        }
-    }
-
-    // TODO: Copy the device memory back (or at least, the velocities)
-
-    // Free the GPU memory
-    if (boxColliders_d != nullptr)
-    {
-        checkCudaErrors(cudaFree(boxColliders_d));
-        boxColliders_d = nullptr;
-    }
-    
-    if (sphereColliders_d != nullptr)
-    {
-        checkCudaErrors(cudaFree(sphereColliders_d));
-        sphereColliders_d = nullptr;
-    }
+    CopyDataDeviceToHost(boxColliders, sphereColliders);
     
     // Revert prediction
     for (int i = 0; i < rbs.size(); ++i)

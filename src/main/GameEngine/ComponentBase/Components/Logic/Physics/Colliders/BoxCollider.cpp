@@ -3,8 +3,8 @@
 #include <iostream>
 #include <GLFW/glfw3native.h>
 
-#include "SphereCollider.h"
 #include "main/GameEngine/MathUtils.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 
 using namespace component;
 using namespace utils;
@@ -424,4 +424,23 @@ float BoxCollider::GetMomentOfInertia(float mass)
     // Very crude approximation (normally we should detect which side of the box was hit, but we'll be using cubes)
     float sizeApproximation = (halfSize.x + halfSize.y + halfSize.z) / 3.0f;
     return 1.0f / 6.0f * mass * sizeApproximation * sizeApproximation;
+}
+
+void BoxCollider::CloneToDevice(BoxCollider_Dev& boxCollider_d)
+{
+    boxCollider_d.transform.worldPosition = transform->GetWorldPosition();
+
+    Rigidbody* rb = transform->GetComponent<Rigidbody>();
+    boxCollider_d.rb.isAttached = rb != nullptr;
+    if (rb != nullptr)
+    {
+        boxCollider_d.rb.isStatic = rb->IsStatic();
+        boxCollider_d.rb.velocity = rb->GetVelocity();
+        boxCollider_d.rb.angularVelocity = rb->GetAngularVelocity();
+        boxCollider_d.rb.mass = rb->GetMass();
+        boxCollider_d.rb.restitutionCoefficient = rb->GetRestitutionCoefficient();
+        boxCollider_d.rb.momentOfInertia = GetMomentOfInertia(rb->GetMass());
+    }
+
+    boxCollider_d.halfSize = halfSize;
 }

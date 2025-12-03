@@ -12,7 +12,6 @@ endif()
 
 
 # Set the name of the project
-set(cuda_library_name CUDAComponent)
 set(target_name OpenGLGameEngine)
 project(${target_name} C CXX CUDA)
 
@@ -48,6 +47,8 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     find_package(spdlog REQUIRED)
     find_package(Freetype REQUIRED)
 endif()
+
+find_package(CUDAToolkit 13.0)
 
 
 # Set options
@@ -94,6 +95,7 @@ file(GLOB_RECURSE GFXF_SOURCES
     ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp
     #
     ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.cu
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.c*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.c*
@@ -109,6 +111,7 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/res/*.glsl
     #
     ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.h*
+    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.cuh*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.h*
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.h*
@@ -117,11 +120,6 @@ file(GLOB_RECURSE GFXF_HEADERS_PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M1}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_M2}/*.glsl
     ${CMAKE_CURRENT_LIST_DIR}/src/lab_${SUFFIX_LAB_EXTRA}/*.glsl
-)
-
-# Gather all CUDA files
-file(GLOB_RECURSE GFXF_CUDA_SOURCES
-    ${CMAKE_CURRENT_LIST_DIR}/src/${MAIN}/*.cu*
 )
 
 
@@ -163,12 +161,6 @@ set(GFXF_INCLUDE_DIRS_PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui
     ${CMAKE_CURRENT_LIST_DIR}/src/external/imgui-node-editor
 )
-
-# Add the CUDA library
-# Reference: https://stackoverflow.com/questions/75168735/how-to-link-cuda-dynamic-libraries-using-cmake/75174462#75174462
-add_library(${cuda_library_name} SHARED ${GFXF_CUDA_SOURCES})
-
-target_compile_features(${cuda_library_name} PRIVATE cuda_std_14)
 
 
 # Add the executable
@@ -218,9 +210,8 @@ add_subdirectory(src/external/json-develop)
 
 target_link_libraries(${target_name} PRIVATE
     ${OPENGL_LIBRARIES}
-    ${cuda_library_name}
-    cudart_static.lib
     nlohmann_json::nlohmann_json
+    CUDA::cudart_static
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")

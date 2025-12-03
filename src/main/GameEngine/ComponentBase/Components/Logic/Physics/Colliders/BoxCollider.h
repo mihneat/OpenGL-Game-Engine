@@ -4,6 +4,7 @@
 #include <unordered_set>
 
 #include "SphereCollider.h"
+#include "BoxColliderGPU.cuh"
 #include "utils/glm_utils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Collider.h"
@@ -26,6 +27,8 @@ namespace component
         std::pair<glm::vec3, glm::vec3> GetClosestEdgeInDirectionOfAxis(char pDirChar, glm::vec3 axis, glm::vec3 otherBoxCenter) const;
         void CheckFaceFaceCollision(const BoxCollider* referenceBox, const BoxCollider* incidentBox, glm::vec3 refPlaneCenter, CollisionHit& hit, bool useRetryFallback = true) const;
         bool CheckPointIsInside(glm::vec3 point) const;
+
+        void CloneToDevice(BoxCollider_Dev& boxCollider_d);
         
     protected:
         SERIALIZE_FIELD glm::vec3 halfSize = glm::vec3(.5f);
