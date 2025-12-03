@@ -9,6 +9,8 @@
 #include <helper_cuda.h>
 #include <helper_functions.h>
 
+#include "PhysicsEngineGPU.cuh"
+
 #include "main/GameEngine/GameEngine.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"
 
@@ -425,24 +427,30 @@ void PhysicsEngine::SimulatePhysicsCPU(transform::Transform* transform, const fl
 
 void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const float deltaTime)
 {
+    int gpuBlockSize = 16;
+
     static constexpr float g = 9.81f;
     
     // Find all Colliders
+    int boxCnt = 0, sphereCnt = 0;
     std::vector<Collider*> colliders;
     std::vector<Rigidbody*> rbs;
-    m1::GameEngine::ApplyToComponents(transform, [&colliders, &rbs](Component* component) {
+    m1::GameEngine::ApplyToComponents(transform, [&colliders, &rbs, &boxCnt, &sphereCnt](Component* component) {
         Collider* collider = dynamic_cast<Collider*>(component);
         Rigidbody* rb = dynamic_cast<Rigidbody*>(component);
         
         if (collider != nullptr && collider->IsActive())
+        {
             colliders.push_back(collider);
+            if (dynamic_cast<BoxCollider*>(collider) != nullptr)
+                ++boxCnt;
+            else if (dynamic_cast<SphereCollider*>(collider) != nullptr)
+                ++sphereCnt;
+        }
         
         if (rb != nullptr && rb->IsActive())
             rbs.push_back(rb);
     });
-
-    // TODO: Allocate memory on the GPU
-    
 
     // Apply external forces
     for (auto rb : rbs)
@@ -472,6 +480,16 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
         // Predict angular velocity
         rb->transform->Rotate(-rb->GetAngularVelocity() * deltaTime);
     }
+
+
+
+    
+
+    // Allocate memory on the GPU
+    dim3 dimBlock(gpuBlockSize, 1);
+    dim3 dimGrid((static_cast<int>(colliders.size()) + gpuBlockSize - 1) / dimBlock.x, 1);
+
+    
     
     // Resolve collisions
     for (int i = 0; i < colliders.size(); ++i)
@@ -488,6 +506,21 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
             if (colliderA->CollidesWith(colliderB, hit))
                 ResolveCollisionWithRotationAndFriction(colliderA, colliderB, hit);
         }
+    }
+
+    // TODO: Copy the device memory back (or at least, the velocities)
+
+    // Free the GPU memory
+    if (boxColliders_d != nullptr)
+    {
+        checkCudaErrors(cudaFree(boxColliders_d));
+        boxColliders_d = nullptr;
+    }
+    
+    if (sphereColliders_d != nullptr)
+    {
+        checkCudaErrors(cudaFree(sphereColliders_d));
+        sphereColliders_d = nullptr;
     }
     
     // Revert prediction

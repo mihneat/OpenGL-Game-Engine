@@ -45,7 +45,8 @@ int main(int argc, char **argv)
     WindowProperties wp;
     wp.resolution = glm::ivec2(1280, 720);
     wp.maximized = true;
-    wp.vSync = true;
+    // wp.vSync = true; - Commented such that we can correctly measure FPS
+    wp.vSync = false;
     wp.selfDir = GetParentDir(std::string(argv[0]));
 
     // Set the primary file path

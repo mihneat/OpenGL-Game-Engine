@@ -30,7 +30,7 @@ bool CUDAUtils::InitCUDA()
 
     cudaGetDeviceCount(&count);
     if (count == 0) {
-        fprintf(stdout, "No devices are available.\n");
+        fprintf(stderr, "No devices are available.\n");
         return false;
     }
 
@@ -45,7 +45,7 @@ bool CUDAUtils::InitCUDA()
         }
     }
     if (i == count) {
-        fprintf(stdout, "There are no devices which support CUDA.\n");
+        fprintf(stderr, "There are no devices which support CUDA.\n");
         return false;
     }
 	

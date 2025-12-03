@@ -1,5 +1,6 @@
 #pragma once
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Collider.h"
+#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Colliders/BoxCollider.h"
 
 namespace physics
 {
@@ -21,5 +22,8 @@ namespace physics
 
     private:
         bool useGPUAcceleration = false;
+
+        component::BoxCollider* boxColliders_d = nullptr;
+        component::SphereCollider* sphereColliders_d = nullptr;
     };
 }
