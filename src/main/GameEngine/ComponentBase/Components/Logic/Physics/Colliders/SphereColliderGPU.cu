@@ -1,5 +1,6 @@
 #include "SphereColliderGPU.cuh"
 
+#include <iostream>
 #include <glm/geometric.hpp>
 
 #include "BoxColliderGPU.cuh"
@@ -8,10 +9,18 @@ __device__ bool SphereCollider_Dev::k_CollidesWithSphere(const SphereCollider_De
 {
     glm::vec3 thisPosition = this->transform.worldPosition;
     glm::vec3 otherPosition = other->transform.worldPosition;
+    
+    // printf("World positions: [%f, %f, %f], [%f, %f, %f]\n", thisPosition.x, thisPosition.y, thisPosition.z, otherPosition.x, otherPosition.y, otherPosition.z);
+    // printf("Radii: %f, %f\n", this->radius, other->radius);
         
     float sphereDistance = glm::distance(thisPosition, otherPosition);
     float totalRadius = this->radius + other->radius;
     hit->hasHit = sphereDistance < totalRadius;
+
+    // printf("Sphere distance: %f\n", sphereDistance);
+    // printf("Total radius: %f\n", totalRadius);
+    // printf("Has hit: %d\n\n", hit->hasHit);
+    
 
     // Quit early in case of no collision
     if (!hit->hasHit)

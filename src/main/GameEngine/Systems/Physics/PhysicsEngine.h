@@ -1,7 +1,15 @@
 #pragma once
+
+// Include CUDA
+#include <cuda_runtime.h>
+
+// Include helper functions
+#include <helper_cuda.h>
+#include <helper_functions.h>
+
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Collider.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Colliders/BoxCollider.h"
-#include "main/GameEngine/ComponentBase/Components/Logic/Physics/Colliders/BoxColliderGPU.cuh"
+#include "PhysicsEngineGPU.cuh"
 
 namespace physics
 {

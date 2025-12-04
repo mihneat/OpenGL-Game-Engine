@@ -9,7 +9,7 @@ endif()
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
   set(CMAKE_CUDA_ARCHITECTURES 86)
 endif()
-
+ 
 
 # Set the name of the project
 set(target_name OpenGLGameEngine)
@@ -48,6 +48,7 @@ if (NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     find_package(Freetype REQUIRED)
 endif()
 
+# Optional - if not found, the physics can run solely on the CPU
 find_package(CUDAToolkit 13.0)
 
 
@@ -172,6 +173,11 @@ custom_add_executable(${target_name}
     ${IMGUI_HEADERS}
     ${IMGUI_NODE_EDITOR_SOURCES}
     ${IMGUI_NODE_EDITOR_HEADERS}
+)
+
+set_target_properties(${target_name}
+    PROPERTIES
+            CUDA_SEPARABLE_COMPILATION ON
 )
 
 # Detect architecture
@@ -334,7 +340,15 @@ else()
                                                 -Wno-microsoft-enum-value -Wno-language-extension-token)
     endif()
 endif()
-target_compile_options(${target_name} PRIVATE ${GFXF_CXX_FLAGS})
+
+# Only add the above flags to CXX compilation, CUDA is broken when compiling the cudart static library
+# due to CMake adding /W4 /WX- /wd4100 /wd4458 /wd4189 in the call, and nvcc considering them as input files
+
+# Not even sure if this code does anything actually :) but hey at least the project compiles!
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:${GFXF_CXX_FLAGS}>")
+
+# Old way:
+# target_compile_options(${target_name} PRIVATE ${GFXF_CXX_FLAGS})
 
 
 # Post-build events. First, we get the directory where the target was

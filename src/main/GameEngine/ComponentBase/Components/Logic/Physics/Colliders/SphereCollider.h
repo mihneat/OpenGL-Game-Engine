@@ -3,10 +3,13 @@
 #include <vector>
 #include <unordered_set>
 
+#include <cuda_runtime.h>
+
 #include "utils/glm_utils.h"
 #include "main/GameEngine/ComponentBase/Component.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Collider.h"
-#include "SphereColliderGPU.cuh"
+
+struct SphereCollider_Dev;
 
 namespace component
 {

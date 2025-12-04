@@ -1,7 +1,6 @@
 #include "BoxCollider.h"
 
 #include <iostream>
-#include <GLFW/glfw3native.h>
 
 #include "main/GameEngine/MathUtils.h"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/Rigidbody.h"

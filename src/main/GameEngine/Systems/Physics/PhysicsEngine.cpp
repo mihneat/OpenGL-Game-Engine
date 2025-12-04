@@ -15,10 +15,6 @@
 using namespace physics;
 using namespace component;
 
-extern "C"
-cudaError_t ProcessCollisionsOnGPU(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d,
-    int boxCnt, int sphereCnt, dim3 DIM_GRID, dim3 DIM_BLOCK);
-
 PhysicsEngine::~PhysicsEngine()
 {
     FreeData();
@@ -482,8 +478,8 @@ inline void PhysicsEngine::CopyDataDeviceToHost(std::vector<BoxCollider*>& boxCo
         if (!rb)
             continue;
 
-        rb->SetVelocity(boxColliders_h->rb.velocity);
-        rb->SetAngularVelocity(boxColliders_h->rb.angularVelocity);
+        rb->SetVelocity(boxColliders_h[i].rb.velocity);
+        rb->SetAngularVelocity(boxColliders_h[i].rb.angularVelocity);
     }
 
     for (int i = 0; i < sphereCnt; ++i)
@@ -492,8 +488,8 @@ inline void PhysicsEngine::CopyDataDeviceToHost(std::vector<BoxCollider*>& boxCo
         if (!rb)
             continue;
 
-        rb->SetVelocity(sphereColliders_h->rb.velocity);
-        rb->SetAngularVelocity(sphereColliders_h->rb.angularVelocity);
+        rb->SetVelocity(sphereColliders_h[i].rb.velocity);
+        rb->SetAngularVelocity(sphereColliders_h[i].rb.angularVelocity);
     }
 }
 
@@ -537,7 +533,6 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
     static constexpr float g = 9.81f;
     
     // Find all Colliders
-    int boxCnt = 0, sphereCnt = 0;
     std::vector<Collider*> colliders;
     std::vector<BoxCollider*> boxColliders;
     std::vector<SphereCollider*> sphereColliders;
@@ -594,7 +589,7 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
 
     CopyDataHostToDevice(boxColliders, sphereColliders);
     
-    checkCudaErrors(ProcessCollisionsOnGPU(hit_d, boxColliders_d, sphereColliders_d, boxCnt, sphereCnt, dimGrid, dimBlock));
+    checkCudaErrors(ProcessCollisionsOnGPU(hit_d, boxColliders_d, sphereColliders_d, boxColliders.size(), sphereColliders.size(), dimGrid, dimBlock));
     checkCudaErrors(cudaDeviceSynchronize());
     
     CopyDataDeviceToHost(boxColliders, sphereColliders);

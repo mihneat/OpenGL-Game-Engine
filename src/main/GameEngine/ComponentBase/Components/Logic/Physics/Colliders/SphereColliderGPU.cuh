@@ -10,6 +10,6 @@ struct SphereCollider_Dev
     
     float radius;
 
-    bool k_CollidesWithSphere(const SphereCollider_Dev* other, CollisionHit_Dev* hit) const;
-    bool k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit) const;
+    __device__ bool k_CollidesWithSphere(const SphereCollider_Dev* other, CollisionHit_Dev* hit) const;
+    __device__ bool k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit) const;
 };
