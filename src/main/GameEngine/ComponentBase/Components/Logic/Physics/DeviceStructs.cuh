@@ -4,6 +4,10 @@
 struct Transform_Dev
 {
     glm::vec3 worldPosition;
+
+    glm::vec3 right;
+    glm::vec3 up;
+    glm::vec3 forward;
 };
 
 struct Rigidbody_Dev

@@ -428,6 +428,9 @@ float BoxCollider::GetMomentOfInertia(float mass)
 void BoxCollider::CloneToDevice(BoxCollider_Dev& boxCollider_d)
 {
     boxCollider_d.transform.worldPosition = transform->GetWorldPosition();
+    boxCollider_d.transform.right = transform->right;
+    boxCollider_d.transform.up = transform->up;
+    boxCollider_d.transform.forward = transform->forward;
 
     Rigidbody* rb = transform->GetComponent<Rigidbody>();
     boxCollider_d.rb.isAttached = rb != nullptr;

@@ -52,6 +52,9 @@ float SphereCollider::GetMomentOfInertia(float mass)
 void SphereCollider::CloneToDevice(SphereCollider_Dev& sphereCollider_d)
 {
     sphereCollider_d.transform.worldPosition = transform->GetWorldPosition();
+    sphereCollider_d.transform.right = transform->right;
+    sphereCollider_d.transform.up = transform->up;
+    sphereCollider_d.transform.forward = transform->forward;
 
     Rigidbody* rb = transform->GetComponent<Rigidbody>();
     sphereCollider_d.rb.isAttached = rb != nullptr;
