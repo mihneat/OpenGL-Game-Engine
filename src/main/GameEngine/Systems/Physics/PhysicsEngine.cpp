@@ -440,7 +440,7 @@ inline void PhysicsEngine::CopyDataHostToDevice(const std::vector<BoxCollider*>&
         // Reallocate the device memory
         FreeData();
 
-        checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&hit_d), 1 * sizeof(CollisionHit_Dev)));
+        checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&hits_d), (boxCnt + sphereCnt) * sizeof(CollisionHit_Dev)));
         checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&boxColliders_d), boxCnt * sizeof(BoxCollider_Dev)));
         checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&sphereColliders_d), sphereCnt * sizeof(SphereCollider_Dev)));
 
@@ -448,7 +448,7 @@ inline void PhysicsEngine::CopyDataHostToDevice(const std::vector<BoxCollider*>&
         sphereColliders_h = static_cast<SphereCollider_Dev*>(malloc(sphereCnt * sizeof(SphereCollider_Dev)));
     }
     
-    checkCudaErrors(cudaMemset(hit_d, 0x0, 1 * sizeof(CollisionHit_Dev)));
+    checkCudaErrors(cudaMemset(hits_d, 0x0, (boxCnt + sphereCnt) * sizeof(CollisionHit_Dev)));
     checkCudaErrors(cudaMemset(boxColliders_d, 0x0, boxCnt * sizeof(BoxCollider_Dev)));
     checkCudaErrors(cudaMemset(sphereColliders_d, 0x0, sphereCnt * sizeof(SphereCollider_Dev)));
 
@@ -458,8 +458,29 @@ inline void PhysicsEngine::CopyDataHostToDevice(const std::vector<BoxCollider*>&
     for (int i = 0; i < sphereCnt; ++i)
         sphereColliders[i]->CloneToDevice(sphereColliders_h[i]);
     
+    // Copy the names
+    std::string transformNames_h;
+    for (int i = 0; i < boxCnt; ++i)
+    {
+        boxColliders_h[i].transform.nameStartIndex = transformNames_h.size();
+        boxColliders_h[i].transform.nameLength = boxColliders[i]->transform->GetName().length();
+
+        transformNames_h += boxColliders[i]->transform->GetName();
+    }
+
+    for (int i = 0; i < sphereCnt; ++i)
+    {
+        sphereColliders_h[i].transform.nameStartIndex = transformNames_h.size();
+        sphereColliders_h[i].transform.nameLength = sphereColliders[i]->transform->GetName().length();
+
+        transformNames_h += sphereColliders[i]->transform->GetName();
+    }
+    
 	checkCudaErrors(cudaMemcpy(boxColliders_d, boxColliders_h, boxCnt * sizeof(BoxCollider_Dev), cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(sphereColliders_d, sphereColliders_h, sphereCnt * sizeof(SphereCollider_Dev), cudaMemcpyHostToDevice));
+    
+    checkCudaErrors(cudaMalloc(reinterpret_cast<void**>(&transformNames_d), transformNames_h.size() * sizeof(char)));
+	checkCudaErrors(cudaMemcpy(transformNames_d, transformNames_h.c_str(), transformNames_h.size() * sizeof(char), cudaMemcpyHostToDevice));
 }
 
 inline void PhysicsEngine::CopyDataDeviceToHost(std::vector<BoxCollider*>& boxColliders, std::vector<SphereCollider*>& sphereColliders)
@@ -491,14 +512,16 @@ inline void PhysicsEngine::CopyDataDeviceToHost(std::vector<BoxCollider*>& boxCo
         rb->SetVelocity(sphereColliders_h[i].rb.velocity);
         rb->SetAngularVelocity(sphereColliders_h[i].rb.angularVelocity);
     }
+
+    checkCudaErrors(cudaFree(transformNames_d));
 }
 
 inline void PhysicsEngine::FreeData()
 {
-    if (hit_d != nullptr)
+    if (hits_d != nullptr)
     {
-        checkCudaErrors(cudaFree(hit_d));
-        hit_d = nullptr;
+        checkCudaErrors(cudaFree(hits_d));
+        hits_d = nullptr;
     }
     
     if (boxColliders_d != nullptr)
@@ -589,7 +612,7 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
 
     CopyDataHostToDevice(boxColliders, sphereColliders);
     
-    checkCudaErrors(ProcessCollisionsOnGPU(hit_d, boxColliders_d, sphereColliders_d, boxColliders.size(), sphereColliders.size(), dimGrid, dimBlock));
+    checkCudaErrors(ProcessCollisionsOnGPU(hits_d, boxColliders_d, sphereColliders_d, transformNames_d, boxColliders.size(), sphereColliders.size(), dimGrid, dimBlock));
     checkCudaErrors(cudaDeviceSynchronize());
     
     CopyDataDeviceToHost(boxColliders, sphereColliders);

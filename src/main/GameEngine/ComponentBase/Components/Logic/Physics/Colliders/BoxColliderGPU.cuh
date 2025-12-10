@@ -1,6 +1,7 @@
 #pragma once
 #include "SphereColliderGPU.cuh"
 #include "main/GameEngine/ComponentBase/Components/Logic/Physics/DeviceStructs.cuh"
+#include "main/GameEngine/Utils/CUDAUtils.cuh"
 
 struct ClosestPointsResult
 {
@@ -21,10 +22,10 @@ struct BoxCollider_Dev
     
     glm::vec3 halfSize;
 
-    __device__ bool k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit) const;
+    __device__ bool k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit, char* transformNames_d) const;
     __device__ bool k_CollidesWithSphere(const SphereCollider_Dev* other, CollisionHit_Dev* hit) const;
 
-    __device__ void k_CheckFaceFaceCollision(const BoxCollider_Dev* referenceBox, const BoxCollider_Dev* incidentBox, glm::vec3 refPlaneCenter, CollisionHit_Dev* hit, bool useRetryFallback = true) const;
+    __device__ void k_CheckFaceFaceCollision(const BoxCollider_Dev* referenceBox, const BoxCollider_Dev* incidentBox, glm::vec3 refPlaneCenter, CollisionHit_Dev* hit, char* transformNames_d, bool useRetryFallback = true) const;
 
     __device__ Edge k_GetClosestEdgeInDirectionOfAxis(char pDirChar, glm::vec3 axis, glm::vec3 otherBoxCenter) const;
     

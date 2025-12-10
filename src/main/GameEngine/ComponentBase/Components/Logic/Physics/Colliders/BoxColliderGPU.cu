@@ -177,7 +177,7 @@ __device__ bool BoxCollider_Dev::k_CheckPointIsInside(glm::vec3 point) const
     return true;
 }
 
-__device__ void BoxCollider_Dev::k_CheckFaceFaceCollision(const BoxCollider_Dev* referenceBox, const BoxCollider_Dev* incidentBox, glm::vec3 refPlaneCenter, CollisionHit_Dev* hit, bool useRetryFallback) const
+__device__ void BoxCollider_Dev::k_CheckFaceFaceCollision(const BoxCollider_Dev* referenceBox, const BoxCollider_Dev* incidentBox, glm::vec3 refPlaneCenter, CollisionHit_Dev* hit, char* transformNames_d, bool useRetryFallback) const
 {
     // The reference face is the one pointing in the same direction as the axis
     glm::vec3 referencePlaneDir = glm::normalize(refPlaneCenter - referenceBox->transform.worldPosition);
@@ -235,6 +235,22 @@ __device__ void BoxCollider_Dev::k_CheckFaceFaceCollision(const BoxCollider_Dev*
     incidentVertices[2] = incidentPlaneCenter - oVec1 + oVec2;
     incidentVertices[3] = incidentPlaneCenter - oVec1 - oVec2;
 
+    // if ((k_strncmp(transformNames_d + referenceBox->transform.nameStartIndex, "Slope", referenceBox->transform.nameLength) == 0 &&
+    //     k_strncmp(transformNames_d + incidentBox->transform.nameStartIndex, "SlopeBox", incidentBox->transform.nameLength) == 0) ||
+    //     (k_strncmp(transformNames_d + referenceBox->transform.nameStartIndex, "SlopeBox", referenceBox->transform.nameLength) == 0 &&
+    //     k_strncmp(transformNames_d + incidentBox->transform.nameStartIndex, "Slope", incidentBox->transform.nameLength) == 0)
+    // )
+    // {
+    //     printf("=============================================================================================================\n");
+    //     printf("Reference dir: [%f, %f, %f]\n", referencePlaneDir.x, referencePlaneDir.y, referencePlaneDir.z);
+    //     printf("Incident vertices:\n");
+    //     printf("1: [%f, %f, %f]\n", incidentVertices[0].x, incidentVertices[0].y, incidentVertices[0].z);
+    //     printf("2: [%f, %f, %f]\n", incidentVertices[1].x, incidentVertices[1].y, incidentVertices[1].z);
+    //     printf("3: [%f, %f, %f]\n", incidentVertices[2].x, incidentVertices[2].y, incidentVertices[2].z);
+    //     printf("4: [%f, %f, %f]\n", incidentVertices[3].x, incidentVertices[3].y, incidentVertices[3].z);
+    //     printf("\n");
+    // }
+
     // Warning: this is ALSO a crude approximation of the contact point, but (should be) MUCH more accurate than the last
     // Compute the average of the contact points
     int len = 0;
@@ -254,7 +270,7 @@ __device__ void BoxCollider_Dev::k_CheckFaceFaceCollision(const BoxCollider_Dev*
     if (len == 0)
     {
         if (useRetryFallback)
-            k_CheckFaceFaceCollision(incidentBox, referenceBox, incidentPlaneCenter, hit, false);
+            k_CheckFaceFaceCollision(incidentBox, referenceBox, incidentPlaneCenter, hit, transformNames_d, false);
         else
             hit->point = refPlaneCenter;
     } else
@@ -263,7 +279,7 @@ __device__ void BoxCollider_Dev::k_CheckFaceFaceCollision(const BoxCollider_Dev*
     }
 }
 
-__device__ bool BoxCollider_Dev::k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit) const
+__device__ bool BoxCollider_Dev::k_CollidesWithBox(const BoxCollider_Dev* other, CollisionHit_Dev* hit, char* transformNames_d) const
 {
     glm::vec3 rPos = other->transform.worldPosition - this->transform.worldPosition;
 
@@ -308,22 +324,22 @@ __device__ bool BoxCollider_Dev::k_CollidesWithBox(const BoxCollider_Dev* other,
     switch (minimumOverlapIndex)
     {
     case 0:
-        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.x, hit);
+        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.x, hit, transformNames_d);
         break;
     case 1:
-        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.y, hit);
+        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.y, hit, transformNames_d);
         break;
     case 2:
-        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.z, hit);
+        k_CheckFaceFaceCollision(this, other, this->transform.worldPosition - hit->normal * this->halfSize.z, hit, transformNames_d);
         break;
     case 3:
-        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.x, hit);
+        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.x, hit, transformNames_d);
         break;
     case 4:
-        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.y, hit);
+        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.y, hit, transformNames_d);
         break;
     case 5:
-        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.z, hit);
+        k_CheckFaceFaceCollision(other, this, other->transform.worldPosition + hit->normal * other->halfSize.z, hit, transformNames_d);
         break;
     case 6:
         k_CheckEdgeToEdgeCollision(this, 'x', other, 'x', hit->normal, hit);

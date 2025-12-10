@@ -1,11 +1,14 @@
 #include "PhysicsEngineGPU.cuh"
 
+#include <iostream>
 #include <glm/ext/quaternion_geometric.hpp>
+
+#include "main/GameEngine/Utils/CUDAUtils.cuh"
 
 __device__ inline void k_ResolveCollisionWithRotationAndFriction(
     Rigidbody_Dev* rbA, Rigidbody_Dev* rbB,
     Transform_Dev* transformA, Transform_Dev* transformB,
-    CollisionHit_Dev* hit
+    CollisionHit_Dev* hit, char* transformNames_d
 )
 {
     if (!rbA->isAttached || !rbB->isAttached) // TODO: Untreated case on GPU:  rbA == rbB
@@ -18,6 +21,23 @@ __device__ inline void k_ResolveCollisionWithRotationAndFriction(
     glm::vec3 velocityA = rbA->isStatic ? glm::vec3(0.0f) : rbA->velocity + glm::cross(rbA->angularVelocity, vecToHitPointA);
     glm::vec3 velocityB = rbB->isStatic ? glm::vec3(0.0f) : rbB->velocity + glm::cross(rbB->angularVelocity, vecToHitPointB);
     glm::vec3 relativeVelocity = velocityA - velocityB;
+
+    // if ((k_strncmp(transformNames_d + transformA->nameStartIndex, "Slope", transformA->nameLength) == 0 &&
+    //     k_strncmp(transformNames_d + transformB->nameStartIndex, "SlopeBox", transformB->nameLength) == 0) ||
+    //     (k_strncmp(transformNames_d + transformA->nameStartIndex, "SlopeBox", transformA->nameLength) == 0 &&
+    //     k_strncmp(transformNames_d + transformB->nameStartIndex, "Slope", transformB->nameLength) == 0)
+    // )
+    // {
+    //     printf("=============================================================================================================\n");
+    //     printf("%.*s: [%f, %f, %f], %.*s: [%f, %f, %f]\n", transformA->nameLength, transformNames_d + transformA->nameStartIndex, velocityA.x, velocityA.y, velocityA.z,
+    //         transformB->nameLength, transformNames_d + transformB->nameStartIndex, velocityB.x, velocityB.y, velocityB.z);
+    //     printf("Relative velocity: [%f, %f, %f]\n", relativeVelocity.x, relativeVelocity.y, relativeVelocity.z);
+    //     printf("Hit point: [%f, %f, %f]\n", hit->point.x, hit->point.y, hit->point.z);
+    //     printf("Hit normal: [%f, %f, %f]\n", hit->normal.x, hit->normal.y, hit->normal.z);
+    //     printf("Hit normal tip: [%f, %f, %f]\n", hit->point.x + hit->normal.x, hit->point.y + hit->normal.y, hit->point.z + hit->normal.z);
+    //     printf("Dot product: %f\n", glm::dot(relativeVelocity, hit->normal));
+    //     printf("\n");
+    // }
     
     // If relative normal velocity is negative, ignore the collision
     // Source: https://www.chrishecker.com/images/e/e7/Gdmphys3.pdf
@@ -99,7 +119,7 @@ __device__ inline void k_ResolveCollisionWithRotationAndFriction(
     rbB->angularVelocity = rbB->isStatic ? glm::vec3(0.0f) : newAngularVelocityB;
 }
 
-__device__ inline void k_ProcessBoxCollisions(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d, int boxCnt, int sphereCnt)
+__device__ inline void k_ProcessBoxCollisions(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d, char* transformNames_d, int boxCnt, int sphereCnt)
 {
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     BoxCollider_Dev* currBoxCollider = &boxColliders_d[idx];
@@ -108,11 +128,12 @@ __device__ inline void k_ProcessBoxCollisions(CollisionHit_Dev* hit, BoxCollider
     for (int i = idx + 1; i < boxCnt; ++i)
     {
         hit->hasHit = false;
-        if (currBoxCollider->k_CollidesWithBox(&boxColliders_d[i], hit))
+        if (currBoxCollider->k_CollidesWithBox(&boxColliders_d[i], hit, transformNames_d))
             k_ResolveCollisionWithRotationAndFriction(
                 &currBoxCollider->rb, &boxColliders_d[i].rb,
                 &currBoxCollider->transform, &boxColliders_d[i].transform,
-                hit
+                hit,
+                transformNames_d
             );
     }
     
@@ -124,12 +145,13 @@ __device__ inline void k_ProcessBoxCollisions(CollisionHit_Dev* hit, BoxCollider
             k_ResolveCollisionWithRotationAndFriction(
                 &currBoxCollider->rb, &sphereColliders_d[i].rb,
                 &currBoxCollider->transform, &sphereColliders_d[i].transform,
-                hit
+                hit,
+                transformNames_d
             );
     }
 }
 
-__device__ inline void k_ProcessSphereCollisions(CollisionHit_Dev* hit, SphereCollider_Dev* sphereColliders_d, int boxCnt, int sphereCnt)
+__device__ inline void k_ProcessSphereCollisions(CollisionHit_Dev* hit, SphereCollider_Dev* sphereColliders_d, char* transformNames_d, int boxCnt, int sphereCnt)
 {
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     SphereCollider_Dev* currSphereCollider = &sphereColliders_d[idx - boxCnt];
@@ -142,13 +164,14 @@ __device__ inline void k_ProcessSphereCollisions(CollisionHit_Dev* hit, SphereCo
             k_ResolveCollisionWithRotationAndFriction(
                 &currSphereCollider->rb, &sphereColliders_d[i].rb,
                 &currSphereCollider->transform, &sphereColliders_d[i].transform,
-                hit
+                hit,
+                transformNames_d
             );
     }
 }
 
 // Kernel executed on CUDA device
-__global__ void k_ProcessCollisions(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d, int boxCnt, int sphereCnt)
+__global__ void k_ProcessCollisions(CollisionHit_Dev* hits, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d, char* transformNames_d, int boxCnt, int sphereCnt)
 {
     const int idx = blockIdx.x * blockDim.x + threadIdx.x;
     const int n = boxCnt + sphereCnt;
@@ -157,16 +180,16 @@ __global__ void k_ProcessCollisions(CollisionHit_Dev* hit, BoxCollider_Dev* boxC
         return;
 
     if (idx < boxCnt)
-        k_ProcessBoxCollisions(hit, boxColliders_d, sphereColliders_d, boxCnt, sphereCnt);
+        k_ProcessBoxCollisions(&hits[idx], boxColliders_d, sphereColliders_d, transformNames_d, boxCnt, sphereCnt);
     else
-        k_ProcessSphereCollisions(hit, sphereColliders_d, boxCnt, sphereCnt);
+        k_ProcessSphereCollisions(&hits[idx], sphereColliders_d, transformNames_d, boxCnt, sphereCnt);
         
 }
 
-cudaError_t ProcessCollisionsOnGPU(CollisionHit_Dev* hit, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d,
-    int boxCnt, int sphereCnt, dim3 DIM_GRID, dim3 DIM_BLOCK)
+cudaError_t ProcessCollisionsOnGPU(CollisionHit_Dev* hits, BoxCollider_Dev* boxColliders_d, SphereCollider_Dev* sphereColliders_d,
+    char* transformNames_d, int boxCnt, int sphereCnt, dim3 DIM_GRID, dim3 DIM_BLOCK)
 {
-    k_ProcessCollisions <<< DIM_GRID, DIM_BLOCK >>> (hit, boxColliders_d, sphereColliders_d, boxCnt, sphereCnt);
+    k_ProcessCollisions <<< DIM_GRID, DIM_BLOCK >>> (hits, boxColliders_d, sphereColliders_d, transformNames_d, boxCnt, sphereCnt);
 
     return cudaGetLastError();
 }

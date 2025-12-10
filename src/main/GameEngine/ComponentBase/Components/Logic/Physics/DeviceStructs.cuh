@@ -3,6 +3,9 @@
 
 struct Transform_Dev
 {
+    int nameStartIndex;
+    int nameLength;
+    
     glm::vec3 worldPosition;
 
     glm::vec3 right;

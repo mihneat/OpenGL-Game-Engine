@@ -41,10 +41,12 @@ namespace physics
         int prevBoxCnt = -1;
         int prevSphereCnt = -1;
 
-        CollisionHit_Dev* hit_d = nullptr;
+        CollisionHit_Dev* hits_d = nullptr;
         BoxCollider_Dev* boxColliders_d = nullptr;
         SphereCollider_Dev* sphereColliders_d = nullptr;
         BoxCollider_Dev* boxColliders_h = nullptr;
         SphereCollider_Dev* sphereColliders_h = nullptr;
+        
+        char* transformNames_d = nullptr;
     };
 }
