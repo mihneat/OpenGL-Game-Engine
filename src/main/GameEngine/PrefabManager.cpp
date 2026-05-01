@@ -445,6 +445,7 @@ Transform* PrefabManager::CreateFractalTreeSegment(Transform* parent)
     mesh->GetComponent<MeshRenderer>()->SetTexture(TextureLoader::GetTextureByName("TreeBark2"));
     mesh->GetComponent<MeshRenderer>()->SetTexture2(TextureLoader::GetTextureByName("HeightMap"));
     mesh->GetComponent<MeshRenderer>()->SetTexture3(TextureLoader::GetTextureByName("TreeCorona"));
+    mesh->GetComponent<MeshRenderer>()->SetFaceCullingMode(MeshRenderer::CullNone);
     
     return fractalTreeSegment;
 }

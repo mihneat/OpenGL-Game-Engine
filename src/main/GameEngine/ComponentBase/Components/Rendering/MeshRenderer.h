@@ -94,6 +94,7 @@ namespace component
         void SetTexture4(rendering::Texture* newTexture);
         void SetTextureScale(glm::vec2 newTexScale);
         void SetMaterialOverrides(rendering::MaterialOverrides* materialOverrides);
+        void SetFaceCullingMode(FaceCullingMode newFaceCullingMode);
 
         const rendering::Material* GetMaterial() const { return material; }
         rendering::MaterialOverrides* GetMaterialOverrides() const { return materialOverrides; }

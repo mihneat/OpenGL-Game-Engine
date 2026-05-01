@@ -111,10 +111,10 @@ void ShaderBase::GetUniforms()
 }
 
 
-void ShaderBase::AddShader(const std::string & shaderFile, GLenum shaderType)
+void ShaderBase::AddShader(const std::vector<std::string> &shaderFileList, GLenum shaderType)
 {
     ShaderFile S;
-    S.file = shaderFile;
+    S.files = shaderFileList;
     S.type = shaderType;
     shaderFiles.push_back(S);
 }
@@ -123,7 +123,7 @@ void ShaderBase::AddShader(const std::string & shaderFile, GLenum shaderType)
 void ShaderBase::AddShaderCode(const std::string &shaderCode, GLenum shaderType)
 {
     ShaderFile S;
-    S.file = shaderCode;
+    S.files = std::vector{ shaderCode };
     S.type = shaderType;
     shaderCodes.push_back(S);
 }
@@ -135,7 +135,7 @@ unsigned int ShaderBase::CreateAndLink()
 
     // Compile shaders
     for (auto S : shaderFiles) {
-        auto shaderID = ShaderBase::CreateShader(S.file, S.type);
+        auto shaderID = ShaderBase::CreateShader(S.files, S.type);
         if (shaderID) {
             shaders.push_back(shaderID);
         } else {
@@ -145,7 +145,7 @@ unsigned int ShaderBase::CreateAndLink()
 
     for (auto S : shaderCodes)
     {
-        auto shaderID = ShaderBase::CompileShader(S.file, S.type);
+        auto shaderID = ShaderBase::CompileShader(S.files[0], S.type);
         if (shaderID) {
             shaders.push_back(shaderID);
         } else {
@@ -195,25 +195,38 @@ static std::string InjectDefines(const std::string &shaderCode)
 }
 
 
-unsigned int ShaderBase::CreateShader(const std::string &shaderFile, GLenum shaderType)
+unsigned int ShaderBase::CreateShader(const std::vector<std::string> &shaderFileList, GLenum shaderType)
 {
     std::string shader_code;
-    std::ifstream file(shaderFile.c_str(), std::ios::in);
+    unsigned int shaderCodeSize = 0;
 
-    if (!file.good()) {
-        std::cout << "\tCould not open file: " << shaderFile << std::endl;
-        std::terminate();
+    std::cout << "\n\tFILES:\n";
+
+    for (const std::string &filePath : shaderFileList)
+    {
+        std::ifstream file(filePath.c_str(), std::ios::in);
+
+        if (!file.good()) {
+            std::cout << "\t (X) Could not open file: " << filePath << "\n";
+            std::terminate();
+        }
+
+        std::cout << "\t  -> " << filePath << "\n";
+
+        // Get file content
+        file.seekg(0, std::ios::end);
+        unsigned int fileSize = file.tellg();
+        shader_code.resize(shaderCodeSize + fileSize, '\n');
+        file.seekg(0, std::ios::beg);
+        file.read(&shader_code[shaderCodeSize], fileSize);
+        file.close();
+
+        shaderCodeSize += fileSize;
     }
 
-    std::cout << "\tFILE = " << shaderFile;
-
-    // Get file content
-    file.seekg(0, std::ios::end);
-    shader_code.resize((unsigned int)file.tellg());
-    file.seekg(0, std::ios::beg);
-    file.read(&shader_code[0], shader_code.size());
-    file.close();
-
+    // One final pad with '\0'
+    shader_code.resize(shaderCodeSize + 1);
+    
     return CompileShader(InjectDefines(shader_code), shaderType);
 }
 

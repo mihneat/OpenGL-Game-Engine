@@ -93,11 +93,11 @@ void ShaderLoader::LoadShaderFromType(ShaderType type)
         break;
 
     case VertexNormal:
-        newShader = LoadShader("VertexNormal", "MVP.Texture.VS.glsl", "Normals.FS.glsl");
+        newShader = LoadShader("VertexNormal", "MVP.Texture.VS.glsl", "Normals.FS.glsl", false, false);
         break;
 
     case VertexColor:
-        newShader = LoadShader("VertexColor", "MVP.Texture.VS.glsl", "VertexColor.FS.glsl");
+        newShader = LoadShader("VertexColor", "MVP.Texture.VS.glsl", "VertexColor.FS.glsl", false, false);
         break;
 
     default:
@@ -182,7 +182,8 @@ Shader* ShaderLoader::LoadSkyboxShader()
     Shader *newShader = LoadShader(ShaderResourceManager::SHADER_SKYBOX,
             "Shaders/Skybox/Skybox.VS.glsl",
             "Shaders/Skybox/Skybox.FS.glsl",
-            true);
+            true,
+            false);
     
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_SKYBOX, newShader);
     newShader->shaderParams.vec3s["helicopter_position"] = glm::vec3(0);
@@ -223,7 +224,8 @@ Shader* ShaderLoader::LoadMinimapShader()
     Shader *newShader = LoadShader(ShaderResourceManager::SHADER_MINIMAP,
             "Shaders/Minimap/Minimap.VS.glsl",
             "Shaders/Minimap/Minimap.FS.glsl",
-            true);
+            true,
+            false);
     
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_MINIMAP, newShader);
     newShader->shaderParams.ints["draw_heightmap"] = 0;
@@ -241,7 +243,8 @@ Shader* ShaderLoader::LoadViewDepthTextureShader()
     Shader *newShader = LoadShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE,
             "Shaders/Shadows/ViewDepthTexture.VS.glsl",
             "Shaders/Shadows/ViewDepthTexture.FS.glsl",
-            true);
+            true,
+            false);
     
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE, newShader);
 
@@ -257,7 +260,8 @@ Shader* ShaderLoader::LoadViewColorTextureShader()
     Shader *newShader = LoadShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE,
             "Shaders/Shadows/ViewColorTexture.VS.glsl",
             "Shaders/Shadows/ViewColorTexture.FS.glsl",
-            true);
+            true,
+            false);
     
     ShaderResourceManager::AddShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE, newShader);
 
@@ -300,7 +304,8 @@ Shader* ShaderLoader::LoadShader(
     const std::string& shaderName,
     const std::string& vertexShaderPath,
     const std::string& fragmentShaderPath,
-    bool useAssetsFolder)
+    bool useAssetsFolder,
+    bool addLightingLibrary)
 {
     // Check if the name exists
     if (ShaderResourceManager::GetShader(shaderName) != nullptr)
@@ -311,10 +316,16 @@ Shader* ShaderLoader::LoadShader(
         PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS) :
         PATH_JOIN(FileSystem::rootDirectory, RESOURCE_PATH::SHADERS);
 
+    // Prepare shader vectors
+    std::vector vertexShaderFiled = { PATH_JOIN(sourceTextureDir, vertexShaderPath) };
+    std::vector fragmentShaderFiled = { PATH_JOIN(sourceTextureDir, fragmentShaderPath) };
+    if (addLightingLibrary)
+        fragmentShaderFiled.push_back(PATH_JOIN(FileSystem::rootDirectory, ENGINE_PATH::ASSETS, "Shaders/Lighting.glsl"));
+
     // Create a shader program for drawing face polygon with the color of the normal
     Shader* newShader = new Shader(shaderName);
-    newShader->AddShader(PATH_JOIN(sourceTextureDir, vertexShaderPath), GL_VERTEX_SHADER);
-    newShader->AddShader(PATH_JOIN(sourceTextureDir, fragmentShaderPath), GL_FRAGMENT_SHADER);
+    newShader->AddShader(vertexShaderFiled, GL_VERTEX_SHADER);
+    newShader->AddShader(fragmentShaderFiled, GL_FRAGMENT_SHADER);
     newShader->CreateAndLink();
     
     ShaderResourceManager::AddShader(shaderName, newShader);

@@ -82,6 +82,11 @@ void MeshRenderer::SetMaterialOverrides(rendering::MaterialOverrides* materialOv
     this->materialOverrides = materialOverrides;
 }
 
+void MeshRenderer::SetFaceCullingMode(FaceCullingMode newFaceCullingMode)
+{
+    this->faceCullingMode = newFaceCullingMode;
+}
+
 // Reference: https://learnopengl.com/Guest-Articles/2021/Scene/Frustum-Culling
 bool MeshRenderer::IsInFrustum(const utils::Frustum& frustum) const
 {

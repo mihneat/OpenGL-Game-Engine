@@ -26,7 +26,8 @@ namespace loaders
             const std::string& shaderName,
             const std::string& vertexShaderPath,
             const std::string& fragmentShaderPath,
-            bool useAssetsFolder = false
+            bool useAssetsFolder = false,
+            bool addLightingLibrary = true
         );
 
     private:

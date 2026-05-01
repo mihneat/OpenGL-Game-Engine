@@ -22,8 +22,8 @@ gfxc::TextRenderer::TextRenderer(const std::string &selfDir, GLuint width, GLuin
 {
     // Load and configure shader
     ShaderBase *shader = new ShaderBase("ShaderText");
-    shader->AddShader(PATH_JOIN(selfDir, RESOURCE_PATH::SHADERS, "Text.VS.glsl"), GL_VERTEX_SHADER);
-    shader->AddShader(PATH_JOIN(selfDir, RESOURCE_PATH::SHADERS, "Text.FS.glsl"), GL_FRAGMENT_SHADER);
+    shader->AddShader({ PATH_JOIN(selfDir, RESOURCE_PATH::SHADERS, "Text.VS.glsl") }, GL_VERTEX_SHADER);
+    shader->AddShader({ PATH_JOIN(selfDir, RESOURCE_PATH::SHADERS, "Text.FS.glsl") }, GL_FRAGMENT_SHADER);
     shader->CreateAndLink();
     this->m_textShader = shader;
 

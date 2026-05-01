@@ -28,7 +28,7 @@ class ShaderBase
     void Use() const;
     unsigned int Reload();
 
-    void AddShader(const std::string &shaderFile, GLenum shaderType);
+    void AddShader(const std::vector<std::string> &shaderFileList, GLenum shaderType);
     void AddShaderCode(const std::string &shaderCode, GLenum shaderType);
     void ClearShaders();
     unsigned int CreateAndLink();
@@ -40,7 +40,7 @@ class ShaderBase
 
  private:
     void GetUniforms();
-    static unsigned int CreateShader(const std::string &shaderFile, GLenum shaderType);
+    static unsigned int CreateShader(const std::vector<std::string> &shaderFileList, GLenum shaderType);
     static unsigned int CompileShader(const std::string shaderCode, GLenum shaderType);
     static unsigned int CreateProgram(const std::vector<unsigned int> &shaderObjects);
 
@@ -76,7 +76,7 @@ class ShaderBase
  private:
     struct ShaderFile
     {
-        std::string file;
+        std::vector<std::string> files;
         GLenum type;
     };
 
