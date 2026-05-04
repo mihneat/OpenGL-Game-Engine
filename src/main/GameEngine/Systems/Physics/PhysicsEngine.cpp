@@ -577,6 +577,9 @@ void PhysicsEngine::SimulatePhysicsGPU(transform::Transform* transform, const fl
             rbs.push_back(rb);
     });
 
+    if (rbs.empty())
+        return;
+
     // Apply external forces
     for (auto rb : rbs)
     {

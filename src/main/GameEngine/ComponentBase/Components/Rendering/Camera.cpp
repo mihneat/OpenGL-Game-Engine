@@ -12,6 +12,12 @@ using namespace std;
 using namespace component;
 using namespace transform;
 
+void Camera::Update(const float deltaTime)
+{
+    if (isPerspective)
+        SetPerspective(fovY, aspectRatio);
+}
+
 void Camera::Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up)
 {
     transform->SetLocalPosition(position);
@@ -157,10 +163,7 @@ void Camera::UpdateFrustum()
 void Camera::SetPerspective(const float fov, const float newAspectRatio)
 {
     isPerspective = true;
-    projectionMatrix = glm::perspective(glm::radians(fov), newAspectRatio, 0.01f, 5000.0f);
-
-    zNear = 0.01f;
-    zFar = 5000.0f;
+    projectionMatrix = glm::perspective(glm::radians(fov), newAspectRatio, zNear, zFar);
 
     aspectRatio = newAspectRatio;
     fovY = fov;

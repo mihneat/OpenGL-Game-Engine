@@ -47,6 +47,8 @@ namespace component
 
         ~Camera() { }
 
+        void Update(const float deltaTime) override;
+
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
         void SetPerspective(const float fov, const float newAspectRatio);
@@ -68,7 +70,7 @@ namespace component
 
         void UpdatePerspectiveFrustum();
         void UpdateOrthographicFrustum();
-        void UpdateFrustum();
+        virtual void UpdateFrustum();
         
         void WindowResize(int width, int height);
 
@@ -78,7 +80,7 @@ namespace component
         // TODO: Replace int with MeshRenderer::LayerEnum
         bool IsLayerRendered(int layer);
 
-        glm::mat4 GetViewMatrix();
+        virtual glm::mat4 GetViewMatrix();
         glm::mat4 GetProjectionMatrix() { return projectionMatrix; }
         glm::vec3 GetTargetPosition();
         glm::vec4 GetViewportDimensions() { return glm::vec4(viewportBottomLeft.x, viewportBottomLeft.y,
@@ -104,8 +106,8 @@ namespace component
         bool isPerspective = true;
 
         // Common projection parameters
-        float zNear;
-        float zFar;
+        SERIALIZE_FIELD float zNear = 0.01f;
+        SERIALIZE_FIELD float zFar = 5000.0f;
         
         // Perspective parameters
         float fovY;

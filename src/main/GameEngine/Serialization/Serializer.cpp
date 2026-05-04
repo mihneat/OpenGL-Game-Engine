@@ -66,7 +66,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         // The empty string is necessary
         {"", std::vector<SerializedField>{}},
         {"BoxCollider", std::vector<SerializedField>{{"halfSize", FieldTypeVec3},}},
-        {"Camera", std::vector<SerializedField>{{"skyboxColor", FieldTypeColour},{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},}},
+        {"Camera", std::vector<SerializedField>{{"skyboxColor", FieldTypeColour},{"distanceToTarget", FieldTypeFloat},{"autoResize", FieldTypeBool},{"zNear", FieldTypeFloat},{"zFar", FieldTypeFloat},}},
         {"CameraFollow", std::vector<SerializedField>{{"followTarget", FieldTypeTransform},{"distanceToTarget", FieldTypeFloat},{"forwardFollowDistance", FieldTypeFloat},{"angleScale", FieldTypeFloat},{"retroAngleScale", FieldTypeFloat},{"isRetroCam", FieldTypeBool},}},
         {"CameraStick", std::vector<SerializedField>{}},
         {"Collider", std::vector<SerializedField>{}},
@@ -146,6 +146,12 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "autoResize")
             return &obj->autoResize;
+
+        if (attributeName == "zNear")
+            return &obj->zNear;
+
+        if (attributeName == "zFar")
+            return &obj->zFar;
 
         return nullptr;
     }
@@ -849,7 +855,7 @@ const std::vector<std::pair<std::string, int>>& Serializer::GetValuePairsForEnum
         {"GameState", {{"Start", 0},{"Playing", 1},{"Ended", 2},}},
         {"GameSpeed", {{"Snail", 0},{"Slow", 1},{"Medium", 2},{"Fast", 3},{"Cheetah", 4},{"LightningMcQueen", 5},}},
         {"TransformDirection", {{"TransformDirectionForward", 0},{"TransformDirectionRight", 1},{"TransformDirectionUp", 2},{"TransformDirectionCenter", 3},}},
-        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cylinder", 3},{"Cube", 4},{"CubeMesh", 5},{"Sphere", 6},{"Heart", 7},{"Cone", 8},{"None", 9},}},
+        {"MeshEnum", {{"Square", 0},{"FragmentedSquare", 1},{"Circle", 2},{"Cylinder", 3},{"Cube", 4},{"CubeMesh", 5},{"Sphere", 6},{"Heart", 7},{"Cone", 8},{"Line", 9},{"None", 10},}},
         {"LayerEnum", {{"Default", 0},{"UI", 1},{"Minimap", 2},}},
         {"FaceCullingMode", {{"CullNone", 0},{"CullBack", 1},{"CullFront", 2},{"CullBoth", 3},}},
 

@@ -24,6 +24,7 @@ namespace component
 {
     class SceneCamera;
     class SceneManager;
+    class ShadowCamera;
 }
 
 namespace prefabManager {
@@ -70,6 +71,7 @@ namespace m1
         void DestroyMarkedObjects();
 
         void UpdateGameLogic(float deltaTimeSeconds);
+        void UpdateShadowMappingCamera();
         void RenderGameView();
         void RenderSceneView();
         void DrawFramebufferTextures(utils::FBOContainer* container);
@@ -114,7 +116,7 @@ namespace m1
         physics::PhysicsEngine* physicsEngine = nullptr;
 
         utils::FBOContainer shadowMapFBOContainer;
-        component::Camera* shadowMappingCamera;
+        component::ShadowCamera* shadowMappingCamera;
 
         bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;

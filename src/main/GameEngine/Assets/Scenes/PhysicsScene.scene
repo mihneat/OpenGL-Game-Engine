@@ -63,6 +63,16 @@
               "name": "autoResize",
               "type": "FieldTypeBool",
               "value": true
+            },
+            {
+              "name": "zNear",
+              "type": "FieldTypeFloat",
+              "value": 0.009999999776482582
+            },
+            {
+              "name": "zFar",
+              "type": "FieldTypeFloat",
+              "value": 5000.0
             }
           ]
         }

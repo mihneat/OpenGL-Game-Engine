@@ -7,7 +7,7 @@
 
 #include "ComponentBase/Components/Logic/Physics/Collider.h"
 #include "main/GameEngine/Serialization/Serializer.h"
-#include "ComponentBase/Components/Rendering/Camera.h"
+#include "ComponentBase/Components/Rendering/ShadowCamera.h"
 #include "core/managers/resource_path.h"
 #include "GUI/GUIManager.h"
 #include "Managers/GameInstance.h"
@@ -101,7 +101,7 @@ void GameEngine::CreateShadowMappingCamera()
     Transform* shadowMappingTransform = new Transform();
     shadowMappingTransform->Translate(glm::vec3(-250, 300, -250));
     
-    shadowMappingCamera = new Camera(shadowMappingTransform);
+    shadowMappingCamera = new ShadowCamera(shadowMappingTransform);
     shadowMappingTransform->AddComponent(shadowMappingCamera);
     
     shadowMappingCamera->SetOrthographic(1500, 1500, 0.01f, 2000.0f);
@@ -254,6 +254,7 @@ void GameEngine::PreUpdate()
 void GameEngine::Update(float deltaTimeSeconds)
 {
     UpdateGameLogic(deltaTimeSeconds);
+    UpdateShadowMappingCamera();
     RenderGameView();
     RenderSceneView();
 }
@@ -273,6 +274,12 @@ void GameEngine::UpdateGameLogic(float deltaTimeSeconds)
     }
 
     this->DestroyMarkedObjects();
+}
+
+void GameEngine::UpdateShadowMappingCamera()
+{
+    glm::vec3 lightDirection = shadowMappingCamera->transform->forward;
+    shadowMappingCamera->FitOrthographicProjectionToCameras({ mainCam }, lightDirection);
 }
 
 void GameEngine::RenderGameView()
