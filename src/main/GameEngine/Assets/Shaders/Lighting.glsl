@@ -25,18 +25,20 @@ uniform mat4[4] light_space_projection;
 
 uniform vec2[4] cascade_z_planes;
 
-uniform int use_normal_maps;
-uniform sampler2D normal_1;
-uniform sampler2D normal_2;
-uniform sampler2D normal_3;
-uniform sampler2D normal_4;
+vec3 sample_normal_map(in sampler2D normal_texture, vec2 texture_coord)
+{
+    vec3 normal_sample = texture(normal_texture, texture_coord).rgb;
+    normal_sample = normalize(normal_sample * 2.0 - 1.0);
+    
+    return normalize(frag_TBN * normal_sample);
+}
 
-float sun_light_contribution(light_source light)
+float sun_light_contribution(light_source light, vec3 normal)
 {
     float material_kd = 0.4;
 
     // vec3 n_world_normal = normalize( mix( world_normal, vec3(texture2D(texture_normal, tex_coord)) / 256, 0.5) );
-    vec3 n_world_normal = world_normal;
+    vec3 n_world_normal = normal;
 
     vec3 L = normalize( -light.direction );
     vec3 V = normalize( eye_position - world_position );
@@ -64,11 +66,11 @@ float sun_light_contribution(light_source light)
     return lightValue;
 }
 
-float spot_light_contribution(light_source light)
+float spot_light_contribution(light_source light, vec3 normal)
 {
     float material_kd = 0.4;
 
-    vec3 n_world_normal = normalize( world_normal );
+    vec3 n_world_normal = normalize( normal );
 
     vec3 L = normalize( light.position - world_position );
     vec3 V = normalize( eye_position - world_position );
@@ -108,11 +110,11 @@ float spot_light_contribution(light_source light)
     return lightValue;
 }
 
-float point_light_contribution(light_source light)
+float point_light_contribution(light_source light, vec3 normal)
 {
     float material_kd = 0.4;
 
-    vec3 n_world_normal = normalize( world_normal );
+    vec3 n_world_normal = normalize( normal );
 
     vec3 L = normalize( light.position - world_position );
     vec3 V = normalize( eye_position - world_position );
@@ -205,7 +207,7 @@ float shadow_factor(vec3 point_position)
     return is_illuminated ? 1.0f : 0.0f;
 }
 
-vec3 get_light_contribution()
+vec3 get_light_contribution(vec3 normal)
 {
     vec3 light = vec3(0.0);
     for (int i = 0; i < 100; ++i) {   // Also modify vector uniform
@@ -214,11 +216,11 @@ vec3 get_light_contribution()
         }
         
         if (lights[i].type == 0) {
-          light += sun_light_contribution(lights[i]) * lights[i].color;
+          light += sun_light_contribution(lights[i], normal) * lights[i].color;
         } else if (lights[i].type == 1) {
-          light += spot_light_contribution(lights[i]) * lights[i].color;
+          light += spot_light_contribution(lights[i], normal) * lights[i].color;
         } else if (lights[i].type == 2) {
-          light += point_light_contribution(lights[i]) * lights[i].color;
+          light += point_light_contribution(lights[i], normal) * lights[i].color;
         }
     }
 

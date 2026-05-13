@@ -235,6 +235,37 @@ void MeshRenderer::GenerateAABB()
     meshData.boundingBox = utils::AABB(minPoint, maxPoint);
 }
 
+// Source: https://learnopengl.com/Advanced-Lighting/Normal-Mapping
+void MeshRenderer::GenerateTangentVectors(vector<VertexFormat>& vertices, glm::ivec3 indices)
+{
+    VertexFormat& v1 = vertices[indices.x];
+    VertexFormat& v2 = vertices[indices.y];
+    VertexFormat& v3 = vertices[indices.z];
+    
+    glm::vec3 edge1 = v2.position - v1.position;
+    glm::vec3 edge2 = v3.position - v1.position;
+    glm::vec2 deltaUV1 = v2.text_coord - v1.text_coord;
+    glm::vec2 deltaUV2 = v3.text_coord - v1.text_coord;
+
+    float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+    v1.tangent = f * glm::vec3(
+        deltaUV2.y * edge1.x - deltaUV1.y * edge2.x,
+        deltaUV2.y * edge1.y - deltaUV1.y * edge2.y,
+        deltaUV2.y * edge1.z - deltaUV1.y * edge2.z
+    );
+
+    v3.tangent = v2.tangent = v1.tangent;
+
+    v1.bitangent = f * glm::vec3(
+        -deltaUV2.x * edge1.x + deltaUV1.x * edge2.x,
+        -deltaUV2.x * edge1.y + deltaUV1.x * edge2.y,
+        -deltaUV2.x * edge1.z + deltaUV1.x * edge2.z
+    );
+
+    v3.bitangent = v2.bitangent = v1.bitangent;
+}
+
 mesh_desc MeshRenderer::CreateSquare()
 {
     vector<VertexFormat> vertices
@@ -250,6 +281,10 @@ mesh_desc MeshRenderer::CreateSquare()
         0, 2, 1,
         2, 3, 1
     };
+
+    // Compute the tangent vectors
+    for (int i = 0; i < indices.size(); i += 3)
+        GenerateTangentVectors(vertices, { indices[i], indices[i + 1], indices[i + 2] });
 
     return { vertices, indices, GL_TRIANGLES };
 }
@@ -306,6 +341,10 @@ mesh_desc MeshRenderer::CreateFragmentedSquare()
         }
     }
 
+    // Compute the tangent vectors
+    for (int i = 0; i < indices.size(); i += 3)
+        GenerateTangentVectors(vertices, { indices[i], indices[i + 1], indices[i + 2] });
+
     return { vertices, indices, GL_TRIANGLES };
 }
 
@@ -344,6 +383,20 @@ mesh_desc MeshRenderer::CreateCircle(const int circleVertexCount, const bool mak
 
     // Add the first circle index to loop back the triangle on itself
     indices.push_back(1);
+
+    // Compute the tangent vectors
+    if (!makeHollow && circleVertexCount >= 2)
+    {
+        // Since it's a circle, we can compute the tangent vectors for a single triangle, then copy to all others
+        GenerateTangentVectors(vertices, { indices[0], indices[1], indices[2] });
+
+        VertexFormat& center = vertices[0];
+        for (int i = 3; i < indices.size(); i++)
+        {
+            vertices[indices[i]].tangent = center.tangent;
+            vertices[indices[i]].bitangent = center.bitangent;
+        }
+    }
 
     return { vertices, indices, makeHollow ? GL_LINE_LOOP : GL_TRIANGLE_FAN };
 }
@@ -450,6 +503,10 @@ mesh_desc MeshRenderer::CreateCylinder(const int segmentCount)
         indices.push_back(startVertex3);
     }
 
+    // Compute the tangent vectors
+    for (int i = 0; i < indices.size(); i += 3)
+        GenerateTangentVectors(vertices, { indices[i], indices[i + 1], indices[i + 2] });
+
     return { vertices, indices, GL_TRIANGLES };
 }
 
@@ -528,6 +585,10 @@ mesh_desc MeshRenderer::CreateCube()
         21, 23, 22
 
     };
+
+    // Compute the tangent vectors
+    for (int i = 0; i < indices.size(); i += 3)
+        GenerateTangentVectors(vertices, { indices[i], indices[i + 1], indices[i + 2] });
 
     return { vertices, indices, GL_TRIANGLES };
 }

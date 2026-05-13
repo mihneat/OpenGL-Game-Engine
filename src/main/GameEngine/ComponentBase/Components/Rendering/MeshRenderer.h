@@ -114,6 +114,8 @@ namespace component
         SERIALIZE_FIELD glm::vec3 meshScale = glm::vec3(1); // This needs to be deprecated
         SERIALIZE_FIELD FaceCullingMode faceCullingMode = CullBack;
 
+        void GenerateTangentVectors(std::vector<VertexFormat>& vertices, glm::ivec3 indices);
+
         mesh_desc CreateSquare();
         mesh_desc CreateFragmentedSquare();
         mesh_desc CreateCircle(const int circleVertexCount, const bool makeRainbow, const bool makeHollow);

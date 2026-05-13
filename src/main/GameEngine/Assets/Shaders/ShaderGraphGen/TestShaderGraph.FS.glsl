@@ -9,6 +9,11 @@ in vec3 world_normal;
 
 in vec2 tex_coord;
 
+in vec3 frag_tangent;
+in vec3 frag_bitangent;
+
+in mat3 frag_TBN;
+
 // Output
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_selection;
@@ -28,7 +33,12 @@ uniform sampler2D texture_1;
 uniform sampler2D texture_2;
 uniform sampler2D texture_3;
 uniform sampler2D texture_4;
-//uniform sampler2D texture_normal;
+
+uniform int use_normal_maps;
+uniform sampler2D normal_1;
+uniform sampler2D normal_2;
+uniform sampler2D normal_3;
+uniform sampler2D normal_4;
 
 uniform vec4 mesh_color;
 
@@ -52,12 +62,12 @@ float remap(float value, vec2 in_interval, vec2 out_interval)
 
 // End node functions
 
-vec3 get_light_contribution();
+vec3 get_light_contribution(vec3 normal);
 float get_fog_factor(float dist);
 
 void main()
 {
-    vec3 light = get_light_contribution();
+    vec3 light = get_light_contribution(world_normal);
 
     // GENERATED Get the shader color
     vec4 shader_color = vec4(1, 1, 1, 1);

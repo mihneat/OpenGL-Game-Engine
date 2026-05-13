@@ -128,6 +128,12 @@ GPUBuffers gpu_utils::UploadData(const std::vector<VertexFormat> &vertices,
 
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(2 * sizeof(glm::vec3) + sizeof(glm::vec2)));
+    
+        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(3 * sizeof(glm::vec3) + sizeof(glm::vec2)));
+    
+        glEnableVertexAttribArray(5);
+        glVertexAttribPointer(5, 3, GL_FLOAT, GL_FALSE, sizeof(VertexFormat), (void*)(4 * sizeof(glm::vec3) + sizeof(glm::vec2)));
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffers.m_VBO[1]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * indices.size(), &indices[0], GL_STATIC_DRAW);

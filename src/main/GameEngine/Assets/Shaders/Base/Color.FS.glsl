@@ -9,6 +9,11 @@ in vec3 world_normal;
 
 in vec2 tex_coord;
 
+in vec3 frag_tangent;
+in vec3 frag_bitangent;
+
+in mat3 frag_TBN;
+
 // Output
 layout(location = 0) out vec4 out_color;
 layout(location = 1) out vec4 out_selection;
@@ -28,7 +33,12 @@ uniform sampler2D texture_1;
 uniform sampler2D texture_2;
 uniform sampler2D texture_3;
 uniform sampler2D texture_4;
-//uniform sampler2D texture_normal;
+
+uniform int use_normal_maps;
+uniform sampler2D normal_1;
+uniform sampler2D normal_2;
+uniform sampler2D normal_3;
+uniform sampler2D normal_4;
 
 uniform vec4 mesh_color;
 
@@ -36,12 +46,12 @@ uniform float selection_value;
         
 uniform vec3 helicopter_position;
 
-vec3 get_light_contribution();
+vec3 get_light_contribution(vec3 normal);
 float get_fog_factor(float dist);
 
 void main()
 {
-    vec3 light = get_light_contribution();
+    vec3 light = get_light_contribution(world_normal);
 
     // Apply light to color
     vec4 tex = mesh_color;
