@@ -82,7 +82,7 @@ const std::vector<SerializedField>& Serializer::GetSerializedFieldsForClass(cons
         {"LifeDisplay", std::vector<SerializedField>{{"player", FieldTypeTransform},}},
         {"Light", std::vector<SerializedField>{{"type", FieldTypeInt},{"intensity", FieldTypeFloat},{"position", FieldTypeVec3},{"color", FieldTypeColour},{"direction", FieldTypeVec3},}},
         {"Marker", std::vector<SerializedField>{{"speed", FieldTypeFloat},{"rotationSpeed", FieldTypeFloat},}},
-        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"faceCullingMode", FieldTypeEnum, "FaceCullingMode"},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
+        {"MeshRenderer", std::vector<SerializedField>{{"meshType", FieldTypeEnum, "MeshEnum"},{"color", FieldTypeColour},{"meshScale", FieldTypeVec3},{"faceCullingMode", FieldTypeEnum, "FaceCullingMode"},{"debugOnly", FieldTypeBool},{"renderInWorldSpace", FieldTypeBool},{"useNormalMaps", FieldTypeBool},{"layer", FieldTypeEnum, "LayerEnum"},{"texture1", FieldTypeGUID, "Texture"},{"texture2", FieldTypeGUID, "Texture"},{"texture3", FieldTypeGUID, "Texture"},{"texture4", FieldTypeGUID, "Texture"},{"normal1", FieldTypeGUID, "Texture"},{"normal2", FieldTypeGUID, "Texture"},{"normal3", FieldTypeGUID, "Texture"},{"normal4", FieldTypeGUID, "Texture"},{"texScale", FieldTypeVec2},{"material", FieldTypeGUID, "Material"},}},
         {"MinimapCamera", std::vector<SerializedField>{}},
         {"ObjectSpawner", std::vector<SerializedField>{{"player", FieldTypeTransform},{"spawnTimeInterval", FieldTypeVec2},{"spawnDistance", FieldTypeFloat},{"spawnSpread", FieldTypeFloat},}},
         {"Obstacle", std::vector<SerializedField>{{"collisionRadius", FieldTypeFloat},{"isHazard", FieldTypeBool},}},
@@ -409,6 +409,9 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
         if (attributeName == "renderInWorldSpace")
             return &obj->renderInWorldSpace;
 
+        if (attributeName == "useNormalMaps")
+            return &obj->useNormalMaps;
+
         if (attributeName == "layer")
             return &obj->layer;
 
@@ -423,6 +426,18 @@ void* Serializer::GetAttributeReference(Component* instance, const std::string& 
 
         if (attributeName == "texture4")
             return &obj->texture4;
+
+        if (attributeName == "normal1")
+            return &obj->normal1;
+
+        if (attributeName == "normal2")
+            return &obj->normal2;
+
+        if (attributeName == "normal3")
+            return &obj->normal3;
+
+        if (attributeName == "normal4")
+            return &obj->normal4;
 
         if (attributeName == "texScale")
             return &obj->texScale;

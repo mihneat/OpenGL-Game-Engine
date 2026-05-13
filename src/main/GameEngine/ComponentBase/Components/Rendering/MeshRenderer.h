@@ -126,11 +126,16 @@ namespace component
         SERIALIZE_FIELD bool debugOnly = false;
         bool generateMesh = true;
         SERIALIZE_FIELD bool renderInWorldSpace = true;
+        SERIALIZE_FIELD bool useNormalMaps = false;
         SERIALIZE_FIELD LayerEnum layer = Default;
         SERIALIZE_FIELD rendering::Texture* texture1 = nullptr;
         SERIALIZE_FIELD rendering::Texture* texture2 = nullptr;
         SERIALIZE_FIELD rendering::Texture* texture3 = nullptr;
         SERIALIZE_FIELD rendering::Texture* texture4 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* normal1 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* normal2 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* normal3 = nullptr;
+        SERIALIZE_FIELD rendering::Texture* normal4 = nullptr;
         SERIALIZE_FIELD glm::vec2 texScale = glm::vec2(1, 1);
 
         SERIALIZE_FIELD rendering::Material* material = nullptr;

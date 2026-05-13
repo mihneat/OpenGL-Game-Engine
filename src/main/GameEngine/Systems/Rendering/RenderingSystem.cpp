@@ -17,9 +17,8 @@ void RenderingSystem::Render(
     transform::Transform* hierarchy,
     gfxc::TextRenderer* textRenderer,
     component::Camera* cam,
-    component::Camera* shadowCam,
     component::Camera* cullCam,
-    int shadowDepthTextureId,
+    const ShadowMapData& shadowMapData,
     bool isShadowPass,
     const glm::ivec2 resolution,
     bool isInPlayMode,
@@ -72,14 +71,14 @@ void RenderingSystem::Render(
         Shader* shader = shaderMeshes.first;
         shader->Use();
 
-        SetGlobalUniforms(shader, cam, shadowCam, isInGameView, isInPlayMode, isShadowPass);
+        SetGlobalUniforms(shader, cam, shadowMapData, isInGameView, isInPlayMode, isShadowPass);
 
         for (auto meshRenderer : shaderMeshes.second)
         {
             const Material* material = meshRenderer->GetMaterial();
 
             // Set the uniforms
-            SetLocalUniforms(material->shader, meshRenderer, cam, shadowDepthTextureId, resolution);
+            SetLocalUniforms(material->shader, meshRenderer, cam, shadowMapData, resolution);
             
             SetShaderSpecificUniforms(material, meshRenderer->GetMaterialOverrides());
 
@@ -162,7 +161,7 @@ void RenderingSystem::Render(
 void RenderingSystem::SetGlobalUniforms(
     ShaderBase* shader,
     component::Camera* cam,
-    component::Camera* shadowCam,
+    const ShadowMapData& shadowMapData,
     bool isInGameView,
     bool isInPlayMode,
     bool isShadowPass
@@ -183,11 +182,25 @@ void RenderingSystem::SetGlobalUniforms(
     const GLint time = glGetUniformLocation(shader->program, "time");
     glUniform1f(time, Engine::GetElapsedTime());
 
-    const GLint light_space_view = glGetUniformLocation(shader->program, "light_space_view");
-    glUniformMatrix4fv(light_space_view, 1, GL_FALSE, glm::value_ptr(shadowCam->GetViewMatrix()));
+    if (!shadowMapData.lightViewMatrices.empty())
+    {
+        const GLint light_space_view = glGetUniformLocation(shader->program, "light_space_view");
+        glUniformMatrix4fv(light_space_view, static_cast<int>(shadowMapData.lightViewMatrices.size()),
+            GL_FALSE, glm::value_ptr(shadowMapData.lightViewMatrices[0]));
+    }
 
-    const GLint light_space_projection = glGetUniformLocation(shader->program, "light_space_projection");
-    glUniformMatrix4fv(light_space_projection, 1, GL_FALSE, glm::value_ptr(shadowCam->GetProjectionMatrix()));
+    if (!shadowMapData.lightProjectionMatrices.empty())
+    {
+        const GLint light_space_projection = glGetUniformLocation(shader->program, "light_space_projection");
+        glUniformMatrix4fv(light_space_projection, static_cast<int>(shadowMapData.lightProjectionMatrices.size()),
+            GL_FALSE, glm::value_ptr(shadowMapData.lightProjectionMatrices[0]));
+    }
+
+    if (!shadowMapData.zPlanes.empty())
+    {
+        const GLint cascade_z_planes = glGetUniformLocation(shader->program, "cascade_z_planes");
+        glUniform2fv(cascade_z_planes, static_cast<int>(shadowMapData.zPlanes.size()), glm::value_ptr(shadowMapData.zPlanes[0]));
+    }
 
     // Send light information
     static std::vector<std::string> lightIsUsedStrings;
@@ -253,7 +266,7 @@ void RenderingSystem::SetLocalUniforms(
     ShaderBase* shader,
     component::MeshRenderer* meshRenderer,
     component::Camera* cam,
-    int shadowDepthTextureId,
+    const ShadowMapData& shadowMapData,
     glm::ivec2 resolution
 )
 {
@@ -299,10 +312,50 @@ void RenderingSystem::SetLocalUniforms(
         glBindTexture(GL_TEXTURE_2D, meshRenderer->texture4->GetTextureID());
         glUniform1i(glGetUniformLocation(shader->program, "texture_4"), 4);
     }
+
+    // Send normal map data
+    glUniform1i(glGetUniformLocation(shader->program, "use_normal_maps"), meshRenderer->useNormalMaps);
+
+    if (meshRenderer->useNormalMaps)
+    {
+        if (meshRenderer->normal1 != nullptr)
+        {
+            glActiveTexture(GL_TEXTURE5);
+            glBindTexture(GL_TEXTURE_2D, meshRenderer->normal1->GetTextureID());
+            glUniform1i(glGetUniformLocation(shader->program, "normal_1"), 5);
+        }
     
-        glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, shadowDepthTextureId);
-        glUniform1i(glGetUniformLocation(shader->program, "depth_texture"), 7);
+        if (meshRenderer->normal2 != nullptr)
+        {
+            glActiveTexture(GL_TEXTURE6);
+            glBindTexture(GL_TEXTURE_2D, meshRenderer->normal2->GetTextureID());
+            glUniform1i(glGetUniformLocation(shader->program, "normal_2"), 6);
+        }
+    
+        if (meshRenderer->normal3 != nullptr)
+        {
+            glActiveTexture(GL_TEXTURE7);
+            glBindTexture(GL_TEXTURE_2D, meshRenderer->normal3->GetTextureID());
+            glUniform1i(glGetUniformLocation(shader->program, "normal_3"), 7);
+        }
+    
+        if (meshRenderer->normal4 != nullptr)
+        {
+            glActiveTexture(GL_TEXTURE8);
+            glBindTexture(GL_TEXTURE_2D, meshRenderer->normal4->GetTextureID());
+            glUniform1i(glGetUniformLocation(shader->program, "normal_4"), 8);
+        }
+    }
+
+    for (int i = 0; i < shadowMapData.depthTextureIds.size(); i++)
+    {
+        std::string depthTextureName("depth_texture_");
+        depthTextureName.append(std::to_string(i));
+        
+        glActiveTexture(GL_TEXTURE9 + i);
+        glBindTexture(GL_TEXTURE_2D, shadowMapData.depthTextureIds[i]);
+        glUniform1i(glGetUniformLocation(shader->program, depthTextureName.c_str() ), 9 + i);
+    }
 
     // Send texture scale
     glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(meshRenderer->texScale));

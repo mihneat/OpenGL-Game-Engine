@@ -3,8 +3,13 @@
 // Input
 layout(location = 0) in vec2 texture_coord;
 
+in vec3 position;
+
 // Uniform properties
+uniform sampler2D texture_0;
 uniform sampler2D texture_1;
+uniform sampler2D texture_2;
+uniform sampler2D texture_3;
 
 uniform float light_space_near_plane;
 uniform float light_space_far_plane;
@@ -17,7 +22,15 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
-    float depth = texture(texture_1, 1 - texture_coord).x;
+    float depth = 0;
+    if (position.x < 0 && position.y > 0)
+        depth = texture(texture_0, (1 - texture_coord) * 2).x;
+    else if (position.x > 0 && position.y > 0)
+        depth = texture(texture_1, (1 - texture_coord) * 2).x;
+    else if (position.x < 0 && position.y < 0)
+        depth = texture(texture_2, (1 - texture_coord) * 2).x;
+    else if (position.x > 0 && position.y < 0)
+        depth = texture(texture_3, (1 - texture_coord) * 2).x;
 
     // This is useful for perspective projections, ortho works directly with depth :)
     // float lDepth = (zNear * zFar / (zFar + depth * (zNear - zFar))) / zFar;

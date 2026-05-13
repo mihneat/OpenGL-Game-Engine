@@ -52,6 +52,7 @@ namespace component
         void Set(const glm::vec3& position, const glm::vec3& center, const glm::vec3& up);
 
         void SetPerspective(const float fov, const float newAspectRatio);
+        void SetPerspective(float fov, float newAspectRatio, float newZNear, float newZFar);
         void SetOrthographic(const float width, const float height, const float newZNear = 0.01f, const float newZFar = 5000.0f);
 
         void MoveForward(float distance);
@@ -75,6 +76,9 @@ namespace component
         void WindowResize(int width, int height);
 
         void SetRenderLayers(std::unordered_set<int> renderLayers);
+
+        glm::vec2 GetZPlanes();
+        void SetZPlanes(glm::vec2 zPlanes);
 
         // C++ headers are too fkin stupid and hard
         // TODO: Replace int with MeshRenderer::LayerEnum

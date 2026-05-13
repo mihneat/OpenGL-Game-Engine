@@ -69,6 +69,19 @@ void ShadowCamera::FitOrthographicProjectionToCameras(const std::vector<Camera*>
         maxPoint.y = glm::max(maxPoint.y, viewCorner.y);
         maxPoint.z = glm::max(maxPoint.z, viewCorner.z);
     }
+
+    // Expand the frustum on the Z axis
+    static constexpr float zMult = 2.0f;
+    if (minPoint.z < 0)
+        minPoint.z *= zMult;
+    else
+        minPoint.z /= zMult;
+    
+    if (maxPoint.z < 0)
+        maxPoint.z /= zMult;
+    else
+        maxPoint.z *= zMult;
+   
     
     isPerspective = false;
     projectionMatrix = glm::ortho(minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, minPoint.z, maxPoint.z);

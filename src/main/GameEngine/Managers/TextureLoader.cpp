@@ -40,6 +40,15 @@ void TextureLoader::InitTextures()
     LoadTexture("TreeCorona2", "Textures/corona2.png", true);
     LoadTexture("TreeCorona3", "Textures/corona3.jpg", true);
 
+    LoadTexture("Gravel Albedo", "Textures/gravel_albedo.jpg", true);
+    LoadTexture("Gravel Normal", "Textures/gravel_normal.jpg", true);
+    LoadTexture("Snow Albedo", "Textures/snow_albedo.jpg", true);
+    LoadTexture("Snow Normal", "Textures/snow_normal.jpg", true);
+    LoadTexture("Propeller Albedo", "Textures/propeller_albedo.jpg", true);
+    LoadTexture("Propeller Normal", "Textures/propeller_normal.jpg", true);
+    LoadTexture("Helicopter Albedo", "Textures/helicopter_albedo.jpg", true);
+    LoadTexture("Helicopter Normal", "Textures/helicopter_normal.jpg", true);
+    
 }
 
 void TextureLoader::LoadTexture(const std::string& texId, const std::string& texPath, bool useAssetsFolder)

@@ -28,7 +28,6 @@ uniform sampler2D texture_1;
 uniform sampler2D texture_2;
 uniform sampler2D texture_3;
 uniform sampler2D texture_4;
-//uniform sampler2D texture_normal;
 
 uniform vec4 mesh_color;
 
@@ -42,6 +41,12 @@ float get_fog_factor(float dist);
 void main()
 {
     vec3 light = get_light_contribution();
+
+    // Extract the normal
+    if (use_normal_maps) {
+        normal = texture(normal_1, tex_coord).rgb;
+        normal = normalize(normal * 2.0 - 1.0);
+    }
 
     // Apply light to color
     vec4 tex = texture2D(texture_1, tex_scale * tex_coord);

@@ -15,10 +15,21 @@ struct light_source {
 uniform light_source lights[100]; // Max lights also need to be changed in LightManager.h
 // Also modify maximum 'for' value below
 
-uniform sampler2D depth_texture;
+uniform sampler2D depth_texture_0;
+uniform sampler2D depth_texture_1;
+uniform sampler2D depth_texture_2;
+uniform sampler2D depth_texture_3;
 
-uniform mat4 light_space_view;
-uniform mat4 light_space_projection;
+uniform mat4[4] light_space_view;
+uniform mat4[4] light_space_projection;
+
+uniform vec2[4] cascade_z_planes;
+
+uniform int use_normal_maps;
+uniform sampler2D normal_1;
+uniform sampler2D normal_2;
+uniform sampler2D normal_3;
+uniform sampler2D normal_4;
 
 float sun_light_contribution(light_source light)
 {
@@ -141,7 +152,20 @@ float get_fog_factor(float dist)
 
 float shadow_factor(vec3 point_position)
 {
-    vec4 light_space_pos = light_space_projection * light_space_view * vec4 (point_position, 1.0f);
+    // Choose a depth texture based on the distance from the player
+    float distanceToPoint = distance(eye_position, world_position);
+    int shadowMapLayer = -1;
+    for (int i = 0; i < 4; i++) {
+        if (distanceToPoint < cascade_z_planes[i].y) {
+            shadowMapLayer = i;
+            break;
+        }
+    }
+
+    if (shadowMapLayer == -1)
+        return 0.0f;
+   
+    vec4 light_space_pos = light_space_projection[shadowMapLayer] * light_space_view[shadowMapLayer] * vec4 (point_position, 1.0f);
 
     light_space_pos = light_space_pos / light_space_pos.w;
 
@@ -156,11 +180,27 @@ float shadow_factor(vec3 point_position)
         return 1.0f;
     }
 
-    // return texture(depth_texture, vec3(depth_map_pos, light_space_depth));
+    // if (shadowMapLayer == 0)
+    //     return texture(depth_texture_0, vec3(depth_map_pos, light_space_depth));
+    // else if (shadowMapLayer == 1)
+    //     return texture(depth_texture_1, vec3(depth_map_pos, light_space_depth));
+    // else if (shadowMapLayer == 2)
+    //     return texture(depth_texture_2, vec3(depth_map_pos, light_space_depth));
+    // else if (shadowMapLayer == 3)
+    //     return texture(depth_texture_3, vec3(depth_map_pos, light_space_depth));
 
     // OLD Approach using hard shadows
+    float depth = 0.0f;
+    if (shadowMapLayer == 0)
+        depth = texture(depth_texture_0, depth_map_pos).x;
+    else if (shadowMapLayer == 1)
+        depth = texture(depth_texture_1, depth_map_pos).x;
+    else if (shadowMapLayer == 2)
+        depth = texture(depth_texture_2, depth_map_pos).x;
+    else if (shadowMapLayer == 3)
+        depth = texture(depth_texture_3, depth_map_pos).x;
+
     const float bias = 0.01f;
-    float depth = texture(depth_texture, depth_map_pos).x;
     bool is_illuminated = light_space_depth - bias < depth;
     return is_illuminated ? 1.0f : 0.0f;
 }

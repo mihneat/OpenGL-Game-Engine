@@ -4,6 +4,7 @@
 
 #include "Material.h"
 #include "MaterialOverrides.h"
+#include "ShadowMapData.h"
 #include "main/GameEngine/ComponentBase/Components/Rendering/Camera.h"
 
 namespace component
@@ -20,9 +21,8 @@ namespace rendering
             ::transform::Transform* hierarchy,
             ::gfxc::TextRenderer* textRenderer,
             ::component::Camera* cam,
-            ::component::Camera* shadowCam,
             ::component::Camera* cullCam,         // Optimally the same as 'cam', different for debug purposes
-            int shadowDepthTextureId,
+            const ShadowMapData& shadowMapData,
             bool isShadowPass,
             glm::ivec2 resolution,
             bool isInPlayMode,
@@ -33,7 +33,7 @@ namespace rendering
         void SetGlobalUniforms(
             ShaderBase* shader,
             component::Camera* cam,
-            component::Camera* shadowCam,
+            const ShadowMapData& shadowMapData,
             bool isInGameView,
             bool isInPlayMode,
             bool isShadowPass
@@ -42,7 +42,7 @@ namespace rendering
             ::ShaderBase* shader,
             ::component::MeshRenderer* meshRenderer,
             ::component::Camera* cam,
-            int shadowDepthTextureId,
+            const ShadowMapData& shadowMapData,
             glm::ivec2 resolution
         );
         void SetShaderSpecificUniforms(const Material* material, const MaterialOverrides* materialOverrides);

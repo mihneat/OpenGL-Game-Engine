@@ -169,6 +169,18 @@ void Camera::SetPerspective(const float fov, const float newAspectRatio)
     fovY = fov;
 }
 
+void Camera::SetPerspective(const float fov, const float newAspectRatio, const float newZNear, const float newZFar)
+{
+    isPerspective = true;
+    projectionMatrix = glm::perspective(glm::radians(fov), newAspectRatio, newZNear, newZFar);
+
+    zNear = newZNear;
+    zFar = newZFar;
+
+    aspectRatio = newAspectRatio;
+    fovY = fov;
+}
+
 void Camera::SetOrthographic(const float width, const float height, const float newZNear, const float newZFar)
 {
     isPerspective = false;
@@ -220,4 +232,15 @@ void Camera::WindowResize(int width, int height)
 void Camera::SetRenderLayers(std::unordered_set<int> renderLayers)
 {
     this->layers = std::move(renderLayers);
+}
+
+glm::vec2 Camera::GetZPlanes()
+{
+    return { zNear, zFar };
+}
+
+void Camera::SetZPlanes(glm::vec2 zPlanes)
+{
+    zNear = zPlanes.x;
+    zFar = zPlanes.y;
 }

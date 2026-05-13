@@ -60,10 +60,10 @@ vec4 get_texture()
     const float ground_snow_level = 0.4f;
     const float snow_level = 0.7f;
     
-    vec4 ground_tex = texture2D(texture_1, tex_scale * tex_coord);
+    vec4 ground_tex = texture2D(texture_1, tex_scale * tex_coord * 10);
     float height = texture2D(texture_2, tex_scale * tex_coord).r;
-    vec4 snow_tex = texture2D(texture_3, tex_scale * tex_coord);
-    vec4 water_tex = texture2D(texture_4, tex_scale * tex_coord + vec2(time * 0.005f, time * 0.01f));
+    vec4 snow_tex = texture2D(texture_3, tex_scale * tex_coord * 10);
+    vec4 water_tex = texture2D(texture_4, tex_scale * tex_coord * 5 + vec2(time * 0.005f, time * 0.01f));
     vec4 height_tex = vec4(vec3(height), 1);
     
     vec4 ground_height_mix = mix(height_tex, ground_tex, height / water_ground_level);

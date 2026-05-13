@@ -15,6 +15,8 @@
 
 #include "Utils/Containers.h"
 
+#include "main/GameEngine/Systems/Rendering/ShadowMapData.h"
+
 namespace physics
 {
     class PhysicsEngine;
@@ -45,7 +47,8 @@ namespace m1
         ~GameEngine();
 
         void Init() override;
-        void CreateShadowMappingCamera();
+        void InitCascadingShadowMapping(int cascadeCnt = 4);
+        void DestroyShadowMappingFBOs() const;
 
         void HandleSceneLoaded(transform::Transform* root);
 
@@ -71,11 +74,11 @@ namespace m1
         void DestroyMarkedObjects();
 
         void UpdateGameLogic(float deltaTimeSeconds);
-        void UpdateShadowMappingCamera();
+        void RenderShadowPass();
         void RenderGameView();
         void RenderSceneView();
-        void DrawFramebufferTextures(utils::FBOContainer* container);
-        void RenderTextureScreen(rendering::Shader* shader, unsigned textureID);
+        void DrawFramebufferTextures(const std::vector<utils::FBOContainer*>& containers);
+        void RenderTextureScreen(rendering::Shader* shader, const std::vector<unsigned int>& textureIDs);
 
         void ReloadScene();
 
@@ -115,8 +118,9 @@ namespace m1
 
         physics::PhysicsEngine* physicsEngine = nullptr;
 
-        utils::FBOContainer shadowMapFBOContainer;
+        std::vector<utils::FBOContainer*> shadowMapFBOContainers;
         component::ShadowCamera* shadowMappingCamera;
+        rendering::ShadowMapData shadowMapData;
 
         bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;

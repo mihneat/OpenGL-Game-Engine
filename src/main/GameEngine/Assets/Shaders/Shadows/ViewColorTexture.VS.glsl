@@ -9,9 +9,12 @@ layout(location = 3) in vec3 v_color;
 // Output
 layout(location = 0) out vec2 texture_coord;
 
+out vec3 position;
+
 
 void main()
 {
+    position = v_position;
     texture_coord = v_texture_coord;
 
     gl_Position = vec4(v_position, 1);
