@@ -69,10 +69,17 @@ class Mesh
                       const std::vector<unsigned int>& indices);
 
     // Initializes the mesh object and upload data to GPU using the provided data buffers
-    bool InitFromData(const std::vector<glm::vec3>& positions,
-                      const std::vector<glm::vec3>& normals,
-                      const std::vector<glm::vec2>& texCoords,
-                      const std::vector<unsigned int>& indices);
+   bool InitFromData(const std::vector<glm::vec3>& positions,
+                     const std::vector<glm::vec3>& normals,
+                     const std::vector<glm::vec2>& texCoords,
+                     const std::vector<unsigned int>& indices);
+
+   bool InitFromData(const std::vector<glm::vec3>& positions,
+                  const std::vector<glm::vec3>& normals,
+                  const std::vector<glm::vec2>& texCoords,
+                  const std::vector<unsigned int>& indices,
+                  const std::vector<glm::vec3>& tangents,
+                  const std::vector<glm::vec3>& bitangents);
 
     bool LoadMesh(const std::string& fileLocation,
                   const std::string& fileName);
@@ -103,6 +110,8 @@ class Mesh
     std::vector<glm::vec3> positions;
     std::vector<glm::vec3> normals;
     std::vector<glm::vec2> texCoords;
+    std::vector<glm::vec3> tangents;
+    std::vector<glm::vec3> bitangents;
     std::vector<VertexFormat> vertices;
     std::vector<unsigned int> indices;
 

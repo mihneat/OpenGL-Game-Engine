@@ -39,6 +39,8 @@ namespace component
         
         void FitOrthographicProjectionToCameras(const std::vector<Camera*>& cameras, glm::vec3 lightDirection);
 
+        DirectionalLight* linkedDirectionalLight = nullptr;
+
     protected:
         glm::mat4 viewMatrix = glm::mat4(1.0f);
     };

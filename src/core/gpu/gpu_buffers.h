@@ -37,4 +37,11 @@ namespace gpu_utils
 
     GPUBuffers UploadData(const std::vector<VertexFormat> &vertices,
                           const std::vector<unsigned int>& indices);
+
+    GPUBuffers UploadData(const std::vector<glm::vec3> &positions,
+                  const std::vector<glm::vec3> &normals,
+                  const std::vector<glm::vec2> &text_coords,
+                  const std::vector<glm::vec3> &tangents,
+                  const std::vector<glm::vec3> &bitangents,
+                  const std::vector<unsigned int> &indices);
 }   // namespace gpu_utils

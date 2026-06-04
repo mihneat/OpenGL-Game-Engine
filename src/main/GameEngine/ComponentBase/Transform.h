@@ -46,7 +46,7 @@ namespace transform
             }
 
             // Didn't find the component, return null
-            return NULL;
+            return nullptr;
         }
 
         template <class T> std::vector<T*> GetComponents()

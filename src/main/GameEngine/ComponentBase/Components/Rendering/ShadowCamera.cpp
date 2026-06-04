@@ -18,6 +18,7 @@ glm::mat4 ShadowCamera::GetViewMatrix()
     return viewMatrix;
 }
 
+// Reference: https://learnopengl.com/Guest-Articles/2021/CSM
 void ShadowCamera::FitOrthographicProjectionToCameras(const std::vector<Camera*>& cameras, glm::vec3 lightDirection)
 {
     std::vector<glm::vec4> frustumCorners;
@@ -43,9 +44,7 @@ void ShadowCamera::FitOrthographicProjectionToCameras(const std::vector<Camera*>
 
     glm::vec3 center = glm::vec3(0, 0, 0);
     for (const auto& v : frustumCorners)
-    {
         center += glm::vec3(v);
-    }
     center /= frustumCorners.size();
     
     const auto lightView = glm::lookAt(
@@ -81,7 +80,6 @@ void ShadowCamera::FitOrthographicProjectionToCameras(const std::vector<Camera*>
         maxPoint.z /= zMult;
     else
         maxPoint.z *= zMult;
-   
     
     isPerspective = false;
     projectionMatrix = glm::ortho(minPoint.x, maxPoint.x, minPoint.y, maxPoint.y, minPoint.z, maxPoint.z);

@@ -34,6 +34,7 @@ class World : public InputController
 
 protected:
    transform::Transform* hierarchy = nullptr;
+   transform::Transform* persistentHierarchy = nullptr;
 
    friend class GUIManager;
 };

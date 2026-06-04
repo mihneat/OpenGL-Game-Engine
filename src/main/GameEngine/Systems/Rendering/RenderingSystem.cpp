@@ -196,11 +196,14 @@ void RenderingSystem::SetGlobalUniforms(
             GL_FALSE, glm::value_ptr(shadowMapData.lightProjectionMatrices[0]));
     }
 
-    if (!shadowMapData.zPlanes.empty())
+    if (!shadowMapData.zPlaneFractions.empty())
     {
         const GLint cascade_z_planes = glGetUniformLocation(shader->program, "cascade_z_planes");
-        glUniform2fv(cascade_z_planes, static_cast<int>(shadowMapData.zPlanes.size()), glm::value_ptr(shadowMapData.zPlanes[0]));
+        glUniform2fv(cascade_z_planes, static_cast<int>(shadowMapData.zPlaneFractions.size()), glm::value_ptr(shadowMapData.zPlaneFractions[0]));
     }
+
+    const GLint z_far = glGetUniformLocation(shader->program, "z_far");
+    glUniform1f(z_far, shadowMapData.zFar);
 
     // Send light information
     static std::vector<std::string> lightIsUsedStrings;

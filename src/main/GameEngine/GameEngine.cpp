@@ -54,12 +54,15 @@ GameEngine::GameEngine()
     // TODO: Extend to multiple observers
     // "Subscribe" to scene manager updates
     SceneManager::engineRef = this;
+
+    persistentHierarchy = new Transform();
 }
 
 GameEngine::~GameEngine()
 {
     DestroyShadowMappingFBOs();
     DeleteComponents(hierarchy);
+    DeleteComponents(persistentHierarchy);
 }
 
 void GameEngine::Init()
@@ -101,11 +104,11 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
     shadowMapData.lightViewMatrices.resize(cascadeCnt);
     shadowMapData.lightProjectionMatrices.resize(cascadeCnt);
     shadowMapData.depthTextureIds.resize(cascadeCnt);
-    shadowMapData.zPlanes = {
-        { 0.01f, 200.0f },
-        { 200.0f, 500.0f },
-        { 500.0f, 1000.0f },
-        { 1000.0f, 2000.0f },
+    shadowMapData.zPlaneFractions = {
+        { 0.00005f, 0.1f },
+        { 0.1f, 0.25f },
+        { 0.25f, 0.5f },
+        { 0.5f, 1.0f },
     };
     
     // Create the cascading FBOs
@@ -120,7 +123,7 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
     }
     
     // Create the shadow mapping camera
-    Transform* shadowMappingTransform = new Transform();
+    Transform* shadowMappingTransform = new Transform(persistentHierarchy);
     shadowMappingTransform->Translate(glm::vec3(-250, 300, -250));
     
     shadowMappingCamera = new ShadowCamera(shadowMappingTransform);
@@ -140,7 +143,7 @@ void GameEngine::DestroyShadowMappingFBOs() const
 void GameEngine::CreateSceneCamera()
 {
     // Create the scene camera
-    Transform* sceneCamTransform = new Transform();
+    Transform* sceneCamTransform = new Transform(persistentHierarchy);
     sceneCamTransform->Translate(glm::vec3(0.0f, 20.0f, -50.0f));
     
     sceneCamera = new SceneCamera(sceneCamTransform);
@@ -173,6 +176,8 @@ void GameEngine::HandleSceneLoaded(Transform* root)
     }
 
     hierarchy = root;
+
+    shadowMappingCamera->linkedDirectionalLight = nullptr;
 }
 
 void GameEngine::FindCameras()
@@ -309,16 +314,33 @@ void GameEngine::RenderShadowPass()
     // Quit out early if no cameras are rendering
     if (mainCam == nullptr)
         return;
+
+    // Try to find the sun in the scene
+    if (shadowMappingCamera->linkedDirectionalLight == nullptr)
+    {
+        Transform* sun = hierarchy->GetTransformByTag("Sun");
+        if (sun != nullptr)
+            shadowMappingCamera->linkedDirectionalLight = sun->GetComponent<DirectionalLight>();
+    }
     
     // Update shadow mapping camera
+    DirectionalLight* sunLight = shadowMappingCamera->linkedDirectionalLight;
+    if (sunLight != nullptr)
+    {
+        glm::vec3 lightDir = sunLight->transform->localRotation;
+        lightDir.y = -lightDir.y;
+        shadowMappingCamera->transform->SetLocalRotation(lightDir);
+    }
+    
     glm::vec3 lightDirection = shadowMappingCamera->transform->forward;
     
     glm::vec2 oldZPlanes = mainCam->GetZPlanes();
+    shadowMapData.zFar = oldZPlanes.y;
 
     // Use the Shadow framebuffers to render the shadows
     for (int i = 0; i < shadowMapFBOContainers.size(); i++)
     {
-        mainCam->SetPerspective(60, 16.0f / 9.0f, shadowMapData.zPlanes[i].x, shadowMapData.zPlanes[i].y);
+        mainCam->SetPerspective(60, 16.0f / 9.0f, shadowMapData.zPlaneFractions[i].x * oldZPlanes.y, shadowMapData.zPlaneFractions[i].y * oldZPlanes.y);
         shadowMappingCamera->FitOrthographicProjectionToCameras({ mainCam }, lightDirection);
         
         shadowMapFBOContainers[i]->Bind();

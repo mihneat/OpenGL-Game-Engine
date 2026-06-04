@@ -24,6 +24,7 @@ uniform mat4[4] light_space_view;
 uniform mat4[4] light_space_projection;
 
 uniform vec2[4] cascade_z_planes;
+uniform float z_far;
 
 vec3 sample_normal_map(in sampler2D normal_texture, vec2 texture_coord)
 {
@@ -158,7 +159,7 @@ float shadow_factor(vec3 point_position)
     float distanceToPoint = distance(eye_position, world_position);
     int shadowMapLayer = -1;
     for (int i = 0; i < 4; i++) {
-        if (distanceToPoint < cascade_z_planes[i].y) {
+        if (distanceToPoint < cascade_z_planes[i].y * z_far) {
             shadowMapLayer = i;
             break;
         }

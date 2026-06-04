@@ -25,7 +25,7 @@ void Light::UpdateLightValues() const
 	LightManager::lights[lightIndex].intensity = intensity;
 	LightManager::lights[lightIndex].position = position;
 	LightManager::lights[lightIndex].color = glm::vec3(color);
-	LightManager::lights[lightIndex].direction = direction;
+	LightManager::lights[lightIndex].direction = this->transform->forward;
 }
 
 void Light::ChangeType(int newType)

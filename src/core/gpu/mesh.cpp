@@ -66,7 +66,7 @@ bool Mesh::LoadMesh(const std::string& fileLocation,
 
     Assimp::Importer Importer;
 
-    unsigned int flags = aiProcess_GenSmoothNormals | aiProcess_FlipUVs;
+    unsigned int flags = aiProcess_GenSmoothNormals | aiProcess_FlipUVs | aiProcess_CalcTangentSpace;
     if (glDrawMode == GL_TRIANGLES) flags |= aiProcess_Triangulate;
 
     const aiScene* pScene = Importer.ReadFile(file, flags);
@@ -181,6 +181,8 @@ bool Mesh::InitFromScene(const aiScene* pScene)
     normals.reserve(nrVertices);
     texCoords.reserve(nrVertices);
     indices.reserve(nrIndices);
+    tangents.reserve(nrVertices);
+    bitangents.reserve(nrVertices);
 
     // Initialize the meshes in the scene one by one
     for (unsigned int i = 0 ; i < meshEntries.size() ; i++)
@@ -193,7 +195,7 @@ bool Mesh::InitFromScene(const aiScene* pScene)
         return false;
 
     buffers->ReleaseMemory();
-    *buffers = gpu_utils::UploadData(positions, normals, texCoords, indices);
+    *buffers = gpu_utils::UploadData(positions, normals, texCoords, tangents, bitangents, indices);
     return buffers->m_VAO != 0;
 }
 
@@ -207,10 +209,16 @@ void Mesh::InitMesh(const aiMesh* paiMesh)
         const aiVector3D* pPos      = &(paiMesh->mVertices[i]);
         const aiVector3D* pNormal   = &(paiMesh->mNormals[i]);
         const aiVector3D* pTexCoord = paiMesh->HasTextureCoords(0) ? &(paiMesh->mTextureCoords[0][i]) : &Zero3D;
+        const aiVector3D* pTangent   = &(paiMesh->mTangents[i]);
 
+        glm::vec3 vNormal = glm::vec3(pNormal->x, pNormal->y, pNormal->z);
+        glm::vec3 vTangent = glm::vec3(pTexCoord->x, pTexCoord->y, pTexCoord->z);
+        
         positions.push_back(glm::vec3(pPos->x, pPos->y, pPos->z));
-        normals.push_back(glm::vec3(pNormal->x, pNormal->y, pNormal->z));
+        normals.push_back(vNormal);
         texCoords.push_back(glm::vec2(pTexCoord->x, pTexCoord->y));
+        tangents.push_back(vTangent);
+        bitangents.push_back(glm::cross(vNormal, vTangent));
     }
 
     // Init the index buffer
