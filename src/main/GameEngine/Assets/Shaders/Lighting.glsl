@@ -23,6 +23,7 @@ uniform sampler2D depth_texture_3;
 uniform mat4[4] light_space_view;
 uniform mat4[4] light_space_projection;
 
+uniform mat4 View;
 uniform vec2[4] cascade_z_planes;
 uniform float z_far;
 
@@ -156,7 +157,8 @@ float get_fog_factor(float dist)
 float shadow_factor(vec3 point_position)
 {
     // Choose a depth texture based on the distance from the player
-    float distanceToPoint = distance(eye_position, world_position);
+    float distanceToPoint = abs((View * vec4(world_position - eye_position, 1.0)).z);
+    // float distanceToPoint = distance(eye_position, world_position);
     int shadowMapLayer = -1;
     for (int i = 0; i < 4; i++) {
         if (distanceToPoint < cascade_z_planes[i].y * z_far) {
