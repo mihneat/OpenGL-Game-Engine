@@ -77,8 +77,8 @@ namespace m1
         void RenderShadowPass();
         void RenderGameView();
         void RenderSceneView();
-        void DrawFramebufferTextures(const std::vector<utils::FBOContainer*>& containers);
-        void RenderTextureScreen(rendering::Shader* shader, const std::vector<unsigned int>& textureIDs);
+        void DrawFramebufferTextures(const utils::FBOContainer* container);
+        void RenderTextureScreen(rendering::Shader* shader, unsigned int textureID);
 
         void ReloadScene();
 
@@ -118,10 +118,10 @@ namespace m1
 
         physics::PhysicsEngine* physicsEngine = nullptr;
 
-        std::vector<utils::FBOContainer*> shadowMapFBOContainers;
+        utils::FBOContainer* shadowMapFBOContainer;
         component::ShadowCamera* shadowMappingCamera;
         rendering::ShadowMapData shadowMapData;
-        int cascadingMapResolution = 4096;
+        int cascadingMapResolution = 8192;
 
         bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;

@@ -349,16 +349,10 @@ void RenderingSystem::SetLocalUniforms(
             glUniform1i(glGetUniformLocation(shader->program, "normal_4"), 8);
         }
     }
-
-    for (int i = 0; i < shadowMapData.depthTextureIds.size(); i++)
-    {
-        std::string depthTextureName("depth_texture_");
-        depthTextureName.append(std::to_string(i));
-        
-        glActiveTexture(GL_TEXTURE9 + i);
-        glBindTexture(GL_TEXTURE_2D, shadowMapData.depthTextureIds[i]);
-        glUniform1i(glGetUniformLocation(shader->program, depthTextureName.c_str() ), 9 + i);
-    }
+    
+    glActiveTexture(GL_TEXTURE9);
+    glBindTexture(GL_TEXTURE_2D, shadowMapData.depthTextureId);
+    glUniform1i(glGetUniformLocation(shader->program, "depth_texture_0" ), 9);
 
     // Send texture scale
     glUniform2fv(glGetUniformLocation(shader->program, "tex_scale"), 1, glm::value_ptr(meshRenderer->texScale));

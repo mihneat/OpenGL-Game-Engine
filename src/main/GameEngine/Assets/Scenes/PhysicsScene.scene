@@ -1601,7 +1601,7 @@
                 {
                   "name": "isStatic",
                   "type": "FieldTypeBool",
-                  "value": true
+                  "value": false
                 }
               ]
             },

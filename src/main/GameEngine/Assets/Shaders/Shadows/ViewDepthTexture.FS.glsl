@@ -23,14 +23,7 @@ layout(location = 0) out vec4 out_color;
 void main()
 {
     float depth = 0;
-    if (position.x < 0 && position.y > 0)
-        depth = texture(texture_0, (1 - texture_coord) * 2).x;
-    else if (position.x > 0 && position.y > 0)
-        depth = texture(texture_1, (1 - texture_coord) * 2).x;
-    else if (position.x < 0 && position.y < 0)
-        depth = texture(texture_2, (1 - texture_coord) * 2).x;
-    else if (position.x > 0 && position.y < 0)
-        depth = texture(texture_3, (1 - texture_coord) * 2).x;
+    depth = texture(texture_1, 1 - texture_coord).x;
 
     // This is useful for perspective projections, ortho works directly with depth :)
     // float lDepth = (zNear * zFar / (zFar + depth * (zNear - zFar))) / zFar;

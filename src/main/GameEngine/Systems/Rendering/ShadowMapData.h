@@ -10,7 +10,7 @@ namespace rendering
     {
         std::vector<glm::mat4> lightViewMatrices;
         std::vector<glm::mat4> lightProjectionMatrices;
-        std::vector<int> depthTextureIds;
+        int depthTextureId;
         std::vector<glm::vec2> zPlaneFractions;
         float zFar;
     };

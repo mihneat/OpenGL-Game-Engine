@@ -16,9 +16,6 @@ uniform light_source lights[100]; // Max lights also need to be changed in Light
 // Also modify maximum 'for' value below
 
 uniform sampler2D depth_texture_0;
-uniform sampler2D depth_texture_1;
-uniform sampler2D depth_texture_2;
-uniform sampler2D depth_texture_3;
 
 uniform mat4[4] light_space_view;
 uniform mat4[4] light_space_projection;
@@ -176,7 +173,7 @@ float shadow_factor(vec3 point_position)
 
     float light_space_depth = light_space_pos.z * 0.5f + 0.5f;
 
-    vec2 depth_map_pos = light_space_pos.xy * 0.5f + 0.5f;
+    vec2 depth_map_pos = light_space_pos.xy * 0.25f + 0.25f;
 
     bvec2 a = greaterThan(depth_map_pos, vec2(1.0, 1.0));
     bvec2 b = lessThan(depth_map_pos, vec2(0.0, 0.0));
@@ -197,13 +194,15 @@ float shadow_factor(vec3 point_position)
     // OLD Approach using hard shadows
     float depth = 0.0f;
     if (shadowMapLayer == 0)
-        depth = texture(depth_texture_0, depth_map_pos).x;
+        depth_map_pos += vec2(0, 0.5);
     else if (shadowMapLayer == 1)
-        depth = texture(depth_texture_1, depth_map_pos).x;
+        depth_map_pos += vec2(0.5, 0.5);
     else if (shadowMapLayer == 2)
-        depth = texture(depth_texture_2, depth_map_pos).x;
+        depth_map_pos += vec2(0, 0);
     else if (shadowMapLayer == 3)
-        depth = texture(depth_texture_3, depth_map_pos).x;
+        depth_map_pos += vec2(0.5, 0);
+
+    depth = texture(depth_texture_0, depth_map_pos).x;
 
     const float bias = 0.01f;
     bool is_illuminated = light_space_depth - bias < depth;

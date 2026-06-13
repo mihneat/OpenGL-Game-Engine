@@ -46,12 +46,18 @@ uniform float selection_value;
         
 uniform vec3 helicopter_position;
 
+uniform int is_shadow_pass;
+
 vec3 sample_normal_map(in sampler2D normal_texture, vec2 texture_coord);
 vec3 get_light_contribution(vec3 normal);
 float get_fog_factor(float dist);
 
 void main()
 {
+    if (is_shadow_pass == 1) {
+        return;
+    }
+    
     // Extract the normal
     vec3 light = vec3(1);
     if (use_normal_maps == 1) {

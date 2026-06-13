@@ -103,7 +103,6 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
     // Prepare the shadow map data
     shadowMapData.lightViewMatrices.resize(cascadeCnt);
     shadowMapData.lightProjectionMatrices.resize(cascadeCnt);
-    shadowMapData.depthTextureIds.resize(cascadeCnt);
     shadowMapData.zPlaneFractions = {
         { 0.00005f, 0.1f },
         { 0.1f, 0.25f },
@@ -111,16 +110,12 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
         { 0.5f, 1.0f },
     };
     
-    // Create the cascading FBOs
-    for (int i = 0; i < cascadeCnt; i++)
-    {
-        utils::FBOContainer* cascadeFBO = new utils::FBOContainer();
-        cascadeFBO->SetResolution(glm::ivec2(cascadingMapResolution));
-        
-        shadowMapFBOContainers.push_back(cascadeFBO);
-
-        shadowMapData.depthTextureIds[i] = cascadeFBO->GetDepthTextureID();
-    }
+    // Create the cascading FBO
+    utils::FBOContainer* cascadeFBO = new utils::FBOContainer();
+    cascadeFBO->SetResolution(glm::ivec2(cascadingMapResolution));
+    
+    shadowMapFBOContainer = cascadeFBO;
+    shadowMapData.depthTextureId = cascadeFBO->GetDepthTextureID();
     
     // Create the shadow mapping camera
     Transform* shadowMappingTransform = new Transform(persistentHierarchy);
@@ -136,8 +131,7 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
 
 void GameEngine::DestroyShadowMappingFBOs() const
 {
-    for (utils::FBOContainer* fboContainer : shadowMapFBOContainers)
-        fboContainer->~FBOContainer();
+    shadowMapFBOContainer->~FBOContainer();
 }
 
 void GameEngine::CreateSceneCamera()
@@ -338,22 +332,27 @@ void GameEngine::RenderShadowPass()
     shadowMapData.zFar = oldZPlanes.y;
 
     // Use the Shadow framebuffers to render the shadows
-    for (int i = 0; i < shadowMapFBOContainers.size(); i++)
+    shadowMapFBOContainer->Bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    int halfRes = cascadingMapResolution / 2;
+    for (int i = 0; i < 2; i++)
     {
-        mainCam->SetPerspective(60, 16.0f / 9.0f, shadowMapData.zPlaneFractions[i].x * oldZPlanes.y, shadowMapData.zPlaneFractions[i].y * oldZPlanes.y);
-        shadowMappingCamera->FitOrthographicProjectionToCameras({ mainCam }, lightDirection);
-        
-        shadowMapFBOContainers[i]->Bind();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for (int j = 0; j < 2; j++)
+        {
+            int index = i * 2 + j;
+            mainCam->SetPerspective(60, 16.0f / 9.0f, shadowMapData.zPlaneFractions[index].x * oldZPlanes.y, shadowMapData.zPlaneFractions[index].y * oldZPlanes.y);
+            shadowMappingCamera->FitOrthographicProjectionToCameras({ mainCam }, lightDirection);
 
-        glViewport(0, 0, cascadingMapResolution, cascadingMapResolution);
+            glViewport(j * halfRes, (1 - i) * halfRes, halfRes, halfRes);
 
-        shadowMapData.lightViewMatrices[i] = shadowMappingCamera->GetViewMatrix();
-        shadowMapData.lightProjectionMatrices[i] = shadowMappingCamera->GetProjectionMatrix();
+            shadowMapData.lightViewMatrices[index] = shadowMappingCamera->GetViewMatrix();
+            shadowMapData.lightProjectionMatrices[index] = shadowMappingCamera->GetProjectionMatrix();
 
-        // Render the scene through the sun's eyes
-        renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMapData,
-            true, glm::ivec2(cascadingMapResolution), GUIManager::GetInstance()->IsGamePlaying(), true, false);
+            // Render the scene through the sun's eyes
+            renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMapData,
+                true, glm::ivec2(cascadingMapResolution), GUIManager::GetInstance()->IsGamePlaying(), true, false);
+        }
     }
 
     mainCam->SetPerspective(60, 16.0f / 9.0f, oldZPlanes.x, oldZPlanes.y);
@@ -393,7 +392,7 @@ void GameEngine::RenderGameView()
     }
 
     if (drawDebugShadowMappingTextures)
-        DrawFramebufferTextures(shadowMapFBOContainers);
+        DrawFramebufferTextures(shadowMapFBOContainer);
 
     // Upload FBO data to the texture
     // fboContainer->UploadDataToTexture();
@@ -428,34 +427,24 @@ void GameEngine::RenderSceneView()
         false, fboContainer->GetResolution(), GUIManager::GetInstance()->IsGamePlaying(), false, false);
 }
 
-void GameEngine::DrawFramebufferTextures(const std::vector<utils::FBOContainer*>& containers)
+void GameEngine::DrawFramebufferTextures(const utils::FBOContainer* container)
 {
     // Render the color texture on the screen
     glViewport(20, 20, 200, 200);
 
     RenderTextureScreen(
         ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_COLOR_TEXTURE),
-        {
-            containers[0]->GetColorTextureID(),
-            containers[1]->GetColorTextureID(),
-            containers[2]->GetColorTextureID(),
-            containers[3]->GetColorTextureID()
-        });
+        container->GetColorTextureID());
 
     // Render the depth texture on the screen
     glViewport(220, 20, 200, 200);
 
     RenderTextureScreen(
         ShaderResourceManager::GetShader(ShaderResourceManager::SHADER_VIEW_DEPTH_TEXTURE),
-        {
-            containers[0]->GetDepthTextureID(),
-            containers[1]->GetDepthTextureID(),
-            containers[2]->GetDepthTextureID(),
-            containers[3]->GetDepthTextureID()
-        });
+        container->GetDepthTextureID());
 }
 
-void GameEngine::RenderTextureScreen(Shader *shader, const std::vector<unsigned int>& textureIDs)
+void GameEngine::RenderTextureScreen(Shader *shader, unsigned int textureID)
 {
     if (!shader || !shader->GetProgramID())
         return;
@@ -471,16 +460,10 @@ void GameEngine::RenderTextureScreen(Shader *shader, const std::vector<unsigned 
     GLint loc_light_space_far_plane = glGetUniformLocation(shader->program, "light_space_far_plane");
     glUniform1f(loc_light_space_far_plane, 2000.0f);
 
-    // Set texture uniforms
-    for (int i = 0; i < textureIDs.size(); i++)
-    {
-        std::string uniformName("texture_");
-        uniformName.append(std::to_string(i));
-        
-        glActiveTexture(GL_TEXTURE1 + i);
-        glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
-        glUniform1i(glGetUniformLocation(shader->program, uniformName.c_str()), 1 + i);
-    }
+    // Set texture uniform
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 1);
 
     // Draw the object
     if (drawPlane == nullptr)

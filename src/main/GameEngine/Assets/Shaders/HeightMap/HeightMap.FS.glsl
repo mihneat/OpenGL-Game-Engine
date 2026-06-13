@@ -116,6 +116,10 @@ vec4 get_texture(inout vec3 normal)
 
 void main()
 {
+    if (is_shadow_pass == 1) {
+        return;
+    }
+    
     // Apply light to color
     vec3 normal = vec3(0, 1, 0);
     vec4 tex = get_texture(normal);
