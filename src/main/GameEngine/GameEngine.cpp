@@ -115,7 +115,7 @@ void GameEngine::InitCascadingShadowMapping(int cascadeCnt)
     for (int i = 0; i < cascadeCnt; i++)
     {
         utils::FBOContainer* cascadeFBO = new utils::FBOContainer();
-        cascadeFBO->SetResolution(glm::ivec2(4096));
+        cascadeFBO->SetResolution(glm::ivec2(cascadingMapResolution));
         
         shadowMapFBOContainers.push_back(cascadeFBO);
 
@@ -346,14 +346,14 @@ void GameEngine::RenderShadowPass()
         shadowMapFBOContainers[i]->Bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glViewport(0, 0, 4096, 4096);
+        glViewport(0, 0, cascadingMapResolution, cascadingMapResolution);
 
         shadowMapData.lightViewMatrices[i] = shadowMappingCamera->GetViewMatrix();
         shadowMapData.lightProjectionMatrices[i] = shadowMappingCamera->GetProjectionMatrix();
 
         // Render the scene through the sun's eyes
         renderingSystem->Render(hierarchy, textRenderer, shadowMappingCamera, shadowMappingCamera, shadowMapData,
-            true, glm::ivec2(4096), GUIManager::GetInstance()->IsGamePlaying(), true, false);
+            true, glm::ivec2(cascadingMapResolution), GUIManager::GetInstance()->IsGamePlaying(), true, false);
     }
 
     mainCam->SetPerspective(60, 16.0f / 9.0f, oldZPlanes.x, oldZPlanes.y);

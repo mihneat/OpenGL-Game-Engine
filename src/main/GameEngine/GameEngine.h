@@ -121,6 +121,7 @@ namespace m1
         std::vector<utils::FBOContainer*> shadowMapFBOContainers;
         component::ShadowCamera* shadowMappingCamera;
         rendering::ShadowMapData shadowMapData;
+        int cascadingMapResolution = 4096;
 
         bool drawDebugShadowMappingTextures = false;
         component::MeshRenderer* drawPlane = nullptr;
